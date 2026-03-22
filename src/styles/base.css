@@ -44,7 +44,6 @@
   --lp-title-button-padding-y: var(--lp-space-xs);
 
   --lp-grid-gap: var(--lp-space-2xs);
-  --lp-row-gap: var(--lp-grid-gap);
   --lp-months-gap: var(--lp-space-lg);
   --lp-month-title-margin-bottom: var(--lp-space-sm);
   --lp-month-title-font-weight: 600;
@@ -119,7 +118,7 @@
   --lp-inline-max-width: none;
 
   /* Day grid: 7 columns + column gaps; weekday row + up to 6 day rows (buildDayGrid). */
-  --lp-day-body-min-width: calc(7 * var(--lp-cell-size) + 6 * var(--lp-row-gap));
+  --lp-day-body-min-width: calc(7 * var(--lp-cell-size));
   /* 7 rows in .lp-grid column + row gaps + .lp-row--head margin-bottom */
   --lp-day-body-min-height: calc(7 * var(--lp-cell-size) + 6 * var(--lp-grid-gap) + var(--lp-space-2xs));
   /* Nav row + header margin; cap taller title/year labels so shell height stays stable across views */
@@ -256,7 +255,6 @@
 .lp-row {
   display: grid;
   grid-template-columns: repeat(7, var(--lp-cell-size));
-  gap: var(--lp-row-gap);
 }
 
 .lp-row--head {
@@ -374,8 +372,11 @@
 }
 
 .lp-cell--outside {
-  color: var(--lp-cell-outside-color);
   opacity: var(--lp-cell-outside-opacity);
+}
+
+.lp-cell--outside:not(.lp-cell--selected) {
+  color: var(--lp-cell-outside-color);
 }
 
 .lp-cell--disabled {
