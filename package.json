@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "rollup -c rollup.config.js",
+    "size": "node scripts/check-bundle-size.mjs",
     "test": "node test/smoke.test.mjs"
   },
   "keywords": [
