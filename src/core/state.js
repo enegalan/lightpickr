@@ -141,7 +141,7 @@ const defaultClasses = {
   titleButton: 'lp-title-btn',
   timePanel: 'lp-time',
   footer: 'lp-footer',
-  popoverPointer: 'lp-popover-pointer',
+  popoverPointer: 'lp-popover-pointer lp--pointer',
   viewBody: 'lp-view-body'
 };
 

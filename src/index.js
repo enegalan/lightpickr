@@ -86,7 +86,7 @@ function Lightpickr(target, options) {
   /** @type {number|null} */
   this._pendingRangeHoverTs = null;
 
-  this.$pointer = document.createElement('div');
+  this.$pointer = document.createElement('i');
   this.$pointer.className = this._state.classes.popoverPointer;
   this.$pointer.setAttribute('aria-hidden', 'true');
 

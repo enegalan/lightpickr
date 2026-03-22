@@ -125,7 +125,7 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
   popover.style.top = c.top + 'px';
   popover.style.left = c.left + 'px';
   popover.style.transform = '';
-  placePopoverPointer(popover, target, pointer, main);
+  placePopoverPointer(popover, target, pointer, main, sec);
 }
 
 /**
@@ -133,22 +133,42 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
  * @param {HTMLElement} target
  * @param {HTMLElement|null|undefined} pointer
  * @param {string} main
+ * @param {string} sec
  */
-function placePopoverPointer(popover, target, pointer, main) {
+function placePopoverPointer(popover, target, pointer, main, sec) {
   if (!(pointer instanceof HTMLElement)) {
     return;
   }
   const vis = getComputedStyle(popover).getPropertyValue('--lp-pointer-visible').trim();
-  if (vis !== '1' || main !== 'bottom') {
+  if (vis !== '1') {
     pointer.style.display = 'none';
     return;
   }
   pointer.style.display = '';
+  pointer.style.left = '';
+  pointer.style.right = '';
+  pointer.style.top = '';
+  pointer.style.bottom = '';
+  pointer.setAttribute('data-lp-pointer-main', main);
+  pointer.setAttribute('data-lp-pointer-sec', sec);
+
+  const s = getComputedStyle(pointer);
+  const ptrSize = parseFloat(s.getPropertyValue('--lp-pointer-size')) || 10;
+  const pad = 8;
   const tr = target.getBoundingClientRect();
   const pr = popover.getBoundingClientRect();
-  const ptrW = pointer.offsetWidth || 12;
-  const ptrH = pointer.offsetHeight || 8;
-  const cx = tr.left + tr.width / 2 - pr.left;
-  pointer.style.left = Math.min(Math.max(8, cx - ptrW / 2), pr.width - ptrW - 8) + 'px';
-  pointer.style.top = -ptrH + 'px';
+
+  if (main === 'bottom' || main === 'top') {
+    if (sec === 'center') {
+      const cx = tr.left + tr.width / 2 - pr.left - ptrSize / 2;
+      const maxL = Math.max(pad, pr.width - ptrSize - pad);
+      pointer.style.left = Math.min(Math.max(pad, cx), maxL) + 'px';
+    }
+  } else if (main === 'left' || main === 'right') {
+    if (sec === 'center') {
+      const cy = tr.top + tr.height / 2 - pr.top - ptrSize / 2;
+      const maxT = Math.max(pad, pr.height - ptrSize - pad);
+      pointer.style.top = Math.min(Math.max(pad, cy), maxT) + 'px';
+    }
+  }
 }
