@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lightpickr example (dist)</title>
+    <link rel="stylesheet" href="../dist/lightpickr.css" />
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
+        label { display: block; margin-top: 1.25rem; font-weight: 600; }
+        input[type="text"] { width: 100%; max-width: 20rem; padding: 0.5rem; margin-top: 0.35rem; }
+        .inline-wrap { margin-top: 1.5rem; min-height: 20rem; }
+    </style>
+</head>
+<body>
+    <h1>Lightpickr</h1>
+    <p>Uses <code>dist/lightpickr.js</code> and <code>dist/lightpickr.css</code>. Run <code>npm run build</code> first, then open this file via a static server (see below).</p>
+
+    <br /><br /><br /><br /><br /><br /><br /><br />
+
+    <label for="date-input">Popover (input)</label>
+    <input id="date-input" type="text" placeholder="Pick a date" autocomplete="off" />
+
+    <label for="range-input">Range</label>
+    <input id="range-input" type="text" placeholder="Start – end" autocomplete="off" />
+
+    <label for="time-input">Time</label>
+    <input id="time-input" type="text" placeholder="Pick a time" autocomplete="off" />
+
+    <div class="inline-wrap">
+        <label>Inline calendar</label>
+        <div id="inline-root"></div>
+    </div>
+
+    <script src="../dist/lightpickr.js"></script>
+    <script>
+        new Lightpickr('#date-input', {
+            format: 'YYYY-MM-DD',
+            position: 'bottom left'
+        });
+
+        new Lightpickr('#range-input', {
+            range: true,
+            format: 'YYYY-MM-DD',
+            position: 'top left'
+        });
+
+        new Lightpickr('#time-input', {
+            enableTime: true,
+            format: 'HH:mm',
+            position: 'bottom right'
+        });
+
+        new Lightpickr('#inline-root', {
+            inline: true,
+            multiple: 3,
+            format: 'YYYY-MM-DD'
+        });
+    </script>
+</body>
+</html>

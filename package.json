@@ -1,0 +1,30 @@
+{
+  "name": "lightpickr",
+  "version": "0.1.0",
+  "description": "Lightweight dependency-free JavaScript datepicker",
+  "type": "module",
+  "main": "dist/lightpickr.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "test": "node test/smoke.test.mjs"
+  },
+  "keywords": [
+    "datepicker",
+    "calendar",
+    "date",
+    "timepicker",
+    "lightweight",
+    "vanilla"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-terser": "^1.0.0",
+    "jsdom": "^25.0.1",
+    "rollup": "^4.28.1",
+    "rollup-plugin-copy": "^3.5.0"
+  }
+}
