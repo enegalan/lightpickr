@@ -1,18 +1,17 @@
 # Lightpickr
 
-Dependency-free JavaScript datepicker with default UI, CSS-variable theming, render callbacks, range and time support, and optional plugins.
+**Dependency-free** JavaScript datepicker with a ready-made UI, CSS-variable theming, ranges, optional time, and plugins.
 
-## Install / build
+---
+
+## Quick start
 
 ```bash
 npm install
 npm run build
 ```
 
-Outputs:
-
-- `dist/lightpickr.js` — single browser bundle (IIFE), global `Lightpickr`
-- `dist/lightpickr.css` — base theme (all layout and colors via CSS custom properties)
+In your HTML:
 
 ```html
 <link rel="stylesheet" href="dist/lightpickr.css" />
@@ -22,167 +21,196 @@ Outputs:
 </script>
 ```
 
-### Size budget
+- `dist/lightpickr.js` — single browser bundle (IIFE), global `Lightpickr`
+- `dist/lightpickr.css` — base styles; color and spacing via **custom properties** (`--lp-*`)
 
-`npm run size` reports gzipped size of `dist/lightpickr.js`. The **stretch goal** is 5KB gzip; the current MVP build is smaller than the **7KB gzip** gate enforced by the script. Further trimming (fewer views, slimmer defaults, or optional modules) can move toward 5KB.
+---
 
-## Mounting
+## Usage examples
 
-- Target is an `<input>` → popover (unless `inline: true`). The calendar is appended to `document.body` and positioned with `position: fixed` relative to the target (see **`position`** below). The root keeps the `lp--popover` class on every render so `top` / `left` from JS are not ignored (`position` would otherwise stay `static`).
-- Target is a non-input element → inline calendar inside that element.
+**Single date** (default):
 
-## Selection model
+```js
+new Lightpickr('#date');
+```
 
-**Single-date mode** is always the baseline when neither multiple nor range is active. It is not toggled via a separate option.
+**Range** (first click start, second end; multiple ranges depend on `multiple`):
 
-### `multiple`
+```js
+new Lightpickr('#range', { range: true });
+```
 
-- `false` / omitted / `0` / `1` → multiple off (single date when `range` is false).
-- `true` → treated as `2`.
-- Integer `n` where `n > 1` → cap on selections.
-- When **`range: true`**, this cap is the **maximum number of ranges** (each range is `[start, end]` in day precision).
+**Multiple separate dates** (max 5):
 
-### `range`
+```js
+new Lightpickr('#many', { multiple: 5 });
+```
 
-- `true` → range selection: first click sets anchor, second click closes the range. Further pairs add ranges up to `multiple` cap (FIFO eviction of the oldest range when over cap).
-- `false` → no range mode.
+**With time:**
 
-Internal storage:
+```js
+new Lightpickr('#appointment', { enableTime: true });
+```
 
-- Non-range: `selectedDates` is `number[]` (timestamps, start of day).
-- Range: `selectedDates` is `number[][]` (pairs of start/end timestamps).
+**Always-visible calendar** (target is a container, not only an `input`):
+
+```js
+new Lightpickr('#calendar-root', { inline: true });
+```
+
+---
 
 ## Options
 
 | Option | Type | Default | Notes |
 |--------|------|---------|--------|
-| `inline` | `boolean` | auto from target | `input` → popover; container → inline |
-| `multiple` | `boolean \| number` | `false` | See semantics above |
-| `range` | `boolean` | `false` | |
-| `enableTime` | `boolean` | `false` | Adds a time row; default control is `<input type="time">` |
-| `minDate` | `number \| Date \| string` | `null` | Start of day |
-| `maxDate` | `number \| Date \| string` | `null` | Start of day |
-| `disabledDates` | array | `[]` | Day-level |
-| `locale` | `'default' \| { months?, weekdays? }` | `'default'` | Custom short month/weekday labels |
-| `firstDayOfWeek` | `number` | `1` | `0` = Sunday |
-| `numberOfMonths` | `number` | `1` | **MVP:** option is accepted for API compatibility but only one month is rendered |
-| `format` | `string` | `'YYYY-MM-DD'` | Tokens: `YYYY`, `MM`, `DD`, `HH`, `mm` |
-| `closeOnSelect` | `boolean` | `true` | Hides popover when a selection “commits” (single date or finished range) |
-| `onChange` | `(dates) => void` | noop | `dates` is `number[]` or `number[][]` |
-| `onShow` | `() => void` | noop | |
-| `onHide` | `() => void` | noop | |
-| `onDestroy` | `() => void` | noop | |
-| `render` | object | see below | Override any render phase |
-| `classes` | object | see below | Extra classes per region |
-| `position` | `string \| function` | `'bottom left'` | Popover placement (ignored when `inline: true`) |
-| `anchor` | `string \| HTMLElement \| null` | `null` | Element used for popover placement and outside-click ignore (see below) |
+| `inline` | `boolean` | *auto* | Omitted: `input` / `textarea` → popover (`false`); other target → inline (`true`). |
+| `multiple` | `boolean \| number` | `false` | `false` / omitted / `0` / `1` → multiple off. `true` → cap `2`. Integer `n > 1` → max selections, or max **ranges** when `range: true`. See [How selection works](#how-selection-works-short). |
+| `range` | `boolean` | `false` | First click anchor, second closes range; FIFO eviction when over `multiple` cap. |
+| `enableTime` | `boolean` | `false` | Time row; default control is `<input type="time">`. |
+| `minDate` | `number \| Date \| string \| null` | `null` | Interpreted at start of day. |
+| `maxDate` | `number \| Date \| string \| null` | `null` | Interpreted at start of day. |
+| `disabledDates` | `array` | `[]` | Day-level; entries as number, `Date`, or string. |
+| `locale` | `'default' \| { months?, weekdays? }` | `'default'` | Custom short month / weekday labels. |
+| `firstDayOfWeek` | `number` | `1` | `0` = Sunday, `1` = Monday, … |
+| `numberOfMonths` | `number` | `1` | Not read from options yet; internal value is always `1` (reserved for future use). |
+| `format` | `string` | `'YYYY-MM-DD'` | Tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`. |
+| `closeOnSelect` | `boolean` | `true` | Hides popover when selection commits (single date or finished range). |
+| `onChange` | `(dates) => void` | no-op | `dates` is `number[]` or `number[][]` in range mode. |
+| `onShow` | `() => void` | no-op | |
+| `onHide` | `() => void` | no-op | |
+| `onDestroy` | `() => void` | no-op | |
+| `render` | `object` | built-in hooks | Optional hooks per region; see [Render](#render-render). |
+| `classes` | `object` | built-in map | Merged over default class names; see [Extra classes](#extra-classes-classes). |
+| `position` | `string \| function` | `'bottom left'` | Popover placement; ignored when `inline: true`. See [Position and anchor](#position-and-anchor-popover). |
+| `anchor` | `string \| HTMLElement \| null` | `null` | Reference for layout and outside-click handling. See [Position and anchor](#position-and-anchor-popover). |
 
-### `anchor` (popover only)
-
-When `new Lightpickr()` is called on a **wrapper** that also contains an **inline** calendar (another `.lp`), the wrapper’s bounding box is tall and the popover would align to the bottom of that whole block.
-
-- If **`anchor`** is set (`'#id'` or an `HTMLElement`), that node is used for `getBoundingClientRect()` and for “click outside” checks.
-- If **`anchor`** is omitted, Lightpickr picks the **first `input` or `textarea`** under `$el` that is **not** inside another Lightpickr root (`[data-lp-root]`, set on each calendar container). This avoids skipping your field when a parent uses the class **`lp`** for layout only (`.closest('.lp')` would wrongly treat that parent as “inside a calendar”).
-- If `$el` is already an `input` / `textarea`, that element is used.
-
-### `position` (popover only)
-
-**String:** two words: main axis, then secondary alignment.
-
-- Main: `top` | `bottom` | `left` | `right` — where the calendar sits relative to the target (e.g. `bottom` = below the field).
-- Secondary: for `top`/`bottom` use `left` | `right` | `center`; for `left`/`right` use `top` | `bottom` | `center`.
-- Examples: `'bottom left'` (default), `'top right'`, `'right center'`.
-
-Gaps come from `--lp-popover-gap-x` / `--lp-popover-gap-y`. The panel is clamped inside the viewport using `--lp-popover-viewport-margin`.
-
-**Function:** custom layout when `show()` runs and again on each view change while open.
-
-```js
-position({
-  $datepicker,   // HTMLDivElement — calendar root
-  $target,       // HTMLElement — element passed to `new Lightpickr(target, …)`
-  $anchor,       // HTMLElement — same reference used for string positioning (see `anchor`)
-  $pointer,      // HTMLElement — arrow node (hidden unless you style it; see CSS)
-  isViewChange,  // true when repositioning after month/year view change, false on open
-  done           // call when async positioning is finished (sync code can ignore)
-}) {
-  // set $datepicker.style (e.g. top/left), optionally $pointer
-}
-```
-
-Return **another function** to hook into `hide()` (e.g. run a close animation). That function receives `hideDone` and must call `hideDone()` when the calendar should actually unmount from the visible state:
-
-```js
-position(ctx) {
-  // …position on open…
-  return function (hideDone) {
-    // …optional hide animation…
-    hideDone();
-  };
-}
-```
-
-If the position function does **not** return a hide callback on the **first** open (`isViewChange === false`), any previous hide callback is cleared. On later calls with `isViewChange === true`, omitting a return value keeps the existing hide callback.
-
-**Pointer (string mode):** set `--lp-pointer-visible: 1` on `.lp` (or a wrapper) to show a small arrow above the panel when main position is `bottom`. Override with `classes.popoverPointer` and matching CSS if you rename the class.
+---
 
 ## Public API
 
-### Properties
+### Constructor
 
-- `$datepicker` — root element
-- `$el` — target element
-- `$pointer` — popover arrow element (only meaningful in popover mode)
-- `viewDate`, `currentView`, `selectedDates`, `focusDate`, `visible`, `disabledDates`, `isDestroyed`
+`new Lightpickr(target, options?)`
+
+- **`target`** — CSS selector string or `HTMLElement`. Throws if the element is not found.
+- **`options`** — Optional object; see [Options](#options). If `inline` is omitted, it is inferred: `input` / `textarea` → popover; any other element → inline calendar.
+
+### Instance fields
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `$el` | `HTMLElement` | Element you passed as `target` (resolved from a selector). |
+| `$datepicker` | `HTMLDivElement` | Root of the calendar UI (`data-lp-root`). Inline: inside `$el`; popover: appended to `document.body`. |
+| `$pointer` | `HTMLElement` | Popover arrow node (string `position` mode; style with CSS / `--lp-pointer-visible`). Meaningless in inline mode. |
+| `visible` | `boolean` | Whether the calendar is shown (`true` always when `inline`; popover toggles with `show` / `hide`). |
+| `isDestroyed` | `boolean` | Set to `true` after `destroy()`; further use of the instance is unsafe. |
+
+### Getters
+
+| Getter | Type | Description |
+|--------|------|-------------|
+| `viewDate` | `number` | Start-of-day timestamp for the period being viewed. |
+| `currentView` | `'day' \| 'month' \| 'year' \| 'time'` | Active view. |
+| `selectedDates` | `number[] \| number[][]` | **Copy** of the selection: flat timestamps in non-range mode; array of `[start, end]` pairs in range mode (each bound is start-of-day). |
+| `focusDate` | `number \| null` | Keyboard/focus highlight timestamp, or `null`. |
+| `disabledDates` | `number[]` | **Copy** of disabled day timestamps (sorted, start-of-day). |
 
 ### Methods
 
-- `show()`, `hide()`
-- `next()`, `prev()` — step month/year/year-block by view
-- `up()`, `down()` — view ladder `day → month → year`
-- `selectDate(date | date[] | [start,end][])` — programmatic selection; for range mode you may pass an array of pairs
-- `unselectDate(date)` — removes a day from multi selection, or drops any range that contains that day
-- `clear()`
-- `formatDate(date, format)`
-- `destroy()`
-- `update(partialOptions)`
-- `setCurrentView(view, params?)` — `view`: `'day' \| 'month' \| 'year' \| 'time'`
-- `setViewDate(date)`, `setFocusDate(date | null)`
-- `getViewDates(view?)` — timestamps currently represented in the active grid
-- `disableDate(date)`, `enableDate(date)`
-- `use(plugin)` — see Plugins
+#### `show()` / `hide()`
 
-## Render callbacks
+Popover only. **No-op** if `isDestroyed` or `inline`.  
 
-Each callback receives a **context** object:
+- **`show()`** — Displays the panel, attaches the document mousedown listener for outside clicks, runs `onShow`, repositions.  
+- **`hide()`** — If a custom `position` function returned a hide callback, that runs first; it must eventually invoke the provided `hideDone` (see [Position and anchor](#position-and-anchor-popover)). Then the panel is hidden, the document listener removed, and `onHide` runs.
 
-```ts
-{
-  date: number,       // primary cell timestamp (start of day)
-  viewDate: number,
-  isSelected, isDisabled, isToday, isInRange, isRangeStart, isRangeEnd,
-  isFocused, isOutside,
-  state: object,      // snapshot for reads
-  instance: Lightpickr
-}
-```
+#### `next()` / `prev()`
 
-Hooks (all optional):
+Step the current view backward (`prev`) or forward (`next`):
 
-- `render.container(ctx)` — wrap root; return an element to host the rest
-- `render.header(ctx)`, `render.nav(ctx)`, `render.grid(ctx)`
-- `render.dayCell(ctx)`, `render.monthCell(ctx)`, `render.yearCell(ctx)`
-- `render.time(ctx)`, `render.footer(ctx)`
+| `currentView` | Effect |
+|---------------|--------|
+| `day` | Previous / next month (from `viewDate`). |
+| `month` | Previous / next year. |
+| `year` | Previous / next 12-year block. |
+| `time` | Same as `day` (month step on `viewDate`). |
 
-Default UI fills missing hooks with vanilla DOM.
+#### `up()` / `down()`
 
-## Class map (`classes`)
+Change granularity along **day → month → year** (not including `time`):
 
-Default keys (all overridable): `container`, `header`, `nav`, `grid`, `cell`, `cellSelected`, `cellDisabled`, `cellToday`, `cellRange`, `cellRangeStart`, `cellRangeEnd`, `cellOutside`, `cellFocused`, `navButton`, `titleButton`, `timePanel`, `footer`, `popoverPointer`.
+- **`up()`** — From `day` → `month` → `year`. From `time` → `day`.
+- **`down()`** — From `year` → `month` → `day`. No change if already on `day`.
 
-## Theming contract
+#### `selectDate(date, opts?)` / `unselectDate(date)` / `clear()`
 
-`dist/lightpickr.css` defines **only** custom properties for visual values on `.lp` (spacing, typography, surfaces, interactive states, popover anchors). Override tokens in your stylesheet after including base CSS:
+- **`selectDate(value)`** — Programmatic selection. Does nothing in the range + array-of-pairs branch if `range` is `false`.  
+  - **Single value** (`Date`, timestamp, or parseable string): applies the same rules as a user click (single / multi / range).  
+  - **Array of values** (not an array of pairs): applies each entry in order.  
+  - **Range mode only:** array of `[start, end]` pairs — replaces selection with normalized pairs, keeping at most `multipleLimit` ranges (newest wins).  
+- **`opts`** (optional second argument) — `{ close?: boolean }`. Only affects the **range + array-of-pairs** path: if `close: true` and `closeOnSelect` is true, calls `hide()` after updating.  
+- **Auto-hide:** With `closeOnSelect`, after selection the popover may hide: single-date and multi-date behavior follows internal rules; for range, hides when there is no pending range start (range fully closed).  
+- **`unselectDate(date)`** — In multi mode, removes that day. In range mode, removes any range that contains that day (by day resolution). Emits `onChange` if something changed.  
+- **`clear()`** — Clears selection and emits `onChange`.
+
+#### `formatDate(date, format?)`
+
+Returns a string for the given `date` using **`format`** (second argument) or the instance `format` option. Uses the current `timePart` when `enableTime` is on. Returns `''` if `date` cannot be parsed to a timestamp.
+
+#### `getSelectedPayload()`
+
+Returns the same shape as the argument passed to **`onChange`**: a **new** `number[]` or `number[][]` (deep copy for ranges). Useful if you need the payload without waiting for a change event.
+
+#### `update(partialOptions)`
+
+Merges **`partialOptions`** into the live options/state. Preserves selection, `viewDate`, `focusDate`, `visible`, `currentView`, and `timePart` where applicable; `render` and `classes` are shallow-merged. Re-renders. Does not fire `onChange` by itself.
+
+#### `setViewDate(date)` / `setFocusDate(date | null)`
+
+- **`setViewDate`** — Sets `viewDate` to the start of that day (invalid values are ignored).  
+- **`setFocusDate`** — Sets keyboard focus day, or `null` to clear.
+
+#### `setCurrentView(view, params?)`
+
+- **`view`** — `'day' | 'month' | 'year' | 'time'`.  
+- **`params`** (optional) — `{ date?: number | Date | string }` sets `viewDate` to the start of that day when provided.
+
+#### `getViewDates(view?)`
+
+Returns `number[]` of start-of-day timestamps for the cells in the given view. **`view`** defaults to `currentView`. Supports **`day`** (grid including leading/trailing outside-month days), **`month`** (12 months of `viewDate`’s year), and **`year`** (12 consecutive years starting at `viewDate`’s year minus five). For **`time`**, returns an empty array (no day grid).
+
+#### `disableDate(date)` / `enableDate(date)`
+
+Adds or removes a **single day** (start-of-day) in the internal disabled set. Invalid dates are ignored. Does not fire `onChange`.
+
+#### `destroy()`
+
+Idempotent. Removes the document listener, tears down delegated handlers, removes `$datepicker` from the DOM, calls `onDestroy` and each plugin’s `onDestroy`, sets `isDestroyed` to `true`.
+
+#### `use(plugin)`
+
+**`plugin`** must be a **function** receiving the instance; otherwise the call does nothing. It may return an object with optional **`onInit`**, **`onRender`**, **`onSelect`**, **`onDestroy`**. `onInit` runs immediately after registration.
+
+---
+
+## Render (`render`)
+
+Each function receives a **context** including: `date`, `viewDate`, `isSelected`, `isDisabled`, `isToday`, `isInRange`, `isRangeStart`, `isRangeEnd`, `isFocused`, `isOutside`, `state`, `instance`.
+
+Optional hooks: `container`, `header`, `nav`, `grid`, `dayCell`, `monthCell`, `yearCell`, `time`, `footer`. If you omit one, Lightpickr uses its default DOM.
+
+---
+
+## Extra classes (`classes`)
+
+You can add classes to specific regions. Default keys include: `container`, `header`, `nav`, `grid`, `cell`, `cellSelected`, `cellDisabled`, `cellToday`, `cellRange`, `cellRangeStart`, `cellRangeEnd`, `cellOutside`, `cellFocused`, `navButton`, `titleButton`, `timePanel`, `footer`, `popoverPointer`.
+
+---
+
+## Theming (CSS)
+
+Base CSS defines **variables** on `.lp`. Override after importing:
 
 ```css
 .my-theme .lp {
@@ -190,6 +218,8 @@ Default keys (all overridable): `container`, `header`, `nav`, `grid`, `cell`, `c
   --lp-cell-size: 2.5rem;
 }
 ```
+
+---
 
 ## Plugins
 
@@ -204,15 +234,30 @@ picker.use(function (instance) {
 });
 ```
 
-Range and time are **core** features, not plugins.
+---
 
-## Development
+## Position and anchor (popover)
 
-```bash
-npm run build   # dist bundle + CSS copy
-npm test        # jsdom smoke test (source modules)
-npm run size    # gzip size report
+**`anchor`** — If you mount the picker on a **wrapper** that also contains another inline calendar, the popover may align incorrectly. Pass `#id` or an `HTMLElement` for `getBoundingClientRect()` and for treating clicks as “inside the field.”
+
+If you omit `anchor`, the **first `input` or `textarea`** under the target that is **not** inside another Lightpickr root (`[data-lp-root]`) is used. If the target is already an input/textarea, that element is used.
+
+**`position`** — Two-word string: main axis, then alignment (e.g. `'bottom left'`, `'top right'`). Main: `top` | `bottom` | `left` | `right`; secondary depends on axis (`left`/`right`/`center` or `top`/`bottom`/`center`). Gaps and margins: `--lp-popover-gap-x`, `--lp-popover-gap-y`, `--lp-popover-viewport-margin`.
+
+**Custom function** — Receives an object with `$datepicker`, `$target`, `$anchor`, `$pointer`, `isViewChange`, and `done` (call it if positioning is async). If you return a function on open, it runs on hide and must call `hideDone()` when the panel can actually be hidden:
+
+```js
+position(ctx) {
+  // ctx.$datepicker.style.left = …
+  return function (hideDone) {
+    hideDone();
+  };
+}
 ```
+
+Arrow in string mode: `--lp-pointer-visible: 1` on `.lp`.
+
+---
 
 ## License
 
