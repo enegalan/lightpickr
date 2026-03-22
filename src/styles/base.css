@@ -44,6 +44,7 @@
   --lp-title-button-padding-y: var(--lp-space-xs);
 
   --lp-grid-gap: var(--lp-space-2xs);
+  --lp-row-gap: var(--lp-grid-gap);
   --lp-months-gap: var(--lp-space-lg);
   --lp-month-title-margin-bottom: var(--lp-space-sm);
   --lp-month-title-font-weight: 600;
@@ -117,10 +118,18 @@
 
   --lp-inline-max-width: none;
 
-  /* Day grid: 7 columns; weekday row + up to 6 day rows (see buildDayGrid totalCells). */
-  --lp-day-body-min-width: calc(7 * var(--lp-cell-size) + 6);
-  /* 7 rows in .lp-grid column + gaps + .lp-row--head margin-bottom */
+  /* Day grid: 7 columns + column gaps; weekday row + up to 6 day rows (buildDayGrid). */
+  --lp-day-body-min-width: calc(7 * var(--lp-cell-size) + 6 * var(--lp-row-gap));
+  /* 7 rows in .lp-grid column + row gaps + .lp-row--head margin-bottom */
   --lp-day-body-min-height: calc(7 * var(--lp-cell-size) + 6 * var(--lp-grid-gap) + var(--lp-space-2xs));
+  /* Nav row + header margin; cap taller title/year labels so shell height stays stable across views */
+  --lp-header-stack-min: max(
+    calc(var(--lp-nav-button-size) + var(--lp-space-sm)),
+    calc(var(--lp-title-font-size) * 1.5 + 2 * var(--lp-title-button-padding-y) + var(--lp-space-sm))
+  );
+  --lp-calendar-shell-min-height: calc(
+    var(--lp-header-stack-min) + var(--lp-day-body-min-height) + 2 * var(--lp-space-md)
+  );
 
   background: var(--lp-bg);
   color: var(--lp-color);
@@ -135,16 +144,9 @@
 .lp--inline {
   position: relative;
   display: inline-block;
-  min-width: calc(var(--lp-day-body-min-width) + 2 * var(--lp-space-md));
-}
-
-.lp--inline .lp-view-body {
-  min-height: var(--lp-day-body-min-height);
   box-sizing: border-box;
-}
-
-.lp-view-body {
-  display: grid;
+  min-width: calc(var(--lp-day-body-min-width) + 2 * var(--lp-space-md));
+  min-height: var(--lp-calendar-shell-min-height);
 }
 
 .lp--popover {
@@ -154,6 +156,19 @@
   left: 0;
   margin: 0;
   overflow: visible;
+  box-sizing: border-box;
+  min-width: calc(var(--lp-day-body-min-width) + 2 * var(--lp-space-md));
+  min-height: var(--lp-calendar-shell-min-height);
+}
+
+.lp--inline .lp-view-body,
+.lp--popover .lp-view-body {
+  min-height: var(--lp-day-body-min-height);
+  box-sizing: border-box;
+}
+
+.lp-view-body {
+  display: grid;
 }
 
 .lp-popover-pointer {
@@ -241,6 +256,7 @@
 .lp-row {
   display: grid;
   grid-template-columns: repeat(7, var(--lp-cell-size));
+  gap: var(--lp-row-gap);
 }
 
 .lp-row--head {
