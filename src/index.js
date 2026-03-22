@@ -8,7 +8,13 @@ import {
 } from './core/selection.js';
 import { formatDate, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './core/utils.js';
 import { setTimePart } from './core/time.js';
-import { attachDelegatedHandlers, getViewDates, renderFull, syncPendingRangeHoverClasses } from './render/renderer.js';
+import {
+  attachDelegatedHandlers,
+  getViewDates,
+  renderFull,
+  syncPendingRangeHoverClasses,
+  syncTimePanelDom
+} from './render/renderer.js';
 import { applyStringPosition } from './core/positioning.js';
 
 /**
@@ -539,6 +545,18 @@ Lightpickr.prototype._onTimeInputChange = function (ev) {
     return;
   }
   const kind = t.getAttribute('data-lp-time');
+  if (kind === 'hours' || kind === 'minutes') {
+    const h = kind === 'hours' ? Number(t.value) : this._state.timePart.hours;
+    const mm = kind === 'minutes' ? Number(t.value) : this._state.timePart.minutes;
+    if (!Number.isFinite(h) || !Number.isFinite(mm)) {
+      return;
+    }
+    const next = setTimePart(this._state, h, mm);
+    this._state = next;
+    syncTimePanelDom(this);
+    this._syncInput();
+    return;
+  }
   if (kind !== 'clock') {
     return;
   }

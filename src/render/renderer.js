@@ -688,9 +688,66 @@ function renderYearView(instance, container) {
 }
 
 /**
- * @param {object} instance
- * @param {HTMLElement} container
+ * @param {number} hours24
+ * @param {number} minutes
+ * @returns {{ hourStr: string, minuteStr: string, ampm: 'AM'|'PM', fullLabel: string }}
  */
+function formatClock12Parts(hours24, minutes) {
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const h = Math.max(0, Math.min(23, Math.floor(hours24)));
+  const m = Math.max(0, Math.min(59, Math.floor(minutes)));
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const hourStr = pad2(h12);
+  const minuteStr = pad2(m);
+  return {
+    hourStr,
+    minuteStr,
+    ampm,
+    fullLabel: hourStr + ':' + minuteStr + ' ' + ampm
+  };
+}
+
+/**
+ * @param {object} instance
+ */
+export function syncTimePanelDom(instance) {
+  const root = instance.$datepicker;
+  const block = root.querySelector('.lp-time-display-block');
+  const hoursRange = root.querySelector('input[data-lp-time="hours"]');
+  const minutesRange = root.querySelector('input[data-lp-time="minutes"]');
+  if (!block) {
+    return;
+  }
+  const hoursSpan = block.querySelector('.lp-time-display-hours');
+  const minutesSpan = block.querySelector('.lp-time-display-minutes');
+  const ampmSpan = block.querySelector('.lp-time-display-ampm');
+  if (!hoursSpan || !minutesSpan || !ampmSpan) {
+    return;
+  }
+  const s = instance._state;
+  const p = formatClock12Parts(s.timePart.hours, s.timePart.minutes);
+  hoursSpan.textContent = p.hourStr;
+  minutesSpan.textContent = p.minuteStr;
+  ampmSpan.textContent = p.ampm;
+  if (hoursRange instanceof HTMLInputElement) {
+    const hv = String(s.timePart.hours);
+    if (hoursRange.value !== hv) {
+      hoursRange.value = hv;
+    }
+    hoursRange.setAttribute('aria-valuenow', hv);
+    hoursRange.setAttribute('aria-valuetext', p.fullLabel);
+  }
+  if (minutesRange instanceof HTMLInputElement) {
+    const mv = String(s.timePart.minutes);
+    if (minutesRange.value !== mv) {
+      minutesRange.value = mv;
+    }
+    minutesRange.setAttribute('aria-valuenow', mv);
+    minutesRange.setAttribute('aria-valuetext', p.fullLabel);
+  }
+}
+
 function renderTimePanel(instance, container) {
   const s = instance._state;
   const hook = s.render.time;
@@ -702,14 +759,60 @@ function renderTimePanel(instance, container) {
       wrap.appendChild(el);
     }
   } else {
-    const pad2 = (n) => String(n).padStart(2, '0');
-    const inp = createEl('input', 'lp-time-input', {
-      type: 'time',
-      'data-lp-time': 'clock',
-      'aria-label': 'Time'
+    const h = s.timePart.hours;
+    const m = s.timePart.minutes;
+    const clock = formatClock12Parts(h, m);
+    const layout = createEl('div', 'lp-time-layout');
+    const displayBlock = createEl('div', 'lp-time-display-block');
+    const spanHours = createEl('span', 'lp-time-display-hours');
+    spanHours.textContent = clock.hourStr;
+    const spanSep = createEl('span', 'lp-time-display-sep');
+    spanSep.textContent = ':';
+    const spanMinutes = createEl('span', 'lp-time-display-minutes');
+    spanMinutes.textContent = clock.minuteStr;
+    displayBlock.appendChild(spanHours);
+    displayBlock.appendChild(spanSep);
+    displayBlock.appendChild(spanMinutes);
+    displayBlock.appendChild(document.createTextNode(' '));
+    const spanAmPm = createEl('span', 'lp-time-display-ampm');
+    spanAmPm.textContent = clock.ampm;
+    displayBlock.appendChild(spanAmPm);
+    const slidersCol = createEl('div', 'lp-time-sliders-col');
+    const rngHours = createEl('input', 'lp-time-slider lp-time-slider--hours', {
+      type: 'range',
+      min: '0',
+      max: '23',
+      step: '1',
+      'data-lp-time': 'hours',
+      'aria-label': 'Hours',
+      'aria-valuemin': '0',
+      'aria-valuemax': '23'
     });
-    inp.value = pad2(s.timePart.hours) + ':' + pad2(s.timePart.minutes);
-    wrap.appendChild(inp);
+    rngHours.value = String(h);
+    rngHours.setAttribute('aria-valuenow', String(h));
+    rngHours.setAttribute('aria-valuetext', clock.fullLabel);
+    const rowHours = createEl('div', 'lp-time-slider-row lp-time-slider-row--hours');
+    rowHours.appendChild(rngHours);
+    const rngMinutes = createEl('input', 'lp-time-slider lp-time-slider--minutes', {
+      type: 'range',
+      min: '0',
+      max: '59',
+      step: '1',
+      'data-lp-time': 'minutes',
+      'aria-label': 'Minutes',
+      'aria-valuemin': '0',
+      'aria-valuemax': '59'
+    });
+    rngMinutes.value = String(m);
+    rngMinutes.setAttribute('aria-valuenow', String(m));
+    rngMinutes.setAttribute('aria-valuetext', clock.fullLabel);
+    const rowMinutes = createEl('div', 'lp-time-slider-row lp-time-slider-row--minutes');
+    rowMinutes.appendChild(rngMinutes);
+    slidersCol.appendChild(rowHours);
+    slidersCol.appendChild(rowMinutes);
+    layout.appendChild(displayBlock);
+    layout.appendChild(slidersCol);
+    wrap.appendChild(layout);
   }
   container.appendChild(wrap);
 }
