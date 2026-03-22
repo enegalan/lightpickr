@@ -24,6 +24,9 @@
     <label for="range-input">Range</label>
     <input id="range-input" type="text" placeholder="Start – end" autocomplete="off" />
 
+    <label for="datetime-input">Datetime</label>
+    <input id="datetime-input" type="text" placeholder="Pick a datetime" autocomplete="off" />
+
     <label for="time-input">Time</label>
     <input id="time-input" type="text" placeholder="Pick a time" autocomplete="off" />
 
@@ -45,10 +48,16 @@
             position: 'top left'
         });
 
-        new Lightpickr('#time-input', {
+        new Lightpickr('#datetime-input', {
             enableTime: true,
             format: 'YYYY-MM-DD HH:mm',
             position: 'bottom right'
+        });
+
+        new Lightpickr('#time-input', {
+            onlyTime: true,
+            format: 'HH:mm',
+            position: 'top right'
         });
 
         new Lightpickr('#inline-root', {

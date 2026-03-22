@@ -33,6 +33,9 @@ export function navigateUp(state) {
   const order = ['day', 'month', 'year'];
   const idx = order.indexOf(state.currentView);
   if (state.currentView === 'time') {
+    if (state.onlyTime) {
+      return next;
+    }
     next.currentView = 'day';
     return next;
   }
@@ -64,7 +67,7 @@ export function navigateDown(state) {
  */
 export function setCurrentViewState(state, view, params) {
   const next = Object.assign({}, state);
-  next.currentView = view;
+  next.currentView = state.onlyTime ? 'time' : view;
   if (params && params.date != null) {
     const raw = toTimestamp(params.date);
     if (raw != null) {

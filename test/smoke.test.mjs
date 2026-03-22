@@ -35,4 +35,14 @@ assert.equal(inline._state.inline, true);
 inline.destroy();
 p.destroy();
 
+const onlyTimeHost = document.createElement('div');
+document.body.appendChild(onlyTimeHost);
+const ot = new Lightpickr(onlyTimeHost, { inline: true, onlyTime: true });
+assert.equal(ot._state.onlyTime, true);
+assert.equal(ot._state.enableTime, true);
+assert.ok(ot.$datepicker.querySelector('.lp-time'));
+assert.equal(ot.$datepicker.querySelector('.lp-header'), null);
+ot.destroy();
+onlyTimeHost.remove();
+
 console.log('smoke OK');

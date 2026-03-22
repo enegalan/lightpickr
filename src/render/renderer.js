@@ -40,6 +40,7 @@ function publicStateSnapshot(instance) {
     multipleLimit: s.multipleLimit,
     multipleEnabled: s.multipleEnabled,
     enableTime: s.enableTime,
+    onlyTime: s.onlyTime,
     minDate: s.minDate,
     maxDate: s.maxDate,
     disabledDates: s.disabledDatesSorted.slice(),
@@ -374,6 +375,9 @@ export function renderFull(instance) {
   } else {
     root.classList.add('lp--popover');
   }
+  if (s.onlyTime) {
+    root.classList.add('lp--only-time');
+  }
 
   let container = root;
   if (hooks.container) {
@@ -386,7 +390,9 @@ export function renderFull(instance) {
     }
   }
 
-  if (s.currentView === 'day') {
+  if (s.onlyTime) {
+    renderTimePanel(instance, container);
+  } else if (s.currentView === 'day') {
     renderDayView(instance, container);
   } else if (s.currentView === 'month') {
     renderMonthView(instance, container);

@@ -52,6 +52,7 @@ import { normalizeMultipleOption, startOfDayTs, toTimestamp } from './utils.js';
  * @property {boolean|number} [multiple]
  * @property {boolean} [range]
  * @property {boolean} [enableTime]
+ * @property {boolean} [onlyTime]
  * @property {number|Date|string|null} [minDate]
  * @property {number|Date|string|null} [maxDate]
  * @property {(number|Date|string)[]} [disabledDates]
@@ -93,6 +94,7 @@ import { normalizeMultipleOption, startOfDayTs, toTimestamp } from './utils.js';
  * @property {boolean} multipleEnabled
  * @property {number} multipleLimit
  * @property {boolean} enableTime
+ * @property {boolean} onlyTime
  * @property {number|null} minDate
  * @property {number|null} maxDate
  * @property {number[]} disabledDatesSorted
@@ -150,8 +152,9 @@ const defaultClasses = {
  * @returns {LightpickrInternalState}
  */
 export function createStateFromOptions(raw) {
-  const range = Boolean(raw.range);
-  const { multipleLimit, multipleEnabled } = normalizeMultipleOption(raw.multiple, range);
+  const onlyTime = Boolean(raw.onlyTime);
+  const range = onlyTime ? false : Boolean(raw.range);
+  const { multipleLimit, multipleEnabled } = normalizeMultipleOption(onlyTime ? false : raw.multiple, range);
   const minTs = toTimestamp(raw.minDate);
   const maxTs = toTimestamp(raw.maxDate);
   const disabled = Array.isArray(raw.disabledDates) ? raw.disabledDates.map(toTimestamp).filter((t) => t != null) : [];
@@ -180,7 +183,8 @@ export function createStateFromOptions(raw) {
     range,
     multipleEnabled,
     multipleLimit: range ? multipleLimit : multipleEnabled ? multipleLimit : 1,
-    enableTime: Boolean(raw.enableTime),
+    onlyTime,
+    enableTime: onlyTime || Boolean(raw.enableTime),
     minDate: minTs != null ? startOfDayTs(minTs) : null,
     maxDate: maxTs != null ? startOfDayTs(maxTs) : null,
     disabledDatesSorted: disabled.map(startOfDayTs),
@@ -195,7 +199,7 @@ export function createStateFromOptions(raw) {
     onDestroy: typeof raw.onDestroy === 'function' ? raw.onDestroy : function () {},
     render,
     classes: cls,
-    currentView: 'day',
+    currentView: onlyTime ? 'time' : 'day',
     viewDate,
     focusDate: null,
     visible: false,
@@ -223,6 +227,7 @@ export function extractRawOptions(state) {
     multiple: state.multipleEnabled ? state.multipleLimit : false,
     range: state.range,
     enableTime: state.enableTime,
+    onlyTime: state.onlyTime,
     minDate: state.minDate,
     maxDate: state.maxDate,
     disabledDates: state.disabledDatesSorted.slice(),
@@ -262,7 +267,16 @@ export function mergeOptionsIntoState(state, patch) {
   next.viewDate = state.viewDate;
   next.focusDate = state.focusDate;
   next.visible = state.visible;
-  next.currentView = state.currentView;
+  if (patch.onlyTime === true) {
+    next.currentView = 'time';
+  } else if (patch.onlyTime === false) {
+    next.currentView = state.currentView === 'time' ? 'day' : state.currentView;
+  } else {
+    next.currentView = state.currentView;
+    if (next.onlyTime && next.currentView !== 'time') {
+      next.currentView = 'time';
+    }
+  }
   next.timePart = Object.assign({}, state.timePart);
   return next;
 }

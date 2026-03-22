@@ -287,10 +287,16 @@ Lightpickr.prototype._syncInput = function () {
     this.$el.value = parts.join(', ');
   } else {
     const dates = /** @type {number[]} */ (s.selectedDates);
-    if (!dates.length) {
+    if (!dates.length && !s.onlyTime) {
       this.$el.value = '';
     } else {
-      this.$el.value = dates.map((d) => formatDate(s.format, d, tp)).join(', ');
+      const rows =
+        dates.length > 0
+          ? dates
+          : s.onlyTime
+            ? [s.viewDate]
+            : [];
+      this.$el.value = rows.map((d) => formatDate(s.format, d, tp)).join(', ');
     }
   }
 };
