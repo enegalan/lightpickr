@@ -84,6 +84,7 @@
 
   --lp-cell-outside-color: var(--lp-muted);
   --lp-cell-outside-opacity: 0.55;
+  --lp-cell-weekend-color: #b45309;
 
   --lp-cell-disabled-opacity: 0.35;
   --lp-cell-disabled-cursor: not-allowed;
@@ -172,6 +173,24 @@
   box-sizing: border-box;
   min-width: calc(var(--lp-day-body-min-width) + 2 * var(--lp-space-md));
   min-height: var(--lp-calendar-shell-min-height);
+}
+
+.lp-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  z-index: var(--lp-z-popover);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--lp-space-lg);
+}
+
+.lp.lp--mobile.lp--popover {
+  --lp-pointer-visible: 0;
+  --lp-cell-size: 2.5rem;
+  --lp-space-md: 1rem;
+  --lp-space-lg: 1.25rem;
 }
 
 .lp.lp--only-time.lp--inline,
@@ -366,6 +385,18 @@
   background: var(--lp-title-button-bg-hover);
 }
 
+.lp-nav-btn svg {
+  width: 1rem;
+  height: 1rem;
+  display: block;
+  margin: 0 auto;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .lp-months {
   display: flex;
   flex-direction: column;
@@ -401,6 +432,10 @@
   color: var(--lp-head-cell-color);
   font-weight: var(--lp-head-cell-font-weight);
   font-size: var(--lp-head-cell-font-size);
+}
+
+.lp-head-cell--weekend {
+  color: var(--lp-cell-weekend-color);
 }
 
 .lp-month-grid,
@@ -508,6 +543,10 @@
 
 .lp-cell--outside:not(.lp-cell--selected) {
   color: var(--lp-cell-outside-color);
+}
+
+.lp-cell--weekend:not(.lp-cell--selected) {
+  color: var(--lp-cell-weekend-color);
 }
 
 .lp-cell--disabled {
@@ -715,6 +754,29 @@
 .lp-time-sep {
   color: var(--lp-time-sep-color);
   padding: 0 var(--lp-time-sep-padding-x);
+}
+
+.lp-footer--actions {
+  margin-top: var(--lp-space-sm);
+  padding-top: var(--lp-space-sm);
+  border-top: 1px solid var(--lp-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--lp-space-sm);
+}
+
+.lp-footer-btn {
+  border: 1px solid var(--lp-border);
+  background: transparent;
+  color: var(--lp-color);
+  border-radius: var(--lp-border-radius);
+  padding: var(--lp-space-xs) var(--lp-space-sm);
+  cursor: pointer;
+  font: inherit;
+}
+
+.lp-footer-btn:hover {
+  background: var(--lp-nav-button-bg-hover);
 }
 
 .lp-year-grid .lp-cell,

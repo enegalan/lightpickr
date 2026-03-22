@@ -6,64 +6,119 @@
     <title>Lightpickr example (dist)</title>
     <link rel="stylesheet" href="../dist/lightpickr.css" />
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
+        body { font-family: system-ui, sans-serif; max-width: 56rem; margin: 2rem auto; padding: 0 1rem; }
         label { display: block; margin-top: 1.25rem; font-weight: 600; }
         input[type="text"] { width: 100%; max-width: 20rem; padding: 0.5rem; margin-top: 0.35rem; }
         .inline-wrap { margin-top: 1.5rem; min-height: 20rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1.25rem; }
+        .card { border: 1px solid #ddd; border-radius: 10px; padding: 0.75rem 1rem 1rem; }
+        .card h3 { margin: 0.2rem 0 0.5rem; font-size: 1rem; }
     </style>
 </head>
 <body>
     <h1>Lightpickr</h1>
     <p>Uses <code>dist/lightpickr.js</code> and <code>dist/lightpickr.css</code>. Run <code>npm run build</code> first, then open this file via a static server (see below).</p>
 
-    <br /><br /><br /><br /><br /><br /><br /><br />
-
-    <label for="date-input">Popover (input)</label>
-    <input id="date-input" type="text" placeholder="Pick a date" autocomplete="off" />
-
-    <label for="range-input">Range</label>
-    <input id="range-input" type="text" placeholder="Start – end" autocomplete="off" />
-
-    <label for="datetime-input">Datetime</label>
-    <input id="datetime-input" type="text" placeholder="Pick a datetime" autocomplete="off" />
-
-    <label for="time-input">Time</label>
-    <input id="time-input" type="text" placeholder="Pick a time" autocomplete="off" />
-
-    <div class="inline-wrap">
-        <label>Inline calendar</label>
-        <div id="inline-root"></div>
+    <div class="grid">
+        <section class="card">
+            <h3>showEvent, startDate, firstDay</h3>
+            <label for="date-input">Open on click only</label>
+            <input id="date-input" type="text" placeholder="Click to open" autocomplete="off" />
+        </section>
+        <section class="card">
+            <h3>Range + dynamicRange + separator</h3>
+            <label for="range-input">Drag range endpoints</label>
+            <input id="range-input" type="text" placeholder="Start – end" autocomplete="off" />
+        </section>
+        <section class="card">
+            <h3>Datetime with bounds/steps</h3>
+            <label for="datetime-input">Working hours only</label>
+            <input id="datetime-input" type="text" placeholder="Pick a datetime" autocomplete="off" />
+        </section>
+        <section class="card">
+            <h3>Mobile modal + nav customization</h3>
+            <label for="mobile-input">Modal popover</label>
+            <input id="mobile-input" type="text" placeholder="Focus to open modal" autocomplete="off" />
+        </section>
+        <section class="card">
+            <h3>Only time</h3>
+            <label for="time-input">Time picker</label>
+            <input id="time-input" type="text" placeholder="Pick a time" autocomplete="off" />
+        </section>
+        <section class="card inline-wrap">
+            <h3>Inline monthsField + allowedViews</h3>
+            <div id="inline-root"></div>
+        </section>
     </div>
 
     <script src="../dist/lightpickr.js"></script>
     <script>
         new Lightpickr('#date-input', {
             format: 'YYYY-MM-DD',
+            startDate: '2027-02-10',
+            firstDay: 0,
+            weekends: [0],
+            showEvent: 'click',
             position: 'bottom left'
         });
 
         new Lightpickr('#range-input', {
             range: true,
+            multiple: 3,
+            multipleSeparator: ' | ',
+            dynamicRange: true,
+            buttons: ['today', 'clear'],
             format: 'YYYY-MM-DD',
             position: 'top left'
         });
 
         new Lightpickr('#datetime-input', {
             enableTime: true,
+            minHours: 9,
+            maxHours: 18,
+            hoursStep: 1,
+            minMinutes: 0,
+            maxMinutes: 45,
+            minutesStep: 15,
+            selectedDates: ['2026-03-25', 'invalid'],
             format: 'YYYY-MM-DD HH:mm',
             position: 'bottom right'
+        });
+
+        new Lightpickr('#mobile-input', {
+            isMobile: true,
+            navTitles: {
+                days: 'MMMM <i>yyyy</i>',
+                months: 'yyyy',
+                years: 'yyyy1 - yyyy2'
+            },
+            prevHtml: '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M14 6 L8 12 L14 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+            nextHtml: '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M10 6 L16 12 L10 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+            autoClose: true
         });
 
         new Lightpickr('#time-input', {
             onlyTime: true,
             format: 'HH:mm',
+            minHours: 8,
+            maxHours: 20,
+            hoursStep: 2,
+            minMinutes: 0,
+            maxMinutes: 50,
+            minutesStep: 10,
             position: 'top right'
         });
 
         new Lightpickr('#inline-root', {
             inline: true,
-            multiple: 3,
-            format: 'YYYY-MM-DD'
+            view: 'months',
+            allowedViews: ['months', 'years'],
+            monthsField: 'monthsLong',
+            locale: {
+                monthsLong: ['January','February','March','April','May','June','July','August','September','October','November','December']
+            },
+            format: 'YYYY-MM-DD',
+            closeOnSelect: false
         });
     </script>
 </body>

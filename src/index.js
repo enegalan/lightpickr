@@ -2,6 +2,7 @@ import { createStateFromOptions, mergeOptionsIntoState } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
 import {
   applyDaySelection,
+  applyRangeEndpointDrag,
   clearSelectionState,
   selectDateExplicit,
   unselectDate
@@ -12,6 +13,7 @@ import {
   attachDelegatedHandlers,
   getViewDates,
   renderFull,
+  renderFooter,
   syncPendingRangeHoverClasses,
   syncTimePanelDom
 } from './render/renderer.js';
@@ -91,6 +93,9 @@ function Lightpickr(target, options) {
   this._positionHideCleanup = null;
   /** @type {number|null} */
   this._pendingRangeHoverTs = null;
+  this._rangeDrag = null;
+  this.$backdrop = null;
+  this._boundShowTargets = [];
 
   this.$pointer = document.createElement('i');
   this.$pointer.className = this._state.classes.popoverPointer;
@@ -108,11 +113,137 @@ Lightpickr.prototype._mount = function () {
     this.$el.appendChild(this.$datepicker);
     this.$datepicker.classList.add('lp--inline');
   } else {
-    document.body.appendChild(this.$datepicker);
+    if (this._state.isMobile) {
+      this.$backdrop = document.createElement('div');
+      this.$backdrop.className = 'lp-mobile-backdrop';
+      this.$backdrop.style.display = 'none';
+      this.$backdrop.appendChild(this.$datepicker);
+      document.body.appendChild(this.$backdrop);
+      this.$datepicker.classList.add('lp--mobile');
+    } else {
+      document.body.appendChild(this.$datepicker);
+      this.$datepicker.classList.remove('lp--mobile');
+    }
     this.$datepicker.classList.add('lp--popover');
     this.$datepicker.setAttribute('role', 'dialog');
     this.$datepicker.style.display = 'none';
   }
+};
+
+Lightpickr.prototype._syncFooterHandlers = function () {
+  const actions = this.$datepicker.querySelectorAll('[data-lp-footer-action]');
+  for (let i = 0; i < actions.length; i++) {
+    const el = actions[i];
+    if (!(el instanceof HTMLElement)) {
+      continue;
+    }
+    if (el.getAttribute('data-lp-footer-bound') === '1') {
+      continue;
+    }
+    el.setAttribute('data-lp-footer-bound', '1');
+    el.addEventListener('click', () => {
+      const action = el.getAttribute('data-lp-footer-action');
+      if (action === 'today') {
+        const next = Object.assign({}, this._state);
+        const now = new Date();
+        next.viewDate = ymdToTsStartOfDay(now.getFullYear(), now.getMonth(), 1);
+        this._commit(next, { emitChange: false });
+      } else if (action === 'clear') {
+        this.clear();
+      }
+    });
+  }
+};
+
+Lightpickr.prototype._attachRangeDragHandlers = function () {
+  if (!this._state.range || !this._state.dynamicRange) {
+    return;
+  }
+  const root = this.$datepicker;
+  const startDrag = (ev) => {
+    if (!(ev.target instanceof HTMLElement)) {
+      return;
+    }
+    const dayBtn = ev.target.closest('[data-lp-day]');
+    if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
+      return;
+    }
+    if (!(dayBtn.classList.contains(this._state.classes.cellRangeStart) || dayBtn.classList.contains(this._state.classes.cellRangeEnd))) {
+      return;
+    }
+    const tsRaw = dayBtn.getAttribute('data-lp-day');
+    if (tsRaw == null) {
+      return;
+    }
+    const ts = Number(tsRaw);
+    if (!Number.isFinite(ts)) {
+      return;
+    }
+    const day = startOfDayTs(ts);
+    const ranges = /** @type {number[][]} */ (this._state.selectedDates);
+    let rangeIndex = -1;
+    let edge = 'start';
+    for (let i = ranges.length - 1; i >= 0; i--) {
+      const pair = ranges[i];
+      if (pair[0] === day) {
+        rangeIndex = i;
+        edge = 'start';
+        break;
+      }
+      if (pair[1] === day) {
+        rangeIndex = i;
+        edge = 'end';
+        break;
+      }
+    }
+    if (rangeIndex < 0) {
+      return;
+    }
+    ev.preventDefault();
+    this._rangeDrag = { rangeIndex: rangeIndex, edge: edge };
+  };
+  const moveDrag = (ev) => {
+    if (!this._rangeDrag) {
+      return;
+    }
+    const target = document.elementFromPoint(ev.clientX, ev.clientY);
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+    const dayBtn = target.closest('[data-lp-day]');
+    if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
+      return;
+    }
+    const tsRaw = dayBtn.getAttribute('data-lp-day');
+    if (tsRaw == null) {
+      return;
+    }
+    const ts = Number(tsRaw);
+    if (!Number.isFinite(ts)) {
+      return;
+    }
+    const out = applyRangeEndpointDrag(this._state, this._rangeDrag.rangeIndex, this._rangeDrag.edge, ts);
+    if (!out.changed) {
+      return;
+    }
+    this._commit(out.state, { emitChange: false });
+  };
+  const endDrag = () => {
+    if (!this._rangeDrag) {
+      return;
+    }
+    this._rangeDrag = null;
+    this._state.onChange(this.getSelectedPayload());
+    this._pluginOnSelect();
+  };
+  root.addEventListener('pointerdown', startDrag);
+  document.addEventListener('pointermove', moveDrag);
+  document.addEventListener('pointerup', endDrag);
+  this._delegateOffs.push(function () {
+    root.removeEventListener('pointerdown', startDrag);
+    document.removeEventListener('pointermove', moveDrag);
+    document.removeEventListener('pointerup', endDrag);
+  });
 };
 
 Lightpickr.prototype._defaultPositionReference = function () {
@@ -151,12 +282,15 @@ Lightpickr.prototype._bindTarget = function () {
   const self = this;
   const bindField = function (el) {
     if (isTextInputLike(el)) {
-      el.addEventListener('focus', function () {
-        self.show();
-      });
-      el.addEventListener('click', function () {
-        self.show();
-      });
+      const events = self._state.showEvents;
+      for (let i = 0; i < events.length; i++) {
+        const eventName = events[i];
+        const listener = function () {
+          self.show();
+        };
+        el.addEventListener(eventName, listener);
+        self._boundShowTargets.push({ el: el, eventName: eventName, listener: listener });
+      }
     }
   };
   bindField(this.$el);
@@ -166,8 +300,19 @@ Lightpickr.prototype._bindTarget = function () {
   }
 };
 
+Lightpickr.prototype._unbindTarget = function () {
+  for (let i = 0; i < this._boundShowTargets.length; i++) {
+    const entry = this._boundShowTargets[i];
+    entry.el.removeEventListener(entry.eventName, entry.listener);
+  }
+  this._boundShowTargets = [];
+};
+
 Lightpickr.prototype._positionPopover = function (isViewChange) {
   if (this._state.inline) {
+    return;
+  }
+  if (this._state.isMobile) {
     return;
   }
   const s = this._state;
@@ -199,6 +344,10 @@ Lightpickr.prototype._onDocMouseDown = function (ev) {
     return;
   }
   if (this.$datepicker.contains(t) || this.$el.contains(t)) {
+    return;
+  }
+  if (this.$backdrop && this.$backdrop === t) {
+    this.hide();
     return;
   }
   const ref = this._getPositionReference();
@@ -237,6 +386,8 @@ Lightpickr.prototype._commit = function (next, opts) {
   }
   renderFull(this);
   attachDelegatedHandlers(this, this.$datepicker);
+  this._attachRangeDragHandlers();
+  this._syncFooterHandlers();
   syncPendingRangeHoverClasses(this);
   if (changed) {
     this._state.onChange(this.getSelectedPayload());
@@ -284,7 +435,7 @@ Lightpickr.prototype._syncInput = function () {
   if (s.range) {
     const ranges = /** @type {number[][]} */ (s.selectedDates);
     const parts = ranges.map((pair) => formatDate(s.format, pair[0], tp) + ' – ' + formatDate(s.format, pair[1], tp));
-    this.$el.value = parts.join(', ');
+    this.$el.value = parts.join(s.multipleSeparator);
   } else {
     const dates = /** @type {number[]} */ (s.selectedDates);
     if (!dates.length && !s.onlyTime) {
@@ -296,7 +447,7 @@ Lightpickr.prototype._syncInput = function () {
           : s.onlyTime
             ? [s.viewDate]
             : [];
-      this.$el.value = rows.map((d) => formatDate(s.format, d, tp)).join(', ');
+      this.$el.value = rows.map((d) => formatDate(s.format, d, tp)).join(s.multipleSeparator);
     }
   }
 };
@@ -315,6 +466,9 @@ Lightpickr.prototype.show = function () {
   }
   const next = Object.assign({}, this._state);
   next.visible = true;
+  if (this.$backdrop) {
+    this.$backdrop.style.display = '';
+  }
   this.$datepicker.style.display = '';
   this._attachDocListener();
   this._commit(next, { emitChange: false, popoverInitialOpen: true });
@@ -329,6 +483,9 @@ Lightpickr.prototype.hide = function () {
   const finishHide = function () {
     const next = Object.assign({}, self._state);
     next.visible = false;
+    if (self.$backdrop) {
+      self.$backdrop.style.display = 'none';
+    }
     self.$datepicker.style.display = 'none';
     self._detachDocListener();
     self._commit(next, { emitChange: false });
@@ -382,7 +539,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
         return [Math.min(x, y), Math.max(x, y)];
       })
       .filter(Boolean);
-    next.selectedDates = pairs.slice(-s.multipleLimit);
+    next.selectedDates = Number.isFinite(s.multipleLimit) ? pairs.slice(-s.multipleLimit) : pairs;
     this._commit(next, { emitChange: true });
     if (opts && opts.close && s.closeOnSelect) {
       this.hide();
@@ -430,13 +587,17 @@ Lightpickr.prototype.destroy = function () {
   if (this.isDestroyed) {
     return;
   }
+  this._unbindTarget();
   this._positionHideCleanup = null;
   this._detachDocListener();
   this._delegateOffs.forEach(function (fn) {
     fn();
   });
   this._delegateOffs = [];
-  if (this.$datepicker.parentNode) {
+  if (this.$backdrop && this.$backdrop.parentNode) {
+    this.$backdrop.parentNode.removeChild(this.$backdrop);
+    this.$backdrop = null;
+  } else if (this.$datepicker.parentNode) {
     this.$datepicker.parentNode.removeChild(this.$datepicker);
   }
   this._state.onDestroy();
@@ -451,6 +612,40 @@ Lightpickr.prototype.destroy = function () {
 
 Lightpickr.prototype.update = function (newOpts) {
   const next = mergeOptionsIntoState(this._state, newOpts || {});
+  const isMobileChanged = next.isMobile !== this._state.isMobile;
+  const showEventChanged = next.showEvents.join('::') !== this._state.showEvents.join('::');
+  if (isMobileChanged && !next.inline) {
+    if (next.isMobile) {
+      if (!this.$backdrop) {
+        this.$backdrop = document.createElement('div');
+        this.$backdrop.className = 'lp-mobile-backdrop';
+      }
+      if (this.$datepicker.parentNode) {
+        this.$datepicker.parentNode.removeChild(this.$datepicker);
+      }
+      this.$backdrop.appendChild(this.$datepicker);
+      if (!this.$backdrop.parentNode) {
+        document.body.appendChild(this.$backdrop);
+      }
+      this.$datepicker.classList.add('lp--mobile');
+      this.$backdrop.style.display = this._state.visible ? '' : 'none';
+    } else if (this.$backdrop) {
+      if (this.$datepicker.parentNode) {
+        this.$datepicker.parentNode.removeChild(this.$datepicker);
+      }
+      document.body.appendChild(this.$datepicker);
+      if (this.$backdrop.parentNode) {
+        this.$backdrop.parentNode.removeChild(this.$backdrop);
+      }
+      this.$backdrop = null;
+      this.$datepicker.classList.remove('lp--mobile');
+    }
+  }
+  if (showEventChanged) {
+    this._unbindTarget();
+    this._state = next;
+    this._bindTarget();
+  }
   this._commit(next, { emitChange: false });
 };
 
@@ -518,6 +713,13 @@ Lightpickr.prototype._handleDayClick = function (ts) {
   if (!r.changed) {
     return;
   }
+  if (this._state.moveToOtherMonthsOnSelect) {
+    const currentMonth = tsToYmd(this._state.viewDate).m;
+    const clicked = tsToYmd(ts);
+    if (clicked.m !== currentMonth) {
+      r.state.viewDate = ymdToTsStartOfDay(clicked.y, clicked.m, 1);
+    }
+  }
   this._commit(r.state, { emitChange: true });
   if (this._state.closeOnSelect && !this._state.range && !this._state.multipleEnabled) {
     this.hide();
@@ -532,7 +734,7 @@ Lightpickr.prototype._handleMonthPick = function (monthIndex) {
   const y = tsToYmd(s.viewDate).y;
   const next = Object.assign({}, s);
   next.viewDate = ymdToTsStartOfDay(y, monthIndex, 1);
-  next.currentView = 'day';
+  next.currentView = this._state.allowedViews.indexOf('day') >= 0 ? 'day' : this._state.allowedViews[0];
   this._commit(next, { emitChange: false });
 };
 
@@ -541,7 +743,7 @@ Lightpickr.prototype._handleYearPick = function (year) {
   const m = tsToYmd(s.viewDate).m;
   const next = Object.assign({}, s);
   next.viewDate = ymdToTsStartOfDay(year, m, 1);
-  next.currentView = 'month';
+  next.currentView = this._state.allowedViews.indexOf('month') >= 0 ? 'month' : this._state.allowedViews[0];
   this._commit(next, { emitChange: false });
 };
 
@@ -575,6 +777,11 @@ Lightpickr.prototype._onTimeInputChange = function (ev) {
   const next = setTimePart(this._state, h, mm);
   this._commit(next, { emitChange: false });
   this._syncInput();
+};
+
+Lightpickr.prototype._rebindByState = function () {
+  this._unbindTarget();
+  this._bindTarget();
 };
 
 Object.defineProperties(Lightpickr.prototype, {

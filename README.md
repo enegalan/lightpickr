@@ -65,17 +65,43 @@ new Lightpickr('#calendar-root', { inline: true });
 | Option | Type | Default | Notes |
 |--------|------|---------|--------|
 | `inline` | `boolean` | *auto* | Omitted: `input` / `textarea` → popover (`false`); other target → inline (`true`). |
-| `multiple` | `boolean \| number` | `false` | `false` / omitted / `0` / `1` → multiple off. `true` → cap `2`. Integer `n > 1` → max selections, or max **ranges** when `range: true`. See [How selection works](#how-selection-works-short). |
-| `range` | `boolean` | `false` | First click anchor, second closes range; FIFO eviction when over `multiple` cap. |
+| `multiple` | `boolean \| number` | `false` | `false` / omitted / `0` / `1` → multiple off. `true` → unlimited. Integer `n > 1` → max selections, or max **ranges** when `range: true`. |
+| `range` | `boolean` | `false` | First click anchor, second closes range; FIFO eviction only when `multiple` is finite. |
 | `enableTime` | `boolean` | `false` | Time row; default control is `<input type="time">`. |
 | `minDate` | `number \| Date \| string \| null` | `null` | Interpreted at start of day. |
 | `maxDate` | `number \| Date \| string \| null` | `null` | Interpreted at start of day. |
 | `disabledDates` | `array` | `[]` | Day-level; entries as number, `Date`, or string. |
-| `locale` | `'default' \| { months?, weekdays? }` | `'default'` | Custom short month / weekday labels. |
-| `firstDayOfWeek` | `number` | `1` | `0` = Sunday, `1` = Monday, … |
+| `locale` | `'default' \| object` | `'default'` | Supports `months`, `monthsShort`, `monthsLong`, `weekdays`, `firstDay`. |
+| `firstDay` | `number` | `1` | First weekday. Priority: `firstDay` → `firstDayOfWeek` → `locale.firstDay` → `1`. |
+| `firstDayOfWeek` | `number` | `1` | Backward-compatible alias for `firstDay`. |
+| `weekends` | `number[]` | `[6, 0]` | Weekend day indexes used for weekend cell styling. |
+| `isMobile` | `boolean` | `false` | Popover in centered modal with backdrop. |
+| `startDate` | `number \| Date \| string \| null` | `null` | Initial date used for `viewDate`. |
+| `selectedDates` | `(Date \| string \| number)[] \| false` | `false` | Initial selection. In range mode accepts `[start, end]` pairs. |
 | `numberOfMonths` | `number` | `1` | Not read from options yet; internal value is always `1` (reserved for future use). |
 | `format` | `string` | `'YYYY-MM-DD'` | Tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`. |
+| `view` | `'days' \| 'months' \| 'years'` | `'days'` | Initial calendar view (ignored by `onlyTime`). |
+| `allowedViews` | `string \| string[]` | all | Allowed calendar views (`days`, `months`, `years`). |
+| `showOtherMonths` | `boolean` | `true` | Show leading/trailing month day cells in day grid. |
+| `selectOtherMonths` | `boolean` | `true` | Whether outside-month cells can be selected. |
+| `moveToOtherMonthsOnSelect` | `boolean` | `true` | Move current month when selecting an outside-month cell. |
+| `disableNavWhenOutOfRange` | `boolean` | `true` | Disable prev/next when target period is outside min/max. |
+| `monthsField` | `string` | `'monthsShort'` | Locale key used to render month labels. |
+| `multipleSeparator` | `string` | `', '` | Separator between multiple values / ranges in input value. |
+| `dynamicRange` | `boolean` | `true` | Drag range start/end handles after range is created. |
+| `buttons` | `false \| string \| string[] \| object \| object[]` | `false` | Footer actions (`today`, `clear`) and custom buttons. |
+| `showEvent` | `string \| string[]` | `'focus'` | Target event(s) that open the calendar. |
+| `autoClose` | `boolean` | `true` | Alias for `closeOnSelect`. |
 | `closeOnSelect` | `boolean` | `true` | Hides popover when selection commits (single date or finished range). |
+| `prevHtml` | `string` | SVG | Previous navigation button HTML. |
+| `nextHtml` | `string` | SVG | Next navigation button HTML. |
+| `navTitles` | `object` | defaults | Templates/callbacks for `days`, `months`, `years` titles. |
+| `minHours` | `number` | `0` | Minimum hours value for time controls. |
+| `maxHours` | `number` | `24` | Maximum hours option (internally clamped to 23). |
+| `minMinutes` | `number` | `0` | Minimum minutes value for time controls. |
+| `maxMinutes` | `number` | `59` | Maximum minutes value for time controls. |
+| `hoursStep` | `number` | `1` | Step for hours controls. |
+| `minutesStep` | `number` | `1` | Step for minutes controls. |
 | `onChange` | `(dates) => void` | no-op | `dates` is `number[]` or `number[][]` in range mode. |
 | `onShow` | `() => void` | no-op | |
 | `onHide` | `() => void` | no-op | |
@@ -233,6 +259,15 @@ picker.use(function (instance) {
   };
 });
 ```
+
+---
+
+## Selection notes
+
+- `multiple: true` means unlimited selections/ranges.
+- Use `multiple: 2` to keep the old cap-of-two behavior.
+- In range mode, when `dynamicRange: true`, dragging a range endpoint updates that range.
+- Input formatting uses `multipleSeparator` between multiple values; within one range, separator stays ` – `.
 
 ---
 

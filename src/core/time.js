@@ -1,3 +1,5 @@
+import { clampToStep } from './utils.js';
+
 /**
  * @param {import('./state.js').LightpickrInternalState} state
  * @param {number} hours
@@ -6,8 +8,8 @@
  */
 export function setTimePart(state, hours, minutes) {
   const next = Object.assign({}, state);
-  const h = Math.max(0, Math.min(23, Math.floor(hours)));
-  const m = Math.max(0, Math.min(59, Math.floor(minutes)));
+  const h = clampToStep(hours, state.minHours, state.maxHours, state.hoursStep);
+  const m = clampToStep(minutes, state.minMinutes, state.maxMinutes, state.minutesStep);
   next.timePart = { hours: h, minutes: m };
   return next;
 }
