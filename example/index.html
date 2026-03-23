@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lightpickr example (dist)</title>
-    <link rel="stylesheet" href="../src/styles/base.css" />
+    <title>Lightpickr example</title>
+    <link rel="stylesheet" href="../dist/lightpickr.css" />
     <style>
         body { font-family: system-ui, sans-serif; max-width: 56rem; margin: 2rem auto; padding: 0 1rem; }
         label { display: block; margin-top: 1.25rem; font-weight: 600; }
@@ -51,10 +51,8 @@
         </section>
     </div>
 
-    <script type="module">
-        import Lightpickr from '../src/index.js';
-        window.Lightpickr = Lightpickr;
-
+    <script src="../dist/lightpickr.js"></script>
+    <script>
         new Lightpickr('#date-input', {
             format: 'YYYY-MM-DD',
             startDate: '2027-02-10',

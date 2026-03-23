@@ -8,6 +8,7 @@ import {
   normalizeViewOption,
   normalizeWeekendIndexes,
   startOfDayTs,
+  trimFifo,
   toTimestamp
 } from './utils.js';
 
@@ -217,32 +218,6 @@ const defaultClasses = {
 };
 
 /**
- * @param {number[]} dates
- * @param {number} max
- * @returns {number[]}
- */
-function trimDatesFifo(dates, max) {
-  const out = dates.slice();
-  while (out.length > max) {
-    out.shift();
-  }
-  return out;
-}
-
-/**
- * @param {number[][]} ranges
- * @param {number} max
- * @returns {number[][]}
- */
-function trimRangesFifo(ranges, max) {
-  const out = ranges.slice();
-  while (out.length > max) {
-    out.shift();
-  }
-  return out;
-}
-
-/**
  * @param {LightpickrInternalState} state
  * @param {(Date|string|number)[] | false | undefined} selectedDates
  * @returns {number[]|number[][]}
@@ -267,7 +242,7 @@ function parseInitialSelectedDates(state, selectedDates) {
       const end = startOfDayTs(Math.max(a, b));
       pairs.push([start, end]);
     }
-    return trimRangesFifo(pairs, state.multipleLimit);
+    return trimFifo(pairs, state.multipleLimit);
   }
   const normalized = [];
   for (let i = 0; i < selectedDates.length; i++) {
@@ -281,7 +256,7 @@ function parseInitialSelectedDates(state, selectedDates) {
     }
   }
   if (state.multipleEnabled) {
-    return trimDatesFifo(normalized, state.multipleLimit);
+    return trimFifo(normalized, state.multipleLimit);
   }
   return normalized.length ? [normalized[0]] : [];
 }

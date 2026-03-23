@@ -355,3 +355,17 @@ export function clampToStep(value, min, max, step) {
   const snapped = min + Math.round(offset / step) * step;
   return Math.max(min, Math.min(max, snapped));
 }
+
+/**
+ * @template T
+ * @param {T[]} items
+ * @param {number} max
+ * @returns {T[]}
+ */
+export function trimFifo(items, max) {
+  const out = items.slice();
+  while (out.length > max) {
+    out.shift();
+  }
+  return out;
+}

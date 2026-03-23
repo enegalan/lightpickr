@@ -262,15 +262,6 @@ picker.use(function (instance) {
 
 ---
 
-## Selection notes
-
-- `multiple: true` means unlimited selections/ranges.
-- Use `multiple: 2` to keep the old cap-of-two behavior.
-- In range mode, when `dynamicRange: true`, dragging a range endpoint updates that range.
-- Input formatting uses `multipleSeparator` between multiple values; within one range, separator stays ` – `.
-
----
-
 ## Position and anchor (popover)
 
 **`anchor`** — If you mount the picker on a **wrapper** that also contains another inline calendar, the popover may align incorrectly. Pass `#id` or an `HTMLElement` for `getBoundingClientRect()` and for treating clicks as “inside the field.”

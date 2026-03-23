@@ -6,41 +6,49 @@ import { addMonths, addYears, clampViewToAllowed, startOfDayTs, toTimestamp, tsT
  * @returns {boolean}
  */
 function isNavOutOfRange(state, dir) {
-  if (!state.disableNavWhenOutOfRange) {
+  if (!state.disableNavWhenOutOfRange || (state.minDate == null && state.maxDate == null)) {
     return false;
   }
-  if (state.minDate == null && state.maxDate == null) {
-    return false;
+  let startYear, startMonth, startDay, endYear, endMonth, endDay;
+  switch (state.currentView) {
+    case 'day':
+    case 'time': { // Month navigation (+1 month)
+      const { y, m } = addMonths(state.viewDate, dir);
+      const monthLastDay = new Date(y, m + 1, 0).getDate();
+      startYear = endYear = y; // Same year
+      startMonth = endMonth = m; // Same month
+      startDay = 1; // First day of the month
+      endDay = monthLastDay; // Last day of the month
+      break;
+    }
+    case 'month': { // Year navigation (+1 year)
+      const { y } = addYears(state.viewDate, dir);
+      startYear = endYear = y; // Same year
+      startMonth = 0; // January
+      endMonth = 11; // December
+      startDay = 1; // First day of the year
+      endDay = 31; // Last day of the year
+      break;
+    }
+    case 'year': { // Year grid navigation
+      const { y } = tsToYmd(state.viewDate);
+      const yearChunkSize = 12; // Blocks of 12 years
+      const startYearOfBlock = y + dir * yearChunkSize - 5; // -5 is to center the current year in the grid
+      startYear = startYearOfBlock;
+      endYear = startYearOfBlock + yearChunkSize - 1; 
+      startMonth = 0; // January
+      endMonth = 11; // December
+      startDay = 1; // First day of the year
+      endDay = 31; // Last day of the year
+      break;
+    }
+    default: {
+      return false; // Unsupported view -> do not restrict navigation
+    }
   }
-  const v = state.currentView;
-  let periodStart;
-  let periodEnd;
-  if (v === 'day' || v === 'time') {
-    const shifted = addMonths(state.viewDate, dir);
-    const y = shifted.y;
-    const m = shifted.m;
-    periodStart = ymdToTsStartOfDay(y, m, 1);
-    periodEnd = ymdToTsStartOfDay(y, m, new Date(y, m + 1, 0).getDate());
-  } else if (v === 'month') {
-    const shifted = addYears(state.viewDate, dir);
-    const y = shifted.y;
-    periodStart = ymdToTsStartOfDay(y, 0, 1);
-    periodEnd = ymdToTsStartOfDay(y, 11, 31);
-  } else if (v === 'year') {
-    const { y } = tsToYmd(state.viewDate);
-    const start = y + dir * 12 - 5;
-    periodStart = ymdToTsStartOfDay(start, 0, 1);
-    periodEnd = ymdToTsStartOfDay(start + 11, 11, 31);
-  } else {
-    return false;
-  }
-  if (state.minDate != null && periodEnd < state.minDate) {
-    return true;
-  }
-  if (state.maxDate != null && periodStart > state.maxDate) {
-    return true;
-  }
-  return false;
+  const periodStart = ymdToTsStartOfDay(startYear, startMonth, startDay);
+  const periodEnd = ymdToTsStartOfDay(endYear, endMonth, endDay);
+  return periodEnd < state.minDate || periodStart > state.maxDate;
 }
 
 /**
