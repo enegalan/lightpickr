@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
 
 **Dependency-free** JavaScript datepicker with a ready-made UI, CSS-variable theming, ranges, optional time, and plugins.
-< 12KB gzipped.
+~ 13KB gzipped.
 
 ---
 
@@ -76,11 +76,18 @@ const picker = new Lightpickr('#my-input' [, options]);
 | `maxMinutes` | `number` | `59` | Maximum minutes value for time controls. |
 | `hoursStep` | `number` | `1` | Step for hours controls. |
 | `minutesStep` | `number` | `1` | Step for minutes controls. |
-| `onChange` | `(dates) => void` | no-op | `dates` is `number[]` or `number[][]` in range mode. |
-| `onShow` | `() => void` | no-op | |
-| `onHide` | `() => void` | no-op | |
+| `onSelect` | `({ date, dates, formattedDate, formattedDates, trigger, datepicker }) => void` | no-op | Fires when selecting, unselecting, clearing, range drag end, or time change. |
+| `onBeforeSelect` | `({ date, datepicker }) => boolean` | `() => true` | Returning `false` cancels selection. |
+| `onChangeViewDate` | `({ month, year, decade, datepicker }) => void` | no-op | Fires when `viewDate` changes. |
+| `onChangeView` | `(view) => void` | no-op | `view`: `days`, `months`, `years`, `time`. |
+| `onRenderCell` | `({ date, cellType, datepicker }) => { html?, classes?, disabled?, attrs? }` | no-op | Per-cell customization for `day`, `month`, `year`. |
+| `onShow` | `(isFinished, { datepicker }) => void` | no-op | Called with `false` at start and `true` at finish. |
+| `onHide` | `(isFinished, { datepicker }) => void` | no-op | Called with `false` at start and `true` at finish. |
+| `onClickDayName` | `({ dayIndex, datepicker }) => void` | no-op | Enables clickable weekday headers. |
+| `onFocus` | `({ date, datepicker }) => void` | no-op | Fires when focused date changes. |
+| `onTimeChange` | `({ date, formattedDate, datepicker }) => void` | no-op | Fires when time controls change. |
 | `onDestroy` | `() => void` | no-op | |
-| `render` | `object` | built-in hooks | Optional hooks per region; see [Render](#render-render). |
+| `render` | `object` | built-in hooks | Optional hooks for `container`, `header`, `nav`, `grid`, `time`, `footer`. |
 | `classes` | `object` | built-in map | Merged over default class names; see [Extra classes](#extra-classes-classes). |
 | `position` | `string \| function` | `'bottom left'` | Popover placement; ignored when `inline: true`. See [Position and anchor](#position-and-anchor-popover). |
 | `anchor` | `string \| HTMLElement \| null` | `null` | Reference for layout and outside-click handling. See [Position and anchor](#position-and-anchor-popover). |
@@ -151,8 +158,8 @@ Change granularity along **day → month → year** (not including `time`):
   - **Range mode only:** array of `[start, end]` pairs — replaces selection with normalized pairs, keeping at most `multipleLimit` ranges (newest wins).  
 - **`opts`** (optional second argument) — `{ close?: boolean }`. Only affects the **range + array-of-pairs** path: if `close: true` and `closeOnSelect` is true, calls `hide()` after updating.  
 - **Auto-hide:** With `closeOnSelect`, after selection the popover may hide: single-date and multi-date behavior follows internal rules; for range, hides when there is no pending range start (range fully closed).  
-- **`unselectDate(date)`** — In multi mode, removes that day. In range mode, removes any range that contains that day (by day resolution). Emits `onChange` if something changed.  
-- **`clear()`** — Clears selection and emits `onChange`.
+- **`unselectDate(date)`** — In multi mode, removes that day. In range mode, removes any range that contains that day (by day resolution). Emits `onSelect` if something changed.  
+- **`clear()`** — Clears selection and emits `onSelect`.
 
 #### `formatDate(date, format?)`
 
@@ -160,11 +167,11 @@ Returns a string for the given `date` using **`format`** (second argument) or th
 
 #### `getSelectedPayload()`
 
-Returns the same shape as the argument passed to **`onChange`**: a **new** `number[]` or `number[][]` (deep copy for ranges). Useful if you need the payload without waiting for a change event.
+Returns a **new** `number[]` or `number[][]` (deep copy for ranges). Useful for reading raw selected timestamps from the instance.
 
 #### `update(partialOptions)`
 
-Merges **`partialOptions`** into the live options/state. Preserves selection, `viewDate`, `focusDate`, `visible`, `currentView`, and `timePart` where applicable; `render` and `classes` are shallow-merged. Re-renders. Does not fire `onChange` by itself.
+Merges **`partialOptions`** into the live options/state. Preserves selection, `viewDate`, `focusDate`, `visible`, `currentView`, and `timePart` where applicable; `render` and `classes` are shallow-merged. Re-renders. Does not fire `onSelect` by itself.
 
 #### `setViewDate(date)` / `setFocusDate(date | null)`
 
@@ -182,7 +189,7 @@ Returns `number[]` of start-of-day timestamps for the cells in the given view. *
 
 #### `disableDate(date)` / `enableDate(date)`
 
-Adds or removes a **single day** (start-of-day) in the internal disabled set. Invalid dates are ignored. Does not fire `onChange`.
+Adds or removes a **single day** (start-of-day) in the internal disabled set. Invalid dates are ignored. Does not fire `onSelect`.
 
 #### `destroy()`
 
@@ -194,11 +201,34 @@ Idempotent. Removes the document listener, tears down delegated handlers, remove
 
 ---
 
-## Render (`render`)
+## onRenderCell
 
-Each function receives a **context** including: `date`, `viewDate`, `isSelected`, `isDisabled`, `isToday`, `isInRange`, `isRangeStart`, `isRangeEnd`, `isFocused`, `isOutside`, `state`, `instance`.
+`onRenderCell({ date, cellType, datepicker })` runs for every visible `day`, `month`, and `year` cell.
 
-Optional hooks: `container`, `header`, `nav`, `grid`, `dayCell`, `monthCell`, `yearCell`, `time`, `footer`. If you omit one, Lightpickr uses its default DOM.
+Return object fields:
+
+- `html` (`string`) to replace cell inner HTML
+- `classes` (`string`) to append extra classes
+- `disabled` (`boolean`) to mark the cell as non-interactive
+- `attrs` (`Record<string, string | number | undefined>`) to set/remove attributes (`undefined` removes)
+
+Example:
+
+```js
+new Lightpickr('#el', {
+  onRenderCell({ date, cellType }) {
+    if (cellType === 'day' && date.getDate() === 12) {
+      return {
+        disabled: true,
+        classes: 'is-custom-disabled',
+        attrs: {
+          title: 'Unavailable'
+        }
+      };
+    }
+  }
+});
+```
 
 ---
 

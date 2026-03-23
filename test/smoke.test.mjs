@@ -19,13 +19,32 @@ const { default: Lightpickr } = await import('../src/index.js');
 assert.equal(typeof Lightpickr, 'function');
 
 const input = document.querySelector('#d');
-const p = new Lightpickr(input, { inline: false });
+const showCalls = [];
+const hideCalls = [];
+const selectCalls = [];
+const p = new Lightpickr(input, {
+  inline: false,
+  onShow(isFinished) {
+    showCalls.push(isFinished);
+  },
+  onHide(isFinished) {
+    hideCalls.push(isFinished);
+  },
+  onSelect(payload) {
+    selectCalls.push(payload.trigger);
+  }
+});
 assert.ok(p.$datepicker);
 assert.equal(p.visible, false);
 p.show();
 assert.equal(p.visible, true);
 p.hide();
 assert.equal(p.visible, false);
+assert.deepEqual(showCalls, [false, true]);
+assert.deepEqual(hideCalls, [false, true]);
+p.selectDate('2026-03-15');
+p.unselectDate('2026-03-15');
+assert.deepEqual(selectCalls, ['select', 'unselect']);
 
 const container = document.querySelector('#c');
 const inline = new Lightpickr(container, { inline: true, multiple: 2 });

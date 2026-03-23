@@ -1,16 +1,4 @@
-import {
-  clampViewToAllowed,
-  normalizeAllowedViews,
-  normalizeFirstDay,
-  normalizeMultipleOption,
-  normalizeShowEvents,
-  normalizeTimeBounds,
-  normalizeViewOption,
-  normalizeWeekendIndexes,
-  startOfDayTs,
-  trimFifo,
-  toTimestamp
-} from './utils.js';
+import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalizeMultipleOption, normalizeShowEvents, normalizeTimeBounds, normalizeViewOption, normalizeWeekendIndexes, normalizeRangePairs, startOfDayTs, trimFifo, toTimestamp } from './utils.js';
 
 /**
  * @typedef {Object} LightpickrNavTitles
@@ -34,11 +22,18 @@ import {
  * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [header]
  * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [nav]
  * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [grid]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [dayCell]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [monthCell]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [yearCell]
  * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [time]
  * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [footer]
+ */
+
+/**
+ * @typedef {Object} LightpickrSelectPayload
+ * @property {Date|Date[]|null} date
+ * @property {Date[]} dates
+ * @property {string|string[]|''} formattedDate
+ * @property {string[]} formattedDates
+ * @property {'select'|'unselect'|'clear'|'range-drag'|'time'} trigger
+ * @property {any} datepicker
  */
 
 /**
@@ -109,9 +104,16 @@ import {
  * @property {number} [hoursStep]
  * @property {number} [minutesStep]
  * @property {(Date|string|number)[] | false} [selectedDates]
- * @property {(dates: number[] | number[][]) => void} [onChange]
- * @property {() => void} [onShow]
- * @property {() => void} [onHide]
+ * @property {(payload: LightpickrSelectPayload) => void} [onSelect]
+ * @property {(payload: { date: Date, datepicker: any }) => boolean} [onBeforeSelect]
+ * @property {(payload: { month: number, year: number, decade: [number, number], datepicker: any }) => void} [onChangeViewDate]
+ * @property {(view: 'days'|'months'|'years'|'time') => void} [onChangeView]
+ * @property {(payload: { date: Date, cellType: 'day'|'month'|'year', datepicker: any }) => ({ html?: string, classes?: string, disabled?: boolean, attrs?: Record<string, string|number|undefined> } | void)} [onRenderCell]
+ * @property {(isFinished: boolean, payload: { datepicker: any }) => void} [onShow]
+ * @property {(isFinished: boolean, payload: { datepicker: any }) => void} [onHide]
+ * @property {(payload: { dayIndex: number, datepicker: any }) => void} [onClickDayName]
+ * @property {(payload: { date: Date, datepicker: any }) => void} [onFocus]
+ * @property {(payload: { date: Date|null, formattedDate: string, datepicker: any }) => void} [onTimeChange]
  * @property {() => void} [onDestroy]
  * @property {Partial<LightpickrRenderHooks>} [render]
  * @property {Partial<LightpickrClassMap>} [classes]
@@ -172,9 +174,17 @@ import {
  * @property {number} maxMinutes
  * @property {number} hoursStep
  * @property {number} minutesStep
- * @property {(dates: number[] | number[][]) => void} onChange
- * @property {() => void} onShow
- * @property {() => void} onHide
+ * @property {boolean} dayNameClickable
+ * @property {(payload: LightpickrSelectPayload) => void} onSelect
+ * @property {(payload: { date: Date, datepicker: any }) => boolean} onBeforeSelect
+ * @property {(payload: { month: number, year: number, decade: [number, number], datepicker: any }) => void} onChangeViewDate
+ * @property {(view: 'days'|'months'|'years'|'time') => void} onChangeView
+ * @property {(payload: { date: Date, cellType: 'day'|'month'|'year', datepicker: any }) => ({ html?: string, classes?: string, disabled?: boolean, attrs?: Record<string, string|number|undefined> } | void)} onRenderCell
+ * @property {(isFinished: boolean, payload: { datepicker: any }) => void} onShow
+ * @property {(isFinished: boolean, payload: { datepicker: any }) => void} onHide
+ * @property {(payload: { dayIndex: number, datepicker: any }) => void} onClickDayName
+ * @property {(payload: { date: Date, datepicker: any }) => void} onFocus
+ * @property {(payload: { date: Date|null, formattedDate: string, datepicker: any }) => void} onTimeChange
  * @property {() => void} onDestroy
  * @property {LightpickrRenderHooks} render
  * @property {LightpickrClassMap} classes
@@ -190,6 +200,9 @@ import {
  * @property {string | HTMLElement | null} anchor
  */
 
+/**
+ * @type {LightpickrClassMap}
+ */
 const defaultClasses = {
   container: 'lp',
   header: 'lp-header',
@@ -227,22 +240,7 @@ function parseInitialSelectedDates(state, selectedDates) {
     return [];
   }
   if (state.range) {
-    const pairs = [];
-    for (let i = 0; i < selectedDates.length; i++) {
-      const pair = selectedDates[i];
-      if (!Array.isArray(pair) || pair.length < 2) {
-        continue;
-      }
-      const a = toTimestamp(pair[0]);
-      const b = toTimestamp(pair[1]);
-      if (a == null || b == null) {
-        continue;
-      }
-      const start = startOfDayTs(Math.min(a, b));
-      const end = startOfDayTs(Math.max(a, b));
-      pairs.push([start, end]);
-    }
-    return trimFifo(pairs, state.multipleLimit);
+    return normalizeRangePairs(selectedDates, state.multipleLimit);
   }
   const normalized = [];
   for (let i = 0; i < selectedDates.length; i++) {
@@ -268,7 +266,7 @@ function parseInitialSelectedDates(state, selectedDates) {
 export function createStateFromOptions(raw) {
   const onlyTime = Boolean(raw.onlyTime);
   const range = onlyTime ? false : Boolean(raw.range);
-  const { multipleLimit, multipleEnabled } = normalizeMultipleOption(onlyTime ? false : raw.multiple, range);
+  const { multipleLimit, multipleEnabled } = normalizeMultipleOption(onlyTime ? false : raw.multiple);
   const minTs = toTimestamp(raw.minDate);
   const maxTs = toTimestamp(raw.maxDate);
   const disabled = Array.isArray(raw.disabledDates) ? raw.disabledDates.map(toTimestamp).filter((t) => t != null) : [];
@@ -288,9 +286,6 @@ export function createStateFromOptions(raw) {
     header: raw.render && raw.render.header ? raw.render.header : null,
     nav: raw.render && raw.render.nav ? raw.render.nav : null,
     grid: raw.render && raw.render.grid ? raw.render.grid : null,
-    dayCell: raw.render && raw.render.dayCell ? raw.render.dayCell : null,
-    monthCell: raw.render && raw.render.monthCell ? raw.render.monthCell : null,
-    yearCell: raw.render && raw.render.yearCell ? raw.render.yearCell : null,
     time: raw.render && raw.render.time ? raw.render.time : null,
     footer: raw.render && raw.render.footer ? raw.render.footer : null
   };
@@ -368,9 +363,17 @@ export function createStateFromOptions(raw) {
     maxMinutes: tb.maxMinutes,
     hoursStep: tb.hoursStep,
     minutesStep: tb.minutesStep,
-    onChange: typeof raw.onChange === 'function' ? raw.onChange : function () {},
+    dayNameClickable: typeof raw.onClickDayName === 'function',
+    onSelect: typeof raw.onSelect === 'function' ? raw.onSelect : function () {},
+    onBeforeSelect: typeof raw.onBeforeSelect === 'function' ? raw.onBeforeSelect : function () { return true; },
+    onChangeViewDate: typeof raw.onChangeViewDate === 'function' ? raw.onChangeViewDate : function () {},
+    onChangeView: typeof raw.onChangeView === 'function' ? raw.onChangeView : function () {},
+    onRenderCell: typeof raw.onRenderCell === 'function' ? raw.onRenderCell : function () {},
     onShow: typeof raw.onShow === 'function' ? raw.onShow : function () {},
     onHide: typeof raw.onHide === 'function' ? raw.onHide : function () {},
+    onClickDayName: typeof raw.onClickDayName === 'function' ? raw.onClickDayName : function () {},
+    onFocus: typeof raw.onFocus === 'function' ? raw.onFocus : function () {},
+    onTimeChange: typeof raw.onTimeChange === 'function' ? raw.onTimeChange : function () {},
     onDestroy: typeof raw.onDestroy === 'function' ? raw.onDestroy : function () {},
     render,
     classes: cls,
@@ -437,9 +440,16 @@ export function extractRawOptions(state) {
     maxMinutes: state.maxMinutes,
     hoursStep: state.hoursStep,
     minutesStep: state.minutesStep,
-    onChange: state.onChange,
+    onSelect: state.onSelect,
+    onBeforeSelect: state.onBeforeSelect,
+    onChangeViewDate: state.onChangeViewDate,
+    onChangeView: state.onChangeView,
+    onRenderCell: state.onRenderCell,
     onShow: state.onShow,
     onHide: state.onHide,
+    onClickDayName: state.onClickDayName,
+    onFocus: state.onFocus,
+    onTimeChange: state.onTimeChange,
     onDestroy: state.onDestroy,
     render: state.render,
     classes: state.classes,

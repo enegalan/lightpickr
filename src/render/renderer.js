@@ -5,14 +5,14 @@ import {
   isSameDay,
   startOfDayTs,
   tsToYmd,
+  cloneSelectedDates,
   ymdToTsStartOfDay,
   defaultMonthNames,
   defaultWeekdayNames,
-  formatDate
 } from '../core/utils.js';
 import { isDateDisabled } from '../core/selection.js';
 import { navNextDisabled, navPrevDisabled } from '../core/navigation.js';
-import { createEl, delegate } from './dom.js';
+import { createEl, delegate, parseDayCellTimestamp } from './dom.js';
 
 /**
  * @typedef {Object} RenderCtx
@@ -33,192 +33,7 @@ import { createEl, delegate } from './dom.js';
 
 /**
  * @param {object} instance
- * @returns {object}
- */
-function publicStateSnapshot(instance) {
-  const s = instance._state;
-  return {
-    inline: s.inline,
-    range: s.range,
-    multipleLimit: s.multipleLimit,
-    multipleEnabled: s.multipleEnabled,
-    enableTime: s.enableTime,
-    onlyTime: s.onlyTime,
-    minDate: s.minDate,
-    maxDate: s.maxDate,
-    disabledDates: s.disabledDatesSorted.slice(),
-    locale: s.locale,
-    firstDayOfWeek: s.firstDayOfWeek,
-    weekendIndexes: s.weekendIndexes.slice(),
-    numberOfMonths: s.numberOfMonths,
-    format: s.format,
-    currentView: s.currentView,
-    viewDate: s.viewDate,
-    focusDate: s.focusDate,
-    visible: s.visible,
-    selectedDates: cloneSel(s.selectedDates),
-    timePart: Object.assign({}, s.timePart),
-    allowedViews: s.allowedViews.slice()
-  };
-}
-
-/**
- * @param {number[]|number[][]} sel
- * @returns {number[]|number[][]}
- */
-function cloneSel(sel) {
-  if (!sel || !sel.length) {
-    return [];
-  }
-  if (Array.isArray(sel[0])) {
-    return sel.map((p) => /** @type {number[]} */ (p).slice());
-  }
-  return /** @type {number[]} */ (sel).slice();
-}
-
-/**
- * @param {object} instance
- * @param {number} dayTs
- * @param {boolean} outside
- * @returns {RenderCtx}
- */
-export function buildDayCtx(instance, dayTs, outside) {
-  const s = instance._state;
-  const d = startOfDayTs(dayTs);
-  const today = startOfDayTs(Date.now());
-  const flags = dayFlags(s, d, today);
-  return {
-    date: d,
-    viewDate: s.viewDate,
-    isSelected: flags.isSelected,
-    isDisabled: flags.isDisabled,
-    isToday: flags.isToday,
-    isInRange: flags.isInRange,
-    isRangeStart: flags.isRangeStart,
-    isRangeEnd: flags.isRangeEnd,
-    isFocused: s.focusDate != null && isSameDay(s.focusDate, d),
-    isOutside: outside,
-    isWeekend: s.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
-    state: publicStateSnapshot(instance),
-    instance: instance
-  };
-}
-
-/**
- * @param {object} instance
- * @param {'day'|'month'|'year'} view
- * @returns {string}
- */
-function resolveNavTitle(instance, view) {
-  const s = instance._state;
-  const titles = s.navTitles || {};
-  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
-  const resolver = titles[key];
-  if (typeof resolver === 'function') {
-    return String(resolver(instance));
-  }
-  const rawTemplate = typeof resolver === 'string' ? resolver : '';
-  const { y, m } = tsToYmd(s.viewDate);
-  const blockStart = y - 5;
-  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
-  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
-  return rawTemplate
-    .replace(/yyyy1/g, String(blockStart))
-    .replace(/yyyy2/g, String(blockStart + 11))
-    .replace(/MMMM/g, monthLong || monthShort)
-    .replace(/yyyy/g, String(y))
-    .replace(/YYYY/g, String(y));
-}
-
-/**
- * @param {object} instance
- * @param {'day'|'month'|'year'} view
- * @param {boolean} canGoUp
- * @returns {HTMLElement}
- */
-function buildDefaultNav(instance, view, canGoUp) {
-  const s = instance._state;
-  const c = s.classes;
-  const nav = createEl('div', c.nav);
-  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
-  prev.innerHTML = s.prevHtml;
-  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
-  next.innerHTML = s.nextHtml;
-  const prevDisabled = navPrevDisabled(s);
-  const nextDisabled = navNextDisabled(s);
-  if (prevDisabled) {
-    prev.disabled = true;
-    prev.setAttribute('aria-disabled', 'true');
-  }
-  if (nextDisabled) {
-    next.disabled = true;
-    next.setAttribute('aria-disabled', 'true');
-  }
-  const titleTag = canGoUp ? 'button' : 'span';
-  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', 'data-lp-nav': 'title' } : {});
-  title.innerHTML = resolveNavTitle(instance, view);
-  nav.appendChild(prev);
-  nav.appendChild(title);
-  nav.appendChild(next);
-  return nav;
-}
-
-/**
- * @param {import('../core/state.js').LightpickrInternalState} s
- * @param {number} d
- * @param {number} today
- */
-function dayFlags(s, d, today) {
-  const disabled = isDateDisabled(s, d);
-  let isSelected = false;
-  let isInRange = false;
-  let isRangeStart = false;
-  let isRangeEnd = false;
-  if (s.range) {
-    const ranges = /** @type {number[][]} */ (s.selectedDates);
-    for (let i = 0; i < ranges.length; i++) {
-      const pair = ranges[i];
-      if (isSameDay(d, pair[0])) {
-        isRangeStart = true;
-      }
-      if (isSameDay(d, pair[1])) {
-        isRangeEnd = true;
-      }
-      if (isInClosedRangeDay(d, pair[0], pair[1])) {
-        isInRange = true;
-      }
-      if (isSameDay(d, pair[0]) || isSameDay(d, pair[1])) {
-        isSelected = true;
-      }
-    }
-    if (s.pendingRangeStart != null && isSameDay(s.pendingRangeStart, d)) {
-      isSelected = true;
-      isRangeStart = true;
-    }
-  } else {
-    const dates = /** @type {number[]} */ (s.selectedDates);
-    isSelected = dates.some((x) => isSameDay(x, d));
-  }
-  return {
-    isSelected,
-    isDisabled: disabled,
-    isToday: isSameDay(d, today),
-    isInRange,
-    isRangeStart,
-    isRangeEnd
-  };
-}
-
-/**
- * @param {import('../core/state.js').LightpickrClassMap} c
- * @returns {string[]}
- */
-function previewClassNames(c) {
-  return [c.cellRangePreview, c.cellRangePreviewMid, c.cellRangePreviewStartCap, c.cellRangePreviewEndCap];
-}
-
-/**
- * @param {object} instance
+ * @returns {void}
  */
 export function syncPendingRangeHoverClasses(instance) {
   const root = instance.$datepicker;
@@ -253,12 +68,8 @@ export function syncPendingRangeHoverClasses(instance) {
 
   for (let i = 0; i < buttons.length; i++) {
     const el = /** @type {HTMLButtonElement} */ (buttons[i]);
-    const raw = el.getAttribute('data-lp-day');
-    if (raw == null) {
-      continue;
-    }
-    const ts = Number(raw);
-    if (!Number.isFinite(ts)) {
+    const ts = parseDayCellTimestamp(el);
+    if (ts == null) {
       continue;
     }
     const d = startOfDayTs(ts);
@@ -293,60 +104,16 @@ export function syncPendingRangeHoverClasses(instance) {
 }
 
 /**
- * @param {HTMLElement} root
- * @param {EventTarget|null} target
- * @returns {HTMLElement|null}
- */
-function dayButtonFromEventTarget(root, target) {
-  if (target == null) {
-    return null;
-  }
-  if (!(target instanceof Node) || !root.contains(target)) {
-    return null;
-  }
-  let el = target instanceof Element ? target : target.parentElement;
-  if (!el) {
-    return null;
-  }
-  const btn = el.closest('[data-lp-day]');
-  return btn && root.contains(btn) ? /** @type {HTMLElement} */ (btn) : null;
-}
-
-/**
- * @param {object} instance
- * @param {HTMLElement} dayBtn
- */
-function applyRangeHoverFromDayButton(instance, dayBtn) {
-  const raw = dayBtn.getAttribute('data-lp-day');
-  if (raw == null) {
-    return;
-  }
-  const ts = Number(raw);
-  if (!Number.isFinite(ts)) {
-    return;
-  }
-  const next = startOfDayTs(ts);
-  if (instance._pendingRangeHoverTs === next) {
-    return;
-  }
-  instance._pendingRangeHoverTs = next;
-  syncPendingRangeHoverClasses(instance);
-}
-
-/**
  * @param {object} instance
  * @param {HTMLElement} root
+ * @returns {void}
  */
 export function attachDelegatedHandlers(instance, root) {
   const offs = instance._delegateOffs || [];
   offs.forEach((fn) => fn());
   const off1 = delegate(root, '[data-lp-day]', 'click', function (_ev, el) {
-    const raw = el.getAttribute('data-lp-day');
-    if (raw == null) {
-      return;
-    }
-    const ts = Number(raw);
-    if (!Number.isFinite(ts)) {
+    const ts = parseDayCellTimestamp(el);
+    if (ts == null) {
       return;
     }
     instance._handleDayClick(ts);
@@ -385,6 +152,17 @@ export function attachDelegatedHandlers(instance, root) {
       return;
     }
     instance._handleYearPick(y);
+  });
+  const offDayName = delegate(root, '[data-lp-day-name]', 'click', function (_ev, el) {
+    const raw = el.getAttribute('data-lp-day-name');
+    if (raw == null) {
+      return;
+    }
+    const dayIndex = Number(raw);
+    if (!Number.isFinite(dayIndex)) {
+      return;
+    }
+    instance._handleDayNameClick(dayIndex);
   });
   const timeFn = function (ev) {
     instance._onTimeInputChange(ev);
@@ -426,11 +204,12 @@ export function attachDelegatedHandlers(instance, root) {
     root.removeEventListener('pointerleave', onRangeHoverLeave);
   };
 
-  instance._delegateOffs = [off1, off2, off3, off4, off5, off6];
+  instance._delegateOffs = [off1, off2, off3, off4, offDayName, off5, off6];
 }
 
 /**
  * @param {object} instance
+ * @returns {void}
  */
 export function renderFull(instance) {
   const s = instance._state;
@@ -484,7 +263,329 @@ export function renderFull(instance) {
 
 /**
  * @param {object} instance
+ * @returns {void}
+ */
+export function syncTimePanelDom(instance) {
+  const root = instance.$datepicker;
+  const block = root.querySelector('.lp-time-display-block');
+  const hoursRange = root.querySelector('input[data-lp-time="hours"]');
+  const minutesRange = root.querySelector('input[data-lp-time="minutes"]');
+  if (!block) {
+    return;
+  }
+  const hoursSpan = block.querySelector('.lp-time-display-hours');
+  const minutesSpan = block.querySelector('.lp-time-display-minutes');
+  const ampmSpan = block.querySelector('.lp-time-display-ampm');
+  if (!hoursSpan || !minutesSpan || !ampmSpan) {
+    return;
+  }
+  const s = instance._state;
+  const p = formatClock12Parts(s.timePart.hours, s.timePart.minutes);
+  hoursSpan.textContent = p.hourStr;
+  minutesSpan.textContent = p.minuteStr;
+  ampmSpan.textContent = p.ampm;
+  if (hoursRange instanceof HTMLInputElement) {
+    const hv = String(s.timePart.hours);
+    if (hoursRange.value !== hv) {
+      hoursRange.value = hv;
+    }
+    hoursRange.setAttribute('aria-valuenow', hv);
+    hoursRange.setAttribute('aria-valuetext', p.fullLabel);
+  }
+  if (minutesRange instanceof HTMLInputElement) {
+    const mv = String(s.timePart.minutes);
+    if (minutesRange.value !== mv) {
+      minutesRange.value = mv;
+    }
+    minutesRange.setAttribute('aria-valuenow', mv);
+    minutesRange.setAttribute('aria-valuetext', p.fullLabel);
+  }
+}
+
+/**
+ * @param {object} instance
+ * @param {'day'|'month'|'year'|undefined} view
+ * @returns {number[]}
+ */
+export function getViewDates(instance, view) {
+  const s = instance._state;
+  const v = view || s.currentView;
+  const out = [];
+  if (v === 'day') {
+    const vd = s.viewDate;
+    const { y, m } = tsToYmd(vd);
+    const fd = s.firstDayOfWeek % 7;
+    const first = firstWeekdayOfMonth(y, m);
+    const leading = (first - fd + 7) % 7;
+    const dim = daysInMonth(y, m);
+    const prevY = m - 1 < 0 ? y - 1 : y;
+    const prevM = m - 1 < 0 ? 11 : m - 1;
+    const prevDim = daysInMonth(prevY, prevM);
+    let dayNum = 1;
+    let nextMonthDay = 1;
+    const rows = Math.ceil((leading + dim) / 7);
+    const totalCells = Math.max(6, rows) * 7;
+    for (let cell = 0; cell < totalCells; cell++) {
+      let ts;
+      if (cell < leading) {
+        const d = prevDim - (leading - cell - 1);
+        ts = ymdToTsStartOfDay(prevY, prevM, d);
+      } else if (dayNum <= dim) {
+        ts = ymdToTsStartOfDay(y, m, dayNum);
+        dayNum++;
+      } else {
+        const nm = m + 1 > 11 ? 0 : m + 1;
+        const ny = m + 1 > 11 ? y + 1 : y;
+        ts = ymdToTsStartOfDay(ny, nm, nextMonthDay);
+        nextMonthDay++;
+      }
+      out.push(ts);
+    }
+  } else if (v === 'month') {
+    const y = tsToYmd(s.viewDate).y;
+    for (let mi = 0; mi < 12; mi++) {
+      out.push(ymdToTsStartOfDay(y, mi, 1));
+    }
+  } else if (v === 'year') {
+    const y = tsToYmd(s.viewDate).y;
+    const start = y - 5;
+    for (let i = 0; i < 12; i++) {
+      out.push(ymdToTsStartOfDay(start + i, 0, 1));
+    }
+  }
+  return out;
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {object}
+ */
+function publicStateSnapshot(instance) {
+  const s = instance._state;
+  return {
+    inline: s.inline,
+    range: s.range,
+    multipleLimit: s.multipleLimit,
+    multipleEnabled: s.multipleEnabled,
+    enableTime: s.enableTime,
+    onlyTime: s.onlyTime,
+    minDate: s.minDate,
+    maxDate: s.maxDate,
+    disabledDates: s.disabledDatesSorted.slice(),
+    locale: s.locale,
+    firstDayOfWeek: s.firstDayOfWeek,
+    weekendIndexes: s.weekendIndexes.slice(),
+    numberOfMonths: s.numberOfMonths,
+    format: s.format,
+    currentView: s.currentView,
+    viewDate: s.viewDate,
+    focusDate: s.focusDate,
+    visible: s.visible,
+    selectedDates: cloneSelectedDates(s.selectedDates),
+    timePart: Object.assign({}, s.timePart),
+    allowedViews: s.allowedViews.slice()
+  };
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @param {number} dayTs
+ * @param {boolean} outside
+ * @returns {RenderCtx}
+ */
+function buildDayCtx(instance, dayTs, outside) {
+  const s = instance._state;
+  const d = startOfDayTs(dayTs);
+  const today = startOfDayTs(Date.now());
+  const flags = dayFlags(s, d, today);
+  return {
+    date: d,
+    viewDate: s.viewDate,
+    isSelected: flags.isSelected,
+    isDisabled: flags.isDisabled,
+    isToday: flags.isToday,
+    isInRange: flags.isInRange,
+    isRangeStart: flags.isRangeStart,
+    isRangeEnd: flags.isRangeEnd,
+    isFocused: s.focusDate != null && isSameDay(s.focusDate, d),
+    isOutside: outside,
+    isWeekend: s.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
+    state: publicStateSnapshot(instance),
+    instance: instance
+  };
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @param {'day'|'month'|'year'} view
+ * @returns {string}
+ */
+function formatNavTitle(instance, view) {
+  const s = instance._state;
+  const titles = s.navTitles || {};
+  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
+  const resolver = titles[key];
+  if (typeof resolver === 'function') {
+    return String(resolver(instance));
+  }
+  const rawTemplate = typeof resolver === 'string' ? resolver : '';
+  const { y, m } = tsToYmd(s.viewDate);
+  const blockStart = y - 5;
+  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
+  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
+  return rawTemplate
+    .replace(/yyyy1/g, String(blockStart))
+    .replace(/yyyy2/g, String(blockStart + 11))
+    .replace(/MMMM/g, monthLong || monthShort)
+    .replace(/yyyy/g, String(y))
+    .replace(/YYYY/g, String(y));
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @param {'day'|'month'|'year'} view
+ * @param {boolean} canGoUp
+ * @returns {HTMLElement}
+ */
+function buildDefaultNav(instance, view, canGoUp) {
+  const s = instance._state;
+  const c = s.classes;
+  const nav = createEl('div', c.nav);
+  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
+  prev.innerHTML = s.prevHtml;
+  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
+  next.innerHTML = s.nextHtml;
+  const prevDisabled = navPrevDisabled(s);
+  const nextDisabled = navNextDisabled(s);
+  if (prevDisabled) {
+    prev.disabled = true;
+    prev.setAttribute('aria-disabled', 'true');
+  }
+  if (nextDisabled) {
+    next.disabled = true;
+    next.setAttribute('aria-disabled', 'true');
+  }
+  const titleTag = canGoUp ? 'button' : 'span';
+  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', 'data-lp-nav': 'title' } : {});
+  title.innerHTML = formatNavTitle(instance, view);
+  nav.appendChild(prev);
+  nav.appendChild(title);
+  nav.appendChild(next);
+  return nav;
+}
+
+/**
+ * @private
+ * @param {import('../core/state.js').LightpickrInternalState} s
+ * @param {number} d
+ * @param {number} today
+ * @returns {object}
+ * @property {boolean} isSelected
+ * @property {boolean} isDisabled
+ * @property {boolean} isToday
+ * @property {boolean} isInRange
+ * @property {boolean} isRangeStart
+ * @property {boolean} isRangeEnd
+ * @property {boolean} isFocused
+ * @property {boolean} isOutside
+ * @property {boolean} isWeekend
+ */
+function dayFlags(s, d, today) {
+  const disabled = isDateDisabled(s, d);
+  let isSelected = false;
+  let isInRange = false;
+  let isRangeStart = false;
+  let isRangeEnd = false;
+  if (s.range) {
+    const ranges = /** @type {number[][]} */ (s.selectedDates);
+    for (let i = 0; i < ranges.length; i++) {
+      const pair = ranges[i];
+      if (isSameDay(d, pair[0])) {
+        isRangeStart = true;
+      }
+      if (isSameDay(d, pair[1])) {
+        isRangeEnd = true;
+      }
+      if (isInClosedRangeDay(d, pair[0], pair[1])) {
+        isInRange = true;
+      }
+      if (isSameDay(d, pair[0]) || isSameDay(d, pair[1])) {
+        isSelected = true;
+      }
+    }
+    if (s.pendingRangeStart != null && isSameDay(s.pendingRangeStart, d)) {
+      isSelected = true;
+      isRangeStart = true;
+    }
+  } else {
+    const dates = /** @type {number[]} */ (s.selectedDates);
+    isSelected = dates.some((x) => isSameDay(x, d));
+  }
+  return {
+    isSelected,
+    isDisabled: disabled,
+    isToday: isSameDay(d, today),
+    isInRange,
+    isRangeStart,
+    isRangeEnd
+  };
+}
+
+/**
+ * @private
+ * @param {import('../core/state.js').LightpickrClassMap} c
+ * @returns {string[]}
+ */
+function previewClassNames(c) {
+  return [c.cellRangePreview, c.cellRangePreviewMid, c.cellRangePreviewStartCap, c.cellRangePreviewEndCap];
+}
+
+/**
+ * @private
+ * @param {HTMLElement} root
+ * @param {EventTarget|null} target
+ * @returns {HTMLElement|null}
+ */
+function dayButtonFromEventTarget(root, target) {
+  if (target == null || !(target instanceof Node) || !root.contains(target)) {
+    return null;
+  }
+  let el = target instanceof Element ? target : target.parentElement;
+  if (!el) {
+    return null;
+  }
+  const btn = el.closest('[data-lp-day]');
+  return btn && root.contains(btn) ? /** @type {HTMLElement} */ (btn) : null;
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @param {HTMLElement} dayBtn
+ * @returns {void}
+ */
+function applyRangeHoverFromDayButton(instance, dayBtn) {
+  const ts = parseDayCellTimestamp(dayBtn);
+  if (ts == null) {
+    return;
+  }
+  const next = startOfDayTs(ts);
+  if (instance._pendingRangeHoverTs === next) {
+    return;
+  }
+  instance._pendingRangeHoverTs = next;
+  syncPendingRangeHoverClasses(instance);
+}
+
+/**
+ * @private
+ * @param {object} instance
  * @param {HTMLElement} container
+ * @returns {void}
  */
 function renderDayView(instance, container) {
   const s = instance._state;
@@ -492,7 +593,6 @@ function renderDayView(instance, container) {
   const headerHook = s.render.header;
   const navHook = s.render.nav;
   const gridHook = s.render.grid;
-  const dayHook = s.render.dayCell;
 
   const header = createEl('div', c.header);
   if (headerHook) {
@@ -526,8 +626,8 @@ function renderDayView(instance, container) {
       grid.appendChild(el);
     }
   } else {
-      buildWeekdayRow(instance, grid);
-    buildDayGrid(instance, grid, y, m, dayHook);
+    buildWeekdayRow(instance, grid);
+    buildDayGrid(instance, grid, y, m);
   }
   block.appendChild(grid);
   monthsWrap.appendChild(block);
@@ -540,17 +640,23 @@ function renderDayView(instance, container) {
 }
 
 /**
+ * @private
  * @param {object} instance
  * @param {HTMLElement} grid
+ * @returns {void}
  */
 function buildWeekdayRow(instance, grid) {
   const s = instance._state;
   const names = defaultWeekdayNames({ locale: s.locale });
   const fd = s.firstDayOfWeek % 7;
+  const clickable = s.dayNameClickable === true;
   const row = createEl('div', 'lp-row lp-row--head');
   for (let i = 0; i < 7; i++) {
     const idx = (fd + i) % 7;
-    const cell = createEl('div', 'lp-head-cell');
+    const tag = clickable ? 'button' : 'div';
+    const attrs = clickable ? { type: 'button', 'data-lp-day-name': String(idx) } : {};
+    const extraClass = clickable ? ' lp-head-cell--clickable' : '';
+    const cell = createEl(tag, 'lp-head-cell' + extraClass, attrs);
     if (s.weekendIndexes.indexOf(idx) >= 0) {
       cell.classList.add('lp-head-cell--weekend');
     }
@@ -561,13 +667,14 @@ function buildWeekdayRow(instance, grid) {
 }
 
 /**
+ * @private
  * @param {object} instance
  * @param {HTMLElement} grid
  * @param {number} y
  * @param {number} m
- * @param {(ctx: RenderCtx) => HTMLElement|null|undefined} dayHook
+ * @returns {void}
  */
-function buildDayGrid(instance, grid, y, m, dayHook) {
+function buildDayGrid(instance, grid, y, m) {
   const s = instance._state;
   const c = s.classes;
   const fd = s.firstDayOfWeek % 7;
@@ -612,13 +719,7 @@ function buildDayGrid(instance, grid, y, m, dayHook) {
       }
       continue;
     }
-    let cellEl;
-    if (dayHook) {
-      const custom = dayHook(ctx);
-      cellEl = custom || defaultDayCell(instance, ctx);
-    } else {
-      cellEl = defaultDayCell(instance, ctx);
-    }
+    const cellEl = buildDayCellWithRenderHook(instance, ctx);
     if (row) {
       row.appendChild(cellEl);
     }
@@ -626,6 +727,62 @@ function buildDayGrid(instance, grid, y, m, dayHook) {
 }
 
 /**
+ * @private
+ * @param {object} instance
+ * @param {RenderCtx} ctx
+ * @returns {HTMLElement}
+ */
+function buildDayCellWithRenderHook(instance, ctx) {
+  const s = instance._state;
+  const fallback = defaultDayCell(instance, ctx);
+  const out = s.onRenderCell({
+    date: new Date(ctx.date),
+    cellType: 'day',
+    datepicker: instance
+  });
+  if (!out || typeof out !== 'object') {
+    return fallback;
+  }
+  return applyRenderCellPatch(fallback, out);
+}
+
+/**
+ * @private
+ * @param {HTMLElement} el
+ * @param {{ html?: string, classes?: string, disabled?: boolean, attrs?: Record<string, string|number|undefined> }} out
+ * @returns {HTMLElement}
+ */
+function applyRenderCellPatch(el, out) {
+  if (typeof out.html === 'string') {
+    el.innerHTML = out.html;
+  }
+  if (typeof out.classes === 'string' && out.classes.trim()) {
+    const classes = out.classes.split(/\s+/).filter(Boolean);
+    for (let i = 0; i < classes.length; i++) {
+      el.classList.add(classes[i]);
+    }
+  }
+  if (out.disabled === true && 'disabled' in el) {
+    // Force non-interactive behavior for custom unavailable cells.
+    el.disabled = true;
+  }
+  if (out.attrs && typeof out.attrs === 'object') {
+    const keys = Object.keys(out.attrs);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const value = out.attrs[key];
+      if (value === undefined) {
+        el.removeAttribute(key);
+      } else {
+        el.setAttribute(key, String(value));
+      }
+    }
+  }
+  return el;
+}
+
+/**
+ * @private
  * @param {object} instance
  * @param {RenderCtx} ctx
  * @returns {HTMLElement}
@@ -674,8 +831,10 @@ function defaultDayCell(instance, ctx) {
 }
 
 /**
+ * @private
  * @param {object} instance
  * @param {HTMLElement} container
+ * @returns {void}
  */
 function renderMonthView(instance, container) {
   const s = instance._state;
@@ -689,18 +848,18 @@ function renderMonthView(instance, container) {
 
   const viewBody = createEl('div', c.viewBody);
   const grid = createEl('div', c.grid + ' lp-month-grid');
-  const hook = s.render.monthCell;
   const months = defaultMonthNames({ locale: s.locale }, s.monthsField);
   for (let mi = 0; mi < 12; mi++) {
     const ts = ymdToTsStartOfDay(y, mi, 1);
-    const ctx = buildDayCtx(instance, ts, false);
-    ctx.date = ts;
-    let el;
-    if (hook) {
-      el = hook(ctx) || createEl('button', c.cell, { type: 'button', 'data-lp-month': String(mi) });
-    } else {
-      el = createEl('button', c.cell, { type: 'button', 'data-lp-month': String(mi) });
-      el.textContent = months[mi];
+    const el = createEl('button', c.cell, { type: 'button', 'data-lp-month': String(mi) });
+    el.textContent = months[mi];
+    const out = s.onRenderCell({
+      date: new Date(ts),
+      cellType: 'month',
+      datepicker: instance
+    });
+    if (out && typeof out === 'object') {
+      applyRenderCellPatch(el, out);
     }
     if (!el.getAttribute('data-lp-month')) {
       el.setAttribute('data-lp-month', String(mi));
@@ -715,8 +874,10 @@ function renderMonthView(instance, container) {
 }
 
 /**
+ * @private
  * @param {object} instance
  * @param {HTMLElement} container
+ * @returns {void}
  */
 function renderYearView(instance, container) {
   const s = instance._state;
@@ -730,18 +891,18 @@ function renderYearView(instance, container) {
 
   const viewBody = createEl('div', c.viewBody);
   const grid = createEl('div', c.grid + ' lp-year-grid');
-  const hook = s.render.yearCell;
   for (let i = 0; i < 12; i++) {
     const yy = start + i;
     const ts = ymdToTsStartOfDay(yy, 0, 1);
-    const ctx = buildDayCtx(instance, ts, false);
-    ctx.date = ts;
-    let el;
-    if (hook) {
-      el = hook(ctx) || createEl('button', c.cell, { type: 'button', 'data-lp-year': String(yy) });
-    } else {
-      el = createEl('button', c.cell, { type: 'button', 'data-lp-year': String(yy) });
-      el.textContent = String(yy);
+    const el = createEl('button', c.cell, { type: 'button', 'data-lp-year': String(yy) });
+    el.textContent = String(yy);
+    const out = s.onRenderCell({
+      date: new Date(ts),
+      cellType: 'year',
+      datepicker: instance
+    });
+    if (out && typeof out === 'object') {
+      applyRenderCellPatch(el, out);
     }
     if (!el.getAttribute('data-lp-year')) {
       el.setAttribute('data-lp-year', String(yy));
@@ -756,6 +917,7 @@ function renderYearView(instance, container) {
 }
 
 /**
+ * @private
  * @param {number} hours24
  * @param {number} minutes
  * @returns {{ hourStr: string, minuteStr: string, ampm: 'AM'|'PM', fullLabel: string }}
@@ -777,45 +939,11 @@ function formatClock12Parts(hours24, minutes) {
 }
 
 /**
+ * @private
  * @param {object} instance
+ * @param {HTMLElement} container
+ * @returns {void}
  */
-export function syncTimePanelDom(instance) {
-  const root = instance.$datepicker;
-  const block = root.querySelector('.lp-time-display-block');
-  const hoursRange = root.querySelector('input[data-lp-time="hours"]');
-  const minutesRange = root.querySelector('input[data-lp-time="minutes"]');
-  if (!block) {
-    return;
-  }
-  const hoursSpan = block.querySelector('.lp-time-display-hours');
-  const minutesSpan = block.querySelector('.lp-time-display-minutes');
-  const ampmSpan = block.querySelector('.lp-time-display-ampm');
-  if (!hoursSpan || !minutesSpan || !ampmSpan) {
-    return;
-  }
-  const s = instance._state;
-  const p = formatClock12Parts(s.timePart.hours, s.timePart.minutes);
-  hoursSpan.textContent = p.hourStr;
-  minutesSpan.textContent = p.minuteStr;
-  ampmSpan.textContent = p.ampm;
-  if (hoursRange instanceof HTMLInputElement) {
-    const hv = String(s.timePart.hours);
-    if (hoursRange.value !== hv) {
-      hoursRange.value = hv;
-    }
-    hoursRange.setAttribute('aria-valuenow', hv);
-    hoursRange.setAttribute('aria-valuetext', p.fullLabel);
-  }
-  if (minutesRange instanceof HTMLInputElement) {
-    const mv = String(s.timePart.minutes);
-    if (minutesRange.value !== mv) {
-      minutesRange.value = mv;
-    }
-    minutesRange.setAttribute('aria-valuenow', mv);
-    minutesRange.setAttribute('aria-valuetext', p.fullLabel);
-  }
-}
-
 function renderTimePanel(instance, container) {
   const s = instance._state;
   const hook = s.render.time;
@@ -886,10 +1014,12 @@ function renderTimePanel(instance, container) {
 }
 
 /**
+ * @private
  * @param {object} instance
  * @param {HTMLElement} container
+ * @returns {void}
  */
-export function renderFooter(instance, container) {
+function renderFooter(instance, container) {
   const s = instance._state;
   const footerHook = s.render.footer;
   if (footerHook) {
@@ -958,60 +1088,4 @@ export function renderFooter(instance, container) {
   if (wrap.children.length) {
     container.appendChild(wrap);
   }
-}
-
-export { resolveNavTitle as formatNavTitle };
-
-/**
- * @param {object} instance
- * @param {'day'|'month'|'year'|undefined} view
- * @returns {number[]}
- */
-export function getViewDates(instance, view) {
-  const s = instance._state;
-  const v = view || s.currentView;
-  const out = [];
-  if (v === 'day') {
-    const vd = s.viewDate;
-    const { y, m } = tsToYmd(vd);
-    const fd = s.firstDayOfWeek % 7;
-    const first = firstWeekdayOfMonth(y, m);
-    const leading = (first - fd + 7) % 7;
-    const dim = daysInMonth(y, m);
-    const prevY = m - 1 < 0 ? y - 1 : y;
-    const prevM = m - 1 < 0 ? 11 : m - 1;
-    const prevDim = daysInMonth(prevY, prevM);
-    let dayNum = 1;
-    let nextMonthDay = 1;
-    const rows = Math.ceil((leading + dim) / 7);
-    const totalCells = Math.max(6, rows) * 7;
-    for (let cell = 0; cell < totalCells; cell++) {
-      let ts;
-      if (cell < leading) {
-        const d = prevDim - (leading - cell - 1);
-        ts = ymdToTsStartOfDay(prevY, prevM, d);
-      } else if (dayNum <= dim) {
-        ts = ymdToTsStartOfDay(y, m, dayNum);
-        dayNum++;
-      } else {
-        const nm = m + 1 > 11 ? 0 : m + 1;
-        const ny = m + 1 > 11 ? y + 1 : y;
-        ts = ymdToTsStartOfDay(ny, nm, nextMonthDay);
-        nextMonthDay++;
-      }
-      out.push(ts);
-    }
-  } else if (v === 'month') {
-    const y = tsToYmd(s.viewDate).y;
-    for (let mi = 0; mi < 12; mi++) {
-      out.push(ymdToTsStartOfDay(y, mi, 1));
-    }
-  } else if (v === 'year') {
-    const y = tsToYmd(s.viewDate).y;
-    const start = y - 5;
-    for (let i = 0; i < 12; i++) {
-      out.push(ymdToTsStartOfDay(start + i, 0, 1));
-    }
-  }
-  return out;
 }

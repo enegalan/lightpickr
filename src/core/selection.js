@@ -1,4 +1,4 @@
-import { isSameDay, startOfDayTs, toTimestamp, trimFifo } from './utils.js';
+import { cloneSelectedDates, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp, trimFifo } from './utils.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -43,7 +43,7 @@ export function applyDaySelection(state, dayTs) {
   }
 
   const next = Object.assign({}, state);
-  next.selectedDates = cloneSelection(state);
+  next.selectedDates = cloneSelectedDates(state.selectedDates);
 
   if (state.range) {
     const maxR = state.multipleLimit;
@@ -90,21 +90,6 @@ export function applyDaySelection(state, dayTs) {
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
- * @returns {number[]|number[][]}
- */
-function cloneSelection(state) {
-  const s = state.selectedDates;
-  if (!s || !s.length) {
-    return [];
-  }
-  if (Array.isArray(s[0])) {
-    return s.map((p) => /** @type {number[]} */ (p).slice());
-  }
-  return /** @type {number[]} */ (s).slice();
-}
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
  * @param {number|Date|string} date
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */
@@ -128,10 +113,10 @@ export function unselectDate(state, date) {
   }
   const d = startOfDayTs(ts);
   const next = Object.assign({}, state);
-  const sel = cloneSelection(state);
+  const sel = cloneSelectedDates(state.selectedDates);
   if (state.range) {
     const list = /** @type {number[][]} */ (sel);
-    const filtered = list.filter((pair) => !(d >= pair[0] && d <= pair[1]));
+    const filtered = list.filter((pair) => !isInClosedRangeDay(d, pair[0], pair[1]));
     next.selectedDates = filtered;
   } else {
     const dates = /** @type {number[]} */ (sel);
@@ -167,7 +152,7 @@ export function applyRangeEndpointDrag(state, rangeIndex, edge, dayTs) {
   if (!state.range || !Array.isArray(state.selectedDates[0])) {
     return { state, changed: false };
   }
-  const ranges = /** @type {number[][]} */ (state.selectedDates).map((pair) => pair.slice());
+  const ranges = /** @type {number[][]} */ (cloneSelectedDates(state.selectedDates));
   if (rangeIndex < 0 || rangeIndex >= ranges.length) {
     return { state, changed: false };
   }

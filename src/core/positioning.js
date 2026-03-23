@@ -111,6 +111,7 @@ export function clampToViewport(left, top, w, h, margin) {
  * @param {HTMLElement} target
  * @param {HTMLElement|null|undefined} pointer
  * @param {string|undefined} positionStr
+ * @returns {void}
  */
 export function applyStringPosition(popover, target, pointer, positionStr) {
   const [main, sec] = parsePositionString(positionStr || 'bottom left');
@@ -129,11 +130,13 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
 }
 
 /**
+ * @private
  * @param {HTMLElement} popover
  * @param {HTMLElement} target
  * @param {HTMLElement|null|undefined} pointer
  * @param {string} main
  * @param {string} sec
+ * @returns {void}
  */
 function placePopoverPointer(popover, target, pointer, main, sec) {
   if (!(pointer instanceof HTMLElement)) {

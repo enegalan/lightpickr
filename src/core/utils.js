@@ -134,10 +134,9 @@ export function formatDate(format, ts, timePart) {
 
 /**
  * @param {unknown} multiple
- * @param {boolean} range
  * @returns {{ multipleLimit: number, multipleEnabled: boolean }}
  */
-export function normalizeMultipleOption(multiple, range) {
+export function normalizeMultipleOption(multiple) {
   if (multiple === true) {
     return { multipleLimit: Number.POSITIVE_INFINITY, multipleEnabled: true };
   }
@@ -354,6 +353,47 @@ export function clampToStep(value, min, max, step) {
   const offset = bounded - min;
   const snapped = min + Math.round(offset / step) * step;
   return Math.max(min, Math.min(max, snapped));
+}
+
+/**
+ * @param {number[]|number[][]} selectedDates
+ * @returns {number[]|number[][]}
+ */
+export function cloneSelectedDates(selectedDates) {
+  if (!selectedDates || !selectedDates.length) {
+    return [];
+  }
+  if (Array.isArray(selectedDates[0])) {
+    return selectedDates.map((pair) => /** @type {number[]} */ (pair).slice());
+  }
+  return /** @type {number[]} */ (selectedDates).slice();
+}
+
+/**
+ * @param {unknown} selectedDates
+ * @param {number} max
+ * @returns {number[][]}
+ */
+export function normalizeRangePairs(selectedDates, max) {
+  if (!Array.isArray(selectedDates)) {
+    return [];
+  }
+  const pairs = [];
+  for (let i = 0; i < selectedDates.length; i++) {
+    const pair = selectedDates[i];
+    if (!Array.isArray(pair) || pair.length < 2) {
+      continue;
+    }
+    const a = toTimestamp(pair[0]);
+    const b = toTimestamp(pair[1]);
+    if (a == null || b == null) {
+      continue;
+    }
+    const start = startOfDayTs(Math.min(a, b));
+    const end = startOfDayTs(Math.max(a, b));
+    pairs.push([start, end]);
+  }
+  return trimFifo(pairs, max);
 }
 
 /**

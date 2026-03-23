@@ -18,31 +18,6 @@ export function createEl(tag, className, attrs) {
 }
 
 /**
- * @param {HTMLElement} el
- * @param {string} base
- * @param {string} [extra]
- */
-export function applyClasses(el, base, extra) {
-  const parts = [];
-  if (base) {
-    parts.push(base);
-  }
-  if (extra) {
-    parts.push(extra);
-  }
-  el.className = parts.join(' ').trim();
-}
-
-/**
- * @param {HTMLElement} el
- * @param {string} type
- * @param {(ev: Event) => void} handler
- */
-export function on(el, type, handler) {
-  el.addEventListener(type, handler);
-}
-
-/**
  * @param {ParentNode} root
  * @param {string} selector
  * @param {string} type
@@ -64,4 +39,17 @@ export function delegate(root, selector, type, handler) {
   return function () {
     root.removeEventListener(type, fn);
   };
+}
+
+/**
+ * @param {Element} element
+ * @returns {number|null}
+ */
+export function parseDayCellTimestamp(element) {
+  const raw = element.getAttribute('data-lp-day');
+  if (raw == null) {
+    return null;
+  }
+  const ts = Number(raw);
+  return Number.isFinite(ts) ? ts : null;
 }
