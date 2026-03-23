@@ -281,16 +281,24 @@ Lightpickr.prototype._getPositionReference = function () {
 Lightpickr.prototype._bindTarget = function () {
   const self = this;
   const bindField = function (el) {
-    if (isTextInputLike(el)) {
-      const events = self._state.showEvents;
-      for (let i = 0; i < events.length; i++) {
-        const eventName = events[i];
-        const listener = function () {
-          self.show();
-        };
-        el.addEventListener(eventName, listener);
-        self._boundShowTargets.push({ el: el, eventName: eventName, listener: listener });
+    if (!(el instanceof HTMLElement)) {
+      return;
+    }
+    const events = self._state.showEvents;
+    for (let i = 0; i < events.length; i++) {
+      const eventName = events[i];
+      const listener = function () {
+        self.show();
+      };
+      if (eventName === 'focus') {
+        el.addEventListener('focus', listener, true);
+        self._boundShowTargets.push({ el: el, eventName: 'focus', listener: listener, capture: true });
+        el.addEventListener('focusin', listener);
+        self._boundShowTargets.push({ el: el, eventName: 'focusin', listener: listener, capture: false });
+        continue;
       }
+      el.addEventListener(eventName, listener);
+      self._boundShowTargets.push({ el: el, eventName: eventName, listener: listener, capture: false });
     }
   };
   bindField(this.$el);
@@ -303,7 +311,7 @@ Lightpickr.prototype._bindTarget = function () {
 Lightpickr.prototype._unbindTarget = function () {
   for (let i = 0; i < this._boundShowTargets.length; i++) {
     const entry = this._boundShowTargets[i];
-    entry.el.removeEventListener(entry.eventName, entry.listener);
+    entry.el.removeEventListener(entry.eventName, entry.listener, Boolean(entry.capture));
   }
   this._boundShowTargets = [];
 };
