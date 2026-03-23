@@ -191,6 +191,14 @@
   --lp-cell-size: 2.5rem;
   --lp-space-md: 1rem;
   --lp-space-lg: 1.25rem;
+  position: relative;
+  top: auto;
+  left: auto;
+  width: min(100%, 42rem);
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  overflow: auto;
 }
 
 .lp.lp--only-time.lp--inline,
