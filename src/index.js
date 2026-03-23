@@ -477,7 +477,7 @@ Lightpickr.prototype.show = function () {
   const next = Object.assign({}, this._state);
   next.visible = true;
   if (this.$backdrop) {
-    this.$backdrop.style.display = '';
+    this.$backdrop.style.display = 'flex';
   }
   this.$datepicker.style.display = '';
   this._attachDocListener();
@@ -638,7 +638,7 @@ Lightpickr.prototype.update = function (newOpts) {
         document.body.appendChild(this.$backdrop);
       }
       this.$datepicker.classList.add('lp--mobile');
-      this.$backdrop.style.display = this._state.visible ? '' : 'none';
+      this.$backdrop.style.display = this._state.visible ? 'flex' : 'none';
     } else if (this.$backdrop) {
       if (this.$datepicker.parentNode) {
         this.$datepicker.parentNode.removeChild(this.$datepicker);
