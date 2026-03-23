@@ -139,7 +139,7 @@ export function formatDate(format, ts, timePart) {
  */
 export function normalizeMultipleOption(multiple, range) {
   if (multiple === true) {
-    return { multipleLimit: 2, multipleEnabled: true };
+    return { multipleLimit: Number.POSITIVE_INFINITY, multipleEnabled: true };
   }
   if (multiple === false || multiple == null || multiple === 0 || multiple === 1) {
     return { multipleLimit: 1, multipleEnabled: false };
@@ -152,12 +152,20 @@ export function normalizeMultipleOption(multiple, range) {
 }
 
 /**
- * @param {import('./state.js').LightpickrOptions} opts
+ * @param {import('./state.js').LightpickrOptions|import('./state.js').LightpickrInternalState} opts
+ * @param {string} [monthsField]
  * @returns {string[]}
  */
-export function defaultMonthNames(opts) {
-  if (opts.locale && typeof opts.locale === 'object' && Array.isArray(opts.locale.months)) {
-    return opts.locale.months;
+export function defaultMonthNames(opts, monthsField) {
+  const field = typeof monthsField === 'string' && monthsField.trim() ? monthsField.trim() : 'monthsShort';
+  if (opts.locale && typeof opts.locale === 'object') {
+    const locale = opts.locale;
+    if (Array.isArray(locale[field]) && locale[field].length === 12) {
+      return locale[field];
+    }
+    if (field === 'monthsShort' && Array.isArray(locale.months) && locale.months.length === 12) {
+      return locale.months;
+    }
   }
   return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 }
@@ -171,4 +179,193 @@ export function defaultWeekdayNames(opts) {
     return opts.locale.weekdays;
   }
   return ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+}
+
+/**
+ * @param {unknown} firstDay
+ * @returns {number|null}
+ */
+export function normalizeFirstDay(firstDay) {
+  if (typeof firstDay !== 'number' || !Number.isFinite(firstDay)) {
+    return null;
+  }
+  return ((Math.floor(firstDay) % 7) + 7) % 7;
+}
+
+/**
+ * @param {unknown} weekends
+ * @returns {number[]}
+ */
+export function normalizeWeekendIndexes(weekends) {
+  if (!Array.isArray(weekends)) {
+    return [6, 0];
+  }
+  const seen = new Set();
+  const out = [];
+  for (let i = 0; i < weekends.length; i++) {
+    const raw = weekends[i];
+    const n = Number(raw);
+    if (!Number.isFinite(n)) {
+      continue;
+    }
+    const idx = ((Math.floor(n) % 7) + 7) % 7;
+    if (!seen.has(idx)) {
+      seen.add(idx);
+      out.push(idx);
+    }
+  }
+  return out.length ? out : [6, 0];
+}
+
+/**
+ * @param {unknown} view
+ * @returns {'day'|'month'|'year'}
+ */
+export function normalizeViewOption(view) {
+  if (view === 'day' || view === 'days') {
+    return 'day';
+  }
+  if (view === 'month' || view === 'months') {
+    return 'month';
+  }
+  if (view === 'year' || view === 'years') {
+    return 'year';
+  }
+  return 'day';
+}
+
+/**
+ * @param {unknown} allowedViews
+ * @returns {('day'|'month'|'year')[]}
+ */
+export function normalizeAllowedViews(allowedViews) {
+  const out = [];
+  const seen = new Set();
+  const add = function (raw) {
+    const view = normalizeViewOption(raw);
+    if ((raw === 'day' || raw === 'days' || raw === 'month' || raw === 'months' || raw === 'year' || raw === 'years') && !seen.has(view)) {
+      seen.add(view);
+      out.push(view);
+    }
+  };
+  if (Array.isArray(allowedViews)) {
+    for (let i = 0; i < allowedViews.length; i++) {
+      add(allowedViews[i]);
+    }
+  } else if (typeof allowedViews === 'string') {
+    add(allowedViews);
+  }
+  if (!out.length) {
+    return ['day', 'month', 'year'];
+  }
+  return out;
+}
+
+/**
+ * @param {('day'|'month'|'year')[]} allowedViews
+ * @param {'day'|'month'|'year'} requestedView
+ * @returns {'day'|'month'|'year'}
+ */
+export function clampViewToAllowed(allowedViews, requestedView) {
+  if (allowedViews.indexOf(requestedView) >= 0) {
+    return requestedView;
+  }
+  const order = ['day', 'month', 'year'];
+  const reqIdx = order.indexOf(requestedView);
+  let best = allowedViews[0];
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < allowedViews.length; i++) {
+    const cand = allowedViews[i];
+    const dist = Math.abs(order.indexOf(cand) - reqIdx);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = cand;
+    }
+  }
+  return best;
+}
+
+/**
+ * @param {unknown} showEvent
+ * @returns {string[]}
+ */
+export function normalizeShowEvents(showEvent) {
+  if (typeof showEvent === 'string' && showEvent.trim()) {
+    return [showEvent.trim()];
+  }
+  if (Array.isArray(showEvent)) {
+    const out = [];
+    const seen = new Set();
+    for (let i = 0; i < showEvent.length; i++) {
+      const value = showEvent[i];
+      if (typeof value !== 'string') {
+        continue;
+      }
+      const trimmed = value.trim();
+      if (!trimmed || seen.has(trimmed)) {
+        continue;
+      }
+      seen.add(trimmed);
+      out.push(trimmed);
+    }
+    if (out.length) {
+      return out;
+    }
+  }
+  return ['focus'];
+}
+
+/**
+ * @param {unknown} minHours
+ * @param {unknown} maxHours
+ * @param {unknown} minMinutes
+ * @param {unknown} maxMinutes
+ * @param {unknown} hoursStep
+ * @param {unknown} minutesStep
+ * @returns {{ minHours: number, maxHours: number, minMinutes: number, maxMinutes: number, hoursStep: number, minutesStep: number }}
+ */
+export function normalizeTimeBounds(minHours, maxHours, minMinutes, maxMinutes, hoursStep, minutesStep) {
+  const minH = Number.isFinite(Number(minHours)) ? Math.max(0, Math.min(23, Math.floor(Number(minHours)))) : 0;
+  const rawMaxH = Number.isFinite(Number(maxHours)) ? Math.floor(Number(maxHours)) : 24;
+  const maxH = Math.max(minH, Math.min(23, rawMaxH >= 24 ? 23 : rawMaxH));
+  const minM = Number.isFinite(Number(minMinutes)) ? Math.max(0, Math.min(59, Math.floor(Number(minMinutes)))) : 0;
+  const maxM = Number.isFinite(Number(maxMinutes)) ? Math.max(minM, Math.min(59, Math.floor(Number(maxMinutes)))) : 59;
+  const stepH = Number.isFinite(Number(hoursStep)) ? Math.max(1, Math.floor(Number(hoursStep))) : 1;
+  const stepM = Number.isFinite(Number(minutesStep)) ? Math.max(1, Math.floor(Number(minutesStep))) : 1;
+  return {
+    minHours: minH,
+    maxHours: maxH,
+    minMinutes: minM,
+    maxMinutes: maxM,
+    hoursStep: stepH,
+    minutesStep: stepM
+  };
+}
+
+/**
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ * @param {number} step
+ * @returns {number}
+ */
+export function clampToStep(value, min, max, step) {
+  const bounded = Math.max(min, Math.min(max, Math.floor(value)));
+  const offset = bounded - min;
+  const snapped = min + Math.round(offset / step) * step;
+  return Math.max(min, Math.min(max, snapped));
+}
+
+/**
+ * @template T
+ * @param {T[]} items
+ * @param {number} max
+ * @returns {T[]}
+ */
+export function trimFifo(items, max) {
+  const out = items.slice();
+  while (out.length > max) {
+    out.shift();
+  }
+  return out;
 }

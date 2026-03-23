@@ -1,4 +1,71 @@
-import { addMonths, addYears, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './utils.js';
+import { addMonths, addYears, clampViewToAllowed, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './utils.js';
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir
+ * @returns {boolean}
+ */
+function isNavOutOfRange(state, dir) {
+  if (!state.disableNavWhenOutOfRange || (state.minDate == null && state.maxDate == null)) {
+    return false;
+  }
+  let startYear, startMonth, startDay, endYear, endMonth, endDay;
+  switch (state.currentView) {
+    case 'day':
+    case 'time': { // Month navigation (+1 month)
+      const { y, m } = addMonths(state.viewDate, dir);
+      const monthLastDay = new Date(y, m + 1, 0).getDate();
+      startYear = endYear = y; // Same year
+      startMonth = endMonth = m; // Same month
+      startDay = 1; // First day of the month
+      endDay = monthLastDay; // Last day of the month
+      break;
+    }
+    case 'month': { // Year navigation (+1 year)
+      const { y } = addYears(state.viewDate, dir);
+      startYear = endYear = y; // Same year
+      startMonth = 0; // January
+      endMonth = 11; // December
+      startDay = 1; // First day of the year
+      endDay = 31; // Last day of the year
+      break;
+    }
+    case 'year': { // Year grid navigation
+      const { y } = tsToYmd(state.viewDate);
+      const yearChunkSize = 12; // Blocks of 12 years
+      const startYearOfBlock = y + dir * yearChunkSize - 5; // -5 is to center the current year in the grid
+      startYear = startYearOfBlock;
+      endYear = startYearOfBlock + yearChunkSize - 1; 
+      startMonth = 0; // January
+      endMonth = 11; // December
+      startDay = 1; // First day of the year
+      endDay = 31; // Last day of the year
+      break;
+    }
+    default: {
+      return false; // Unsupported view -> do not restrict navigation
+    }
+  }
+  const periodStart = ymdToTsStartOfDay(startYear, startMonth, startDay);
+  const periodEnd = ymdToTsStartOfDay(endYear, endMonth, endDay);
+  return periodEnd < state.minDate || periodStart > state.maxDate;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @returns {boolean}
+ */
+export function navPrevDisabled(state) {
+  return isNavOutOfRange(state, -1);
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @returns {boolean}
+ */
+export function navNextDisabled(state) {
+  return isNavOutOfRange(state, 1);
+}
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -6,6 +73,9 @@ import { addMonths, addYears, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOf
  * @returns {import('./state.js').LightpickrInternalState}
  */
 export function navigateNextPrev(state, dir) {
+  if (isNavOutOfRange(state, dir)) {
+    return state;
+  }
   const next = Object.assign({}, state);
   const v = state.currentView;
   if (v === 'day') {
@@ -40,7 +110,8 @@ export function navigateUp(state) {
     return next;
   }
   if (idx >= 0 && idx < order.length - 1) {
-    next.currentView = /** @type {'day'|'month'|'year'} */ (order[idx + 1]);
+    const requested = /** @type {'day'|'month'|'year'} */ (order[idx + 1]);
+    next.currentView = clampViewToAllowed(state.allowedViews, requested);
   }
   return next;
 }
@@ -54,7 +125,8 @@ export function navigateDown(state) {
   const order = ['day', 'month', 'year'];
   const idx = order.indexOf(state.currentView);
   if (idx > 0) {
-    next.currentView = /** @type {'day'|'month'|'year'} */ (order[idx - 1]);
+    const requested = /** @type {'day'|'month'|'year'} */ (order[idx - 1]);
+    next.currentView = clampViewToAllowed(state.allowedViews, requested);
   }
   return next;
 }
@@ -67,7 +139,13 @@ export function navigateDown(state) {
  */
 export function setCurrentViewState(state, view, params) {
   const next = Object.assign({}, state);
-  next.currentView = state.onlyTime ? 'time' : view;
+  if (state.onlyTime) {
+    next.currentView = 'time';
+  } else if (view === 'time') {
+    next.currentView = state.enableTime ? 'time' : clampViewToAllowed(state.allowedViews, 'day');
+  } else {
+    next.currentView = clampViewToAllowed(state.allowedViews, view);
+  }
   if (params && params.date != null) {
     const raw = toTimestamp(params.date);
     if (raw != null) {

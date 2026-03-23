@@ -7,9 +7,11 @@ import {
   tsToYmd,
   ymdToTsStartOfDay,
   defaultMonthNames,
-  defaultWeekdayNames
+  defaultWeekdayNames,
+  formatDate
 } from '../core/utils.js';
 import { isDateDisabled } from '../core/selection.js';
+import { navNextDisabled, navPrevDisabled } from '../core/navigation.js';
 import { createEl, delegate } from './dom.js';
 
 /**
@@ -24,6 +26,7 @@ import { createEl, delegate } from './dom.js';
  * @property {boolean} isRangeEnd
  * @property {boolean} isFocused
  * @property {boolean} isOutside
+ * @property {boolean} isWeekend
  * @property {object} state
  * @property {object} instance
  */
@@ -46,6 +49,7 @@ function publicStateSnapshot(instance) {
     disabledDates: s.disabledDatesSorted.slice(),
     locale: s.locale,
     firstDayOfWeek: s.firstDayOfWeek,
+    weekendIndexes: s.weekendIndexes.slice(),
     numberOfMonths: s.numberOfMonths,
     format: s.format,
     currentView: s.currentView,
@@ -53,7 +57,8 @@ function publicStateSnapshot(instance) {
     focusDate: s.focusDate,
     visible: s.visible,
     selectedDates: cloneSel(s.selectedDates),
-    timePart: Object.assign({}, s.timePart)
+    timePart: Object.assign({}, s.timePart),
+    allowedViews: s.allowedViews.slice()
   };
 }
 
@@ -93,9 +98,69 @@ export function buildDayCtx(instance, dayTs, outside) {
     isRangeEnd: flags.isRangeEnd,
     isFocused: s.focusDate != null && isSameDay(s.focusDate, d),
     isOutside: outside,
+    isWeekend: s.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
     state: publicStateSnapshot(instance),
     instance: instance
   };
+}
+
+/**
+ * @param {object} instance
+ * @param {'day'|'month'|'year'} view
+ * @returns {string}
+ */
+function resolveNavTitle(instance, view) {
+  const s = instance._state;
+  const titles = s.navTitles || {};
+  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
+  const resolver = titles[key];
+  if (typeof resolver === 'function') {
+    return String(resolver(instance));
+  }
+  const rawTemplate = typeof resolver === 'string' ? resolver : '';
+  const { y, m } = tsToYmd(s.viewDate);
+  const blockStart = y - 5;
+  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
+  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
+  return rawTemplate
+    .replace(/yyyy1/g, String(blockStart))
+    .replace(/yyyy2/g, String(blockStart + 11))
+    .replace(/MMMM/g, monthLong || monthShort)
+    .replace(/yyyy/g, String(y))
+    .replace(/YYYY/g, String(y));
+}
+
+/**
+ * @param {object} instance
+ * @param {'day'|'month'|'year'} view
+ * @param {boolean} canGoUp
+ * @returns {HTMLElement}
+ */
+function buildDefaultNav(instance, view, canGoUp) {
+  const s = instance._state;
+  const c = s.classes;
+  const nav = createEl('div', c.nav);
+  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
+  prev.innerHTML = s.prevHtml;
+  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
+  next.innerHTML = s.nextHtml;
+  const prevDisabled = navPrevDisabled(s);
+  const nextDisabled = navNextDisabled(s);
+  if (prevDisabled) {
+    prev.disabled = true;
+    prev.setAttribute('aria-disabled', 'true');
+  }
+  if (nextDisabled) {
+    next.disabled = true;
+    next.setAttribute('aria-disabled', 'true');
+  }
+  const titleTag = canGoUp ? 'button' : 'span';
+  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', 'data-lp-nav': 'title' } : {});
+  title.innerHTML = resolveNavTitle(instance, view);
+  nav.appendChild(prev);
+  nav.appendChild(title);
+  nav.appendChild(next);
+  return nav;
 }
 
 /**
@@ -287,6 +352,9 @@ export function attachDelegatedHandlers(instance, root) {
     instance._handleDayClick(ts);
   });
   const off2 = delegate(root, '[data-lp-nav]', 'click', function (_ev, el) {
+    if (el instanceof HTMLButtonElement && el.disabled) {
+      return;
+    }
     const act = el.getAttribute('data-lp-nav');
     if (act === 'prev') {
       instance.prev();
@@ -392,6 +460,7 @@ export function renderFull(instance) {
 
   if (s.onlyTime) {
     renderTimePanel(instance, container);
+    renderFooter(instance, container);
   } else if (s.currentView === 'day') {
     renderDayView(instance, container);
   } else if (s.currentView === 'month') {
@@ -401,6 +470,9 @@ export function renderFull(instance) {
   } else if (s.currentView === 'time') {
     renderDayView(instance, container);
     renderTimePanel(instance, container);
+  }
+  if (!s.onlyTime) {
+    renderFooter(instance, container);
   }
 
   if (!s.inline && instance.$pointer) {
@@ -429,25 +501,15 @@ function renderDayView(instance, container) {
       header.appendChild(el);
     }
   } else {
-    const nav = createEl('div', c.nav);
     if (navHook) {
       const el = navHook(buildDayCtx(instance, s.viewDate, false));
       if (el) {
-        nav.appendChild(el);
+        header.appendChild(el);
       }
     } else {
-      const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
-      prev.textContent = '‹';
-      const title = createEl('button', c.titleButton, { type: 'button', 'data-lp-nav': 'title' });
-      const { y, m } = tsToYmd(s.viewDate);
-      title.textContent = defaultMonthNames({ locale: s.locale })[m] + ' ' + y;
-      const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
-      next.textContent = '›';
-      nav.appendChild(prev);
-      nav.appendChild(title);
-      nav.appendChild(next);
+      const canGoUp = s.allowedViews.indexOf('month') >= 0;
+      header.appendChild(buildDefaultNav(instance, 'day', canGoUp));
     }
-    header.appendChild(nav);
   }
   container.appendChild(header);
 
@@ -489,6 +551,9 @@ function buildWeekdayRow(instance, grid) {
   for (let i = 0; i < 7; i++) {
     const idx = (fd + i) % 7;
     const cell = createEl('div', 'lp-head-cell');
+    if (s.weekendIndexes.indexOf(idx) >= 0) {
+      cell.classList.add('lp-head-cell--weekend');
+    }
     cell.textContent = names[idx];
     row.appendChild(cell);
   }
@@ -504,6 +569,7 @@ function buildWeekdayRow(instance, grid) {
  */
 function buildDayGrid(instance, grid, y, m, dayHook) {
   const s = instance._state;
+  const c = s.classes;
   const fd = s.firstDayOfWeek % 7;
   const first = firstWeekdayOfMonth(y, m);
   const leading = (first - fd + 7) % 7;
@@ -539,6 +605,13 @@ function buildDayGrid(instance, grid, y, m, dayHook) {
       outside = true;
     }
     const ctx = buildDayCtx(instance, ts, outside);
+    if (outside && !s.showOtherMonths) {
+      const empty = createEl('span', c.cell + ' ' + c.cellOutside + ' ' + c.cellDisabled);
+      if (row) {
+        row.appendChild(empty);
+      }
+      continue;
+    }
     let cellEl;
     if (dayHook) {
       const custom = dayHook(ctx);
@@ -582,6 +655,9 @@ function defaultDayCell(instance, ctx) {
   if (ctx.isOutside) {
     extra.push(c.cellOutside);
   }
+  if (ctx.isWeekend) {
+    extra.push(c.cellWeekend);
+  }
   if (ctx.isFocused) {
     extra.push(c.cellFocused);
   }
@@ -589,6 +665,9 @@ function defaultDayCell(instance, ctx) {
   const { d } = tsToYmd(ctx.date);
   el.textContent = String(d);
   if (ctx.isDisabled) {
+    el.disabled = true;
+  }
+  if (ctx.isOutside && !s.selectOtherMonths) {
     el.disabled = true;
   }
   return el;
@@ -603,23 +682,15 @@ function renderMonthView(instance, container) {
   const c = s.classes;
   const { y, m } = tsToYmd(s.viewDate);
   const header = createEl('div', c.header);
-  const nav = createEl('div', c.nav);
-  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
-  prev.textContent = '‹';
-  const title = createEl('button', c.titleButton, { type: 'button', 'data-lp-nav': 'title' });
-  title.textContent = String(y);
-  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
-  next.textContent = '›';
-  nav.appendChild(prev);
-  nav.appendChild(title);
-  nav.appendChild(next);
+  const canGoUp = s.allowedViews.indexOf('year') >= 0;
+  const nav = buildDefaultNav(instance, 'month', canGoUp);
   header.appendChild(nav);
   container.appendChild(header);
 
   const viewBody = createEl('div', c.viewBody);
   const grid = createEl('div', c.grid + ' lp-month-grid');
   const hook = s.render.monthCell;
-  const months = defaultMonthNames({ locale: s.locale });
+  const months = defaultMonthNames({ locale: s.locale }, s.monthsField);
   for (let mi = 0; mi < 12; mi++) {
     const ts = ymdToTsStartOfDay(y, mi, 1);
     const ctx = buildDayCtx(instance, ts, false);
@@ -653,16 +724,7 @@ function renderYearView(instance, container) {
   const y = tsToYmd(s.viewDate).y;
   const start = y - 5;
   const header = createEl('div', c.header);
-  const nav = createEl('div', c.nav);
-  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
-  prev.textContent = '‹';
-  const title = createEl('span', c.titleButton + ' ' + c.titleButton + '--disabled' );
-  title.textContent = start + ' – ' + (start + 11);
-  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
-  next.textContent = '›';
-  nav.appendChild(prev);
-  nav.appendChild(title);
-  nav.appendChild(next);
+  const nav = buildDefaultNav(instance, 'year', false);
   header.appendChild(nav);
   container.appendChild(header);
 
@@ -786,13 +848,13 @@ function renderTimePanel(instance, container) {
     const slidersCol = createEl('div', 'lp-time-sliders-col');
     const rngHours = createEl('input', 'lp-time-slider lp-time-slider--hours', {
       type: 'range',
-      min: '0',
-      max: '23',
-      step: '1',
+      min: String(s.minHours),
+      max: String(s.maxHours),
+      step: String(s.hoursStep),
       'data-lp-time': 'hours',
       'aria-label': 'Hours',
-      'aria-valuemin': '0',
-      'aria-valuemax': '23'
+      'aria-valuemin': String(s.minHours),
+      'aria-valuemax': String(s.maxHours)
     });
     rngHours.value = String(h);
     rngHours.setAttribute('aria-valuenow', String(h));
@@ -801,13 +863,13 @@ function renderTimePanel(instance, container) {
     rowHours.appendChild(rngHours);
     const rngMinutes = createEl('input', 'lp-time-slider lp-time-slider--minutes', {
       type: 'range',
-      min: '0',
-      max: '59',
-      step: '1',
+      min: String(s.minMinutes),
+      max: String(s.maxMinutes),
+      step: String(s.minutesStep),
       'data-lp-time': 'minutes',
       'aria-label': 'Minutes',
-      'aria-valuemin': '0',
-      'aria-valuemax': '59'
+      'aria-valuemin': String(s.minMinutes),
+      'aria-valuemax': String(s.maxMinutes)
     });
     rngMinutes.value = String(m);
     rngMinutes.setAttribute('aria-valuenow', String(m));
@@ -822,6 +884,83 @@ function renderTimePanel(instance, container) {
   }
   container.appendChild(wrap);
 }
+
+/**
+ * @param {object} instance
+ * @param {HTMLElement} container
+ */
+export function renderFooter(instance, container) {
+  const s = instance._state;
+  const footerHook = s.render.footer;
+  if (footerHook) {
+    const ctx = buildDayCtx(instance, s.viewDate, false);
+    const custom = footerHook(ctx);
+    if (custom) {
+      const wrap = createEl('div', s.classes.footer);
+      wrap.appendChild(custom);
+      container.appendChild(wrap);
+    }
+    return;
+  }
+  const buttons = s.buttons;
+  if (!buttons) {
+    return;
+  }
+  const normalizeButton = function (entry) {
+    if (typeof entry === 'string') {
+      if (entry === 'today' || entry === 'clear') {
+        return { preset: entry };
+      }
+      return null;
+    }
+    if (entry && typeof entry === 'object') {
+      return entry;
+    }
+    return null;
+  };
+  const arr = Array.isArray(buttons) ? buttons : [buttons];
+  const wrap = createEl('div', s.classes.footer + ' lp-footer--actions');
+  for (let i = 0; i < arr.length; i++) {
+    const btnDef = normalizeButton(arr[i]);
+    if (!btnDef) {
+      continue;
+    }
+    let el;
+    if (btnDef.preset === 'today') {
+      el = createEl('button', 'lp-footer-btn', { type: 'button', 'data-lp-footer-action': 'today' });
+      el.textContent = 'Today';
+    } else if (btnDef.preset === 'clear') {
+      el = createEl('button', 'lp-footer-btn', { type: 'button', 'data-lp-footer-action': 'clear' });
+      el.textContent = 'Clear';
+    } else {
+      const tag = typeof btnDef.tagName === 'string' && btnDef.tagName ? btnDef.tagName : 'button';
+      const className = typeof btnDef.className === 'string' && btnDef.className ? 'lp-footer-btn ' + btnDef.className : 'lp-footer-btn';
+      el = createEl(tag, className, tag === 'button' ? { type: 'button' } : {});
+      const content = typeof btnDef.content === 'function' ? btnDef.content(instance) : btnDef.content;
+      if (content != null) {
+        el.innerHTML = String(content);
+      }
+      if (btnDef.attrs && typeof btnDef.attrs === 'object') {
+        const keys = Object.keys(btnDef.attrs);
+        for (let k = 0; k < keys.length; k++) {
+          const key = keys[k];
+          el.setAttribute(key, String(btnDef.attrs[key]));
+        }
+      }
+      if (typeof btnDef.onClick === 'function') {
+        el.addEventListener('click', function () {
+          btnDef.onClick(instance);
+        });
+      }
+    }
+    wrap.appendChild(el);
+  }
+  if (wrap.children.length) {
+    container.appendChild(wrap);
+  }
+}
+
+export { resolveNavTitle as formatNavTitle };
 
 /**
  * @param {object} instance
