@@ -4,6 +4,7 @@
 [![license](https://img.shields.io/npm/l/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
 
 **Dependency-free** JavaScript datepicker with a ready-made UI, CSS-variable theming, ranges, optional time, and plugins.
+< 12KB gzipped.
 
 ---
 
