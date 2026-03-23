@@ -1,6 +1,6 @@
 {
   "name": "lightpickr",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Lightweight dependency-free JavaScript datepicker",
   "type": "module",
   "main": "dist/lightpickr.js",
@@ -19,7 +19,7 @@
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "size": "node scripts/check-bundle-size.mjs",
-    "test": "node test/smoke.test.mjs"
+    "test": "node --test test/*.mjs"
   },
   "keywords": [
     "datepicker",

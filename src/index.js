@@ -3,9 +3,11 @@ import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setVie
 import { applyDaySelection, applyRangeEndpointDrag, clearSelectionState, selectDateExplicit, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, normalizeRangePairs, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './core/utils.js';
 import { setTimePart } from './core/time.js';
-import { attachDelegatedHandlers, getViewDates, renderFull, syncPendingRangeHoverClasses, syncTimePanelDom } from './render/renderer.js';
+import { attachDelegatedHandlers, getViewDatesFromState, renderFull, syncPendingRangeHoverClasses, syncTimePanelDom } from './render/renderer.js';
 import { parseDayCellTimestamp } from './render/dom.js';
 import { applyStringPosition } from './core/positioning.js';
+import { isDayNavigationKey, nextStateAfterDayViewKey, nextStateAfterMonthGridKey, nextStateAfterViewHierarchyKey, nextStateAfterYearGridKey, stateWithDefaultDayFocus, stateWithDefaultMonthGridFocus, stateWithDefaultYearGridFocus } from './core/keyboard.js';
+import { scheduleAnimationFrame } from './core/scheduling.js';
 
 /**
  * @private
@@ -14,6 +16,45 @@ import { applyStringPosition } from './core/positioning.js';
  */
 function isTextInputLike(el) {
   return el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+}
+
+/**
+ * @private
+ * @param {import('./core/state.js').LightpickrInternalState} state
+ * @returns {import('./core/state.js').LightpickrInternalState}
+ */
+function reseedKeyboardFocusForView(state) {
+  if (state.onlyTime) {
+    return state;
+  }
+  if (state.currentView === 'month') {
+    return stateWithDefaultMonthGridFocus(state, getViewDatesFromState(state, 'month'));
+  }
+  if (state.currentView === 'year') {
+    return stateWithDefaultYearGridFocus(state, getViewDatesFromState(state, 'year'));
+  }
+  if (state.currentView === 'day' || state.currentView === 'time') {
+    return stateWithDefaultDayFocus(state, getViewDatesFromState(state, 'day'));
+  }
+  return state;
+}
+
+/**
+ * @param {import('./core/state.js').LightpickrInternalState} prev
+ * @param {import('./core/state.js').LightpickrInternalState} next
+ * @returns {boolean}
+ */
+function keyboardStateMeaningfullyChanged(prev, next) {
+  if (prev.currentView !== next.currentView) {
+    return true;
+  }
+  if (prev.viewDate !== next.viewDate) {
+    return true;
+  }
+  if (prev.focusDate !== next.focusDate) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -83,17 +124,24 @@ function Lightpickr(target, options) {
   if (!el) {
     throw new Error('Lightpickr: target not found');
   }
+  /** @type {HTMLElement} */
   this.$el = el;
+  /** @type {import('./core/state.js').LightpickrOptions} */
   this._options = Object.assign({}, options || {});
+  /** @type {import('./core/state.js').LightpickrInternalState} */
   this._state = createStateFromOptions(this._options);
   if (this._options.inline == null) {
     // When isMobile is enabled, default to a modal popover even when the target
     // is a wrapper element.
+    /** @type {boolean} */
     this._state.inline = this._state.isMobile ? false : !isTextInputLike(this.$el);
   }
+  /** @type {HTMLElement} */
   this.$datepicker = document.createElement('div');
   this.$datepicker.className = this._state.classes.container;
+  /** @type {boolean} */
   this.isDestroyed = false;
+  /** @type {boolean} */
   this.visible = this._state.inline;
   this._state.visible = this._state.inline;
   /** @type {{ onInit?: () => void, onRender?: () => void, onSelect?: () => void, onDestroy?: () => void }[]} */
@@ -106,10 +154,17 @@ function Lightpickr(target, options) {
   this._positionHideCleanup = null;
   /** @type {number|null} */
   this._pendingRangeHoverTs = null;
+  /** @type {RangeDrag|null} */
   this._rangeDrag = null;
+  /** @type {HTMLElement|null} */
   this.$backdrop = null;
+  /** @type {HTMLElement[]} */
   this._boundShowTargets = [];
-
+  /** @type {((ev: KeyboardEvent) => void)|null} */
+  this._docKeydownEsc = null;
+  /** @type {((ev: KeyboardEvent) => void)|null} */
+  this._datepickerKeydown = null;
+  /** @type {HTMLElement} */
   this.$pointer = document.createElement('i');
   this.$pointer.className = this._state.classes.popoverPointer;
   this.$pointer.setAttribute('aria-hidden', 'true');
@@ -117,6 +172,7 @@ function Lightpickr(target, options) {
   this._mount();
   renderFull(this);
   attachDelegatedHandlers(this, this.$datepicker);
+  this._bindCalendarKeyboard();
   this._bindTarget();
 }
 
@@ -134,16 +190,22 @@ Lightpickr.prototype.show = function () {
   if (this.isDestroyed || this._state.inline) {
     return;
   }
-  const next = Object.assign({}, this._state);
+  let next = Object.assign({}, this._state);
   next.onShow(false, { datepicker: this });
   next.visible = true;
+  next = this._ensurePopoverFocusDate(next);
   if (this.$backdrop) {
     this.$backdrop.style.display = 'flex';
   }
   this.$datepicker.style.display = '';
   this._attachDocListener();
+  this._attachEscapeListener();
   this._commit(next, { emitSelect: false, popoverInitialOpen: true });
   this._state.onShow(true, { datepicker: this });
+  const self = this;
+  scheduleAnimationFrame(function () {
+    self._focusActiveKeyboardCell();
+  });
 };
 
 /**
@@ -163,6 +225,7 @@ Lightpickr.prototype.hide = function () {
     }
     self.$datepicker.style.display = 'none';
     self._detachDocListener();
+    self._detachEscapeListener();
     self._commit(next, { emitSelect: false });
     self._state.onHide(true, { datepicker: self });
   };
@@ -299,6 +362,8 @@ Lightpickr.prototype.destroy = function () {
   this._unbindTarget();
   this._positionHideCleanup = null;
   this._detachDocListener();
+  this._detachEscapeListener();
+  this._unbindCalendarKeyboard();
   this._delegateOffs.forEach(function (fn) {
     fn();
   });
@@ -395,7 +460,7 @@ Lightpickr.prototype.setFocusDate = function (date) {
  * @returns {number[]}
  */
 Lightpickr.prototype.getViewDates = function (view) {
-  return getViewDates(this, view);
+  return getViewDatesFromState(this._state, view);
 };
 
 /**
@@ -473,6 +538,7 @@ Lightpickr.prototype._mount = function () {
     }
     this.$datepicker.classList.add('lp--popover');
     this.$datepicker.setAttribute('role', 'dialog');
+    this.$datepicker.setAttribute('aria-modal', 'true');
     this.$datepicker.style.display = 'none';
   }
 };
@@ -761,6 +827,195 @@ Lightpickr.prototype._detachDocListener = function () {
   if (this._docDown) {
     document.removeEventListener('mousedown', this._docDown);
     this._docDown = null;
+  }
+};
+
+/**
+ * @private
+ * @param {import('./core/state.js').LightpickrInternalState} state
+ * @returns {import('./core/state.js').LightpickrInternalState}
+ */
+Lightpickr.prototype._ensurePopoverFocusDate = function (state) {
+  if (state.inline || state.onlyTime) {
+    return state;
+  }
+  return reseedKeyboardFocusForView(state);
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._focusActiveKeyboardCell = function () {
+  if (this.isDestroyed) {
+    return;
+  }
+  const sel = '[data-lp-day][tabindex="0"], [data-lp-month][tabindex="0"], [data-lp-year][tabindex="0"]';
+  const el = this.$datepicker.querySelector(sel);
+  if (el instanceof HTMLElement) {
+    el.focus();
+  }
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._attachEscapeListener = function () {
+  if (this._state.inline || this._docKeydownEsc) {
+    return;
+  }
+  const self = this;
+  this._docKeydownEsc = function (ev) {
+    if (ev.key === 'Escape' && self.visible && !self._state.inline) {
+      ev.preventDefault();
+      self.hide();
+    }
+  };
+  document.addEventListener('keydown', this._docKeydownEsc);
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._detachEscapeListener = function () {
+  if (this._docKeydownEsc) {
+    document.removeEventListener('keydown', this._docKeydownEsc);
+    this._docKeydownEsc = null;
+  }
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._bindCalendarKeyboard = function () {
+  if (this._datepickerKeydown) {
+    return;
+  }
+  const self = this;
+  this._datepickerKeydown = function (ev) {
+    self._onDatepickerKeydown(ev);
+  };
+  this.$datepicker.addEventListener('keydown', this._datepickerKeydown, true);
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._unbindCalendarKeyboard = function () {
+  if (this._datepickerKeydown) {
+    this.$datepicker.removeEventListener('keydown', this._datepickerKeydown, true);
+    this._datepickerKeydown = null;
+  }
+};
+
+/**
+ * @private
+ * @param {KeyboardEvent} ev
+ * @returns {void}
+ */
+Lightpickr.prototype._onDatepickerKeydown = function (ev) {
+  if (this.isDestroyed) {
+    return;
+  }
+  const s = this._state;
+  if (s.onlyTime) {
+    return;
+  }
+  const key = ev.key;
+
+  const hierRaw = nextStateAfterViewHierarchyKey(s, key, ev.altKey);
+  if (hierRaw != null) {
+    const next = reseedKeyboardFocusForView(hierRaw);
+    ev.preventDefault();
+    if (keyboardStateMeaningfullyChanged(s, next)) {
+      this._commit(next, { emitSelect: false });
+      const self = this;
+      scheduleAnimationFrame(function () {
+        self._focusActiveKeyboardCell();
+      });
+    }
+    return;
+  }
+
+  if (!isDayNavigationKey(key)) {
+    return;
+  }
+
+  if (s.currentView === 'month') {
+    const monthDates = getViewDatesFromState(s, 'month');
+    let working = s;
+    if (s.focusDate == null) {
+      const seeded = stateWithDefaultMonthGridFocus(s, monthDates);
+      if (seeded !== s) {
+        ev.preventDefault();
+        this._commit(seeded, { emitSelect: false });
+        working = this._state;
+      }
+    }
+    ev.preventDefault();
+    const next = nextStateAfterMonthGridKey(
+      working,
+      key,
+      ev.shiftKey,
+      getViewDatesFromState(working, 'month')
+    );
+    if (next !== working) {
+      this._commit(next, { emitSelect: false });
+      const self = this;
+      scheduleAnimationFrame(function () {
+        self._focusActiveKeyboardCell();
+      });
+    }
+    return;
+  }
+
+  if (s.currentView === 'year') {
+    const yearDates = getViewDatesFromState(s, 'year');
+    let working = s;
+    if (s.focusDate == null) {
+      const seeded = stateWithDefaultYearGridFocus(s, yearDates);
+      if (seeded !== s) {
+        ev.preventDefault();
+        this._commit(seeded, { emitSelect: false });
+        working = this._state;
+      }
+    }
+    ev.preventDefault();
+    const next = nextStateAfterYearGridKey(working, key, ev.shiftKey, getViewDatesFromState(working, 'year'));
+    if (next !== working) {
+      this._commit(next, { emitSelect: false });
+      const self = this;
+      scheduleAnimationFrame(function () {
+        self._focusActiveKeyboardCell();
+      });
+    }
+    return;
+  }
+
+  if (s.currentView !== 'day' && s.currentView !== 'time') {
+    return;
+  }
+
+  const dayDates = getViewDatesFromState(s, 'day');
+  if (s.focusDate == null) {
+    const seeded = stateWithDefaultDayFocus(s, dayDates);
+    if (seeded !== s) {
+      ev.preventDefault();
+      this._commit(seeded, { emitSelect: false });
+    }
+  }
+  ev.preventDefault();
+  const next = nextStateAfterDayViewKey(this._state, key, ev.shiftKey, getViewDatesFromState(this._state, 'day'));
+  if (next !== this._state) {
+    this._commit(next, { emitSelect: false });
+    const self = this;
+    scheduleAnimationFrame(function () {
+      self._focusActiveKeyboardCell();
+    });
   }
 };
 
@@ -1063,35 +1318,27 @@ Lightpickr.prototype._onTimeInputChange = function (ev) {
     return;
   }
   const kind = t.getAttribute('data-lp-time');
-  if (kind === 'hours' || kind === 'minutes') {
-    const h = kind === 'hours' ? Number(t.value) : this._state.timePart.hours;
-    const mm = kind === 'minutes' ? Number(t.value) : this._state.timePart.minutes;
+  const applyTime = (h, mm) => {
     if (!Number.isFinite(h) || !Number.isFinite(mm)) {
       return;
     }
-    const next = setTimePart(this._state, h, mm);
-    this._state = next;
+    this._state = setTimePart(this._state, h, mm);
     syncTimePanelDom(this);
     this._syncInput();
     this._emitTimeChange();
     this._emitSelect('time');
+  };
+  if (kind === 'hours' || kind === 'minutes') {
+    const h = kind === 'hours' ? Number(t.value) : this._state.timePart.hours;
+    const mm = kind === 'minutes' ? Number(t.value) : this._state.timePart.minutes;
+    applyTime(h, mm);
     return;
   }
   if (kind !== 'clock') {
     return;
   }
   const parts = String(t.value).split(':');
-  const h = Number(parts[0]);
-  const mm = Number(parts[1]);
-  if (!Number.isFinite(h) || !Number.isFinite(mm)) {
-    return;
-  }
-  const next = setTimePart(this._state, h, mm);
-  this._state = next;
-  syncTimePanelDom(this);
-  this._syncInput();
-  this._emitTimeChange();
-  this._emitSelect('time');
+  applyTime(Number(parts[0]), Number(parts[1]));
 };
 
 /**

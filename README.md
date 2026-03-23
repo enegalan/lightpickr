@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
 
 **Dependency-free** JavaScript datepicker with a ready-made UI, CSS-variable theming, ranges, optional time, and plugins.
-~ 13KB gzipped.
+~ 15KB gzipped.
 
 ---
 
@@ -52,7 +52,6 @@ const picker = new Lightpickr('#my-input' [, options]);
 | `isMobile` | `boolean` | `false` | Popover in centered modal with backdrop. |
 | `startDate` | `number \| Date \| string \| null` | `null` | Initial date used for `viewDate`. |
 | `selectedDates` | `(Date \| string \| number)[] \| false` | `false` | Initial selection. In range mode accepts `[start, end]` pairs. |
-| `numberOfMonths` | `number` | `1` | Not read from options yet; internal value is always `1` (reserved for future use). |
 | `format` | `string` | `'YYYY-MM-DD'` | Tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`. |
 | `view` | `'days' \| 'months' \| 'years'` | `'days'` | Initial calendar view (ignored by `onlyTime`). |
 | `allowedViews` | `string \| string[]` | all | Allowed calendar views (`days`, `months`, `years`). |
@@ -91,6 +90,58 @@ const picker = new Lightpickr('#my-input' [, options]);
 | `classes` | `object` | built-in map | Merged over default class names; see [Extra classes](#extra-classes-classes). |
 | `position` | `string \| function` | `'bottom left'` | Popover placement; ignored when `inline: true`. See [Position and anchor](#position-and-anchor-popover). |
 | `anchor` | `string \| HTMLElement \| null` | `null` | Reference for layout and outside-click handling. See [Position and anchor](#position-and-anchor-popover). |
+
+---
+
+## Date string inputs
+
+String values passed to options and methods (`minDate`, `maxDate`, `disabledDates`, `selectedDates`, `selectDate`, etc.) are strictly parsed:
+
+- `YYYY-MM-DD` — start of day.
+- `YYYY-MM-DD HH:mm`, `YYYY-MM-DDTHH:mm`, optional seconds (`:ss`) — local time.
+- `YYYY/MM/DD` — start of day.
+- `YYYY/MM/DD HH:mm` or `YYYY/MM/DDTHH:mm`, optional seconds (`:ss`) — local time.
+- `YYYY.MM.DD` — start of day.
+- `YYYY.MM.DD HH:mm` or `YYYY.MM.DDTHH:mm`, optional seconds (`:ss`) — local time.
+
+**Fallback**
+
+If nothing above matches, the string is passed to `Date.parse` (behavior depends on the engine; ISO 8601 with `Z` is interpreted as that instant in UTC).
+
+`Date` instances and finite numeric timestamps are always accepted. Invalid dates are ignored.
+
+---
+
+## Keyboard
+
+With focus inside the calendar (popover opens on a focusable **day**, **month**, or **year** cell):
+
+**View level (coarser / finer)**
+
+- **Alt + ArrowUp** — same as **`up()`**: `day` → `month` → `year`; from **time** → `day`.
+- **Alt + ArrowDown** — same as **`down()`**: `year` → `month` → `day`.
+
+**Day** and **day + time** (`currentView` `day` or `time`)
+
+- **Arrow keys** — move the focused day.
+- **PageUp** / **PageDown** — previous / next month (same day-of-month when possible).
+- **Shift + PageUp** / **Shift + PageDown** — move by one calendar year (same month/day when possible).
+- **Home** / **End** — first / last day of the focused week row.
+- **Enter** on a focused day — same as clicking that day.
+
+**Month** (`currentView` `month`)
+
+- **Arrow keys** move between months; **Home** / **End** move to the first / last month in the **row**.
+- **PageUp** / **PageDown** — previous / next **year**, keeping the **same month index** in the new year.
+- **Shift + PageUp** / **Shift + PageDown** — move **one calendar year** on the underlying day focus (same as day view).
+
+**Year** (`currentView` `year`)
+
+- **Arrow keys** and **Home** / **End** behave like the month grid.
+- **PageUp** / **PageDown** — previous / next **12-year** block; focus moves to the **same slot** in the new block.
+- **Shift + PageUp** / **Shift + PageDown** — move **one calendar year**.
+
+Opening a **popover** focuses the active cell for the current view so keys work without tabbing first. **Escape** closes the popover.
 
 ---
 

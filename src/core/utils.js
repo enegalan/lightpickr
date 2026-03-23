@@ -1,23 +1,4 @@
 /**
- * @param {number|Date|string|null|undefined} value
- * @returns {number|null}
- */
-export function toTimestamp(value) {
-  if (value == null || value === '') {
-    return null;
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-  if (value instanceof Date) {
-    const t = value.getTime();
-    return Number.isFinite(t) ? t : null;
-  }
-  const parsed = Date.parse(String(value));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-/**
  * @param {number} ts
  * @returns {{ y: number, m: number, d: number }}
  */
@@ -74,6 +55,27 @@ export function isInClosedRangeDay(ts, start, end) {
  */
 export function daysInMonth(y, m) {
   return new Date(y, m + 1, 0).getDate();
+}
+
+/**
+ * @param {number|Date|string|null|undefined} value
+ * @returns {number|null}
+ */
+export function toTimestamp(value) {
+  if (value == null || value === '') {
+    return null;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (value instanceof Date) {
+    const t = value.getTime();
+    return Number.isFinite(t) ? t : null;
+  }
+  if (typeof value === 'string') {
+    return timestampFromDateString(value);
+  }
+  return null;
 }
 
 /**
@@ -408,4 +410,79 @@ export function trimFifo(items, max) {
     out.shift();
   }
   return out;
+}
+
+/**
+ * @param {number} y
+ * @param {number} mo 1-12
+ * @param {number} d
+ * @param {number} [h]
+ * @param {number} [mi]
+ * @param {number} [sec]
+ * @returns {number|null}
+ */
+function localTimestampFromParts(y, mo, d, h, mi, sec) {
+  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
+    return null;
+  }
+  const m = Math.floor(mo) - 1;
+  if (m < 0 || m > 11 || d < 1 || d > daysInMonth(y, m)) {
+    return null;
+  }
+  if (h == null || mi == null) {
+    return ymdToTsStartOfDay(y, m, d);
+  }
+  const s = sec != null ? sec : 0;
+  if (h < 0 || h > 23 || mi < 0 || mi > 59 || s < 0 || s > 59) {
+    return null;
+  }
+  const t = new Date(y, m, d, h, mi, s, 0).getTime();
+  return Number.isFinite(t) ? t : null;
+}
+
+/**
+ * @private
+ * @param {string} str
+ * @returns {number|null}
+ */
+function timestampFromDateString(str) {
+  const trimmed = String(str).trim();
+  if (!trimmed) {
+    return null;
+  }
+  /** Same separator twice: YYYY-MM-DD, optional T or space + H:mm[:ss]. */
+  const m = /^(\d{4})([-/.])(\d{2})\2(\d{2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(trimmed);
+  if (m) {
+    const y = Number(m[1]);
+    const mo = Number(m[3]);
+    const d = Number(m[4]);
+    if (m[5] !== undefined) {
+      const h = Number(m[5]);
+      const mi = Number(m[6]);
+      const s = m[7] != null ? Number(m[7]) : 0;
+      if (!Number.isFinite(h) || !Number.isFinite(mi) || !Number.isFinite(s)) {
+        return null;
+      }
+      if (h < 0 || h > 23 || mi < 0 || mi > 59 || s < 0 || s > 59) {
+        return null;
+      }
+      return localTimestampFromParts(y, mo, d, h, mi, s);
+    }
+    return localTimestampFromParts(y, mo, d);
+  }
+  if (/^\d{4}[/.]\d/.test(trimmed)) {
+    return null;
+  }
+  if (/^\d{8}$/.test(trimmed)) {
+    return null;
+  }
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ||
+    /^\d{4}\/\d{2}\/\d{2}$/.test(trimmed) ||
+    /^\d{4}\.\d{2}\.\d{2}$/.test(trimmed)
+  ) {
+    return null;
+  }
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
 }

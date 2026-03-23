@@ -79,7 +79,6 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  * @property {number} [firstDayOfWeek]
  * @property {number[]} [weekends]
  * @property {boolean} [isMobile]
- * @property {number} [numberOfMonths]
  * @property {string} [format]
  * @property {string} [monthsField]
  * @property {string|('day'|'days'|'month'|'months'|'year'|'years')} [view]
@@ -153,7 +152,6 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  * @property {number} firstDayOfWeek
  * @property {number[]} weekendIndexes
  * @property {boolean} isMobile
- * @property {number} numberOfMonths
  * @property {string} format
  * @property {string} monthsField
  * @property {('day'|'month'|'year')[]} allowedViews
@@ -336,7 +334,6 @@ export function createStateFromOptions(raw) {
     firstDayOfWeek: firstDay,
     weekendIndexes: normalizeWeekendIndexes(raw.weekends),
     isMobile: Boolean(raw.isMobile),
-    numberOfMonths: 1,
     format: typeof raw.format === 'string' ? raw.format : 'YYYY-MM-DD',
     monthsField,
     allowedViews,
@@ -417,7 +414,6 @@ export function extractRawOptions(state) {
     firstDayOfWeek: state.firstDayOfWeek,
     weekends: state.weekendIndexes.slice(),
     isMobile: state.isMobile,
-    numberOfMonths: state.numberOfMonths,
     format: state.format,
     monthsField: state.monthsField,
     view: state.currentView === 'time' ? 'days' : state.currentView + 's',

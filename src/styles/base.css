@@ -456,6 +456,10 @@
   gap: var(--lp-grid-gap);
 }
 
+.lp-grid-row--contents {
+  display: contents;
+}
+
 .lp-cell {
   display: flex;
   align-items: center;

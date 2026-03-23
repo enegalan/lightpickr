@@ -1,15 +1,4 @@
-import {
-  daysInMonth,
-  firstWeekdayOfMonth,
-  isInClosedRangeDay,
-  isSameDay,
-  startOfDayTs,
-  tsToYmd,
-  cloneSelectedDates,
-  ymdToTsStartOfDay,
-  defaultMonthNames,
-  defaultWeekdayNames,
-} from '../core/utils.js';
+import { daysInMonth, firstWeekdayOfMonth, isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay, defaultMonthNames, defaultWeekdayNames, formatDate } from '../core/utils.js';
 import { isDateDisabled } from '../core/selection.js';
 import { navNextDisabled, navPrevDisabled } from '../core/navigation.js';
 import { createEl, delegate, parseDayCellTimestamp } from './dom.js';
@@ -303,18 +292,17 @@ export function syncTimePanelDom(instance) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInternalState} state
  * @param {'day'|'month'|'year'|undefined} view
  * @returns {number[]}
  */
-export function getViewDates(instance, view) {
-  const s = instance._state;
-  const v = view || s.currentView;
+export function getViewDatesFromState(state, view) {
+  const v = view || state.currentView;
   const out = [];
   if (v === 'day') {
-    const vd = s.viewDate;
+    const vd = state.viewDate;
     const { y, m } = tsToYmd(vd);
-    const fd = s.firstDayOfWeek % 7;
+    const fd = state.firstDayOfWeek % 7;
     const first = firstWeekdayOfMonth(y, m);
     const leading = (first - fd + 7) % 7;
     const dim = daysInMonth(y, m);
@@ -342,12 +330,12 @@ export function getViewDates(instance, view) {
       out.push(ts);
     }
   } else if (v === 'month') {
-    const y = tsToYmd(s.viewDate).y;
+    const y = tsToYmd(state.viewDate).y;
     for (let mi = 0; mi < 12; mi++) {
       out.push(ymdToTsStartOfDay(y, mi, 1));
     }
   } else if (v === 'year') {
-    const y = tsToYmd(s.viewDate).y;
+    const y = tsToYmd(state.viewDate).y;
     const start = y - 5;
     for (let i = 0; i < 12; i++) {
       out.push(ymdToTsStartOfDay(start + i, 0, 1));
@@ -376,7 +364,6 @@ function publicStateSnapshot(instance) {
     locale: s.locale,
     firstDayOfWeek: s.firstDayOfWeek,
     weekendIndexes: s.weekendIndexes.slice(),
-    numberOfMonths: s.numberOfMonths,
     format: s.format,
     currentView: s.currentView,
     viewDate: s.viewDate,
@@ -618,7 +605,7 @@ function renderDayView(instance, container) {
   const block = createEl('div', 'lp-month-block');
   const vd = s.viewDate;
   const { y, m } = tsToYmd(vd);
-  const grid = createEl('div', c.grid);
+  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': 'Calendar dates' });
   if (gridHook) {
     const fake = buildDayCtx(instance, vd, false);
     const el = gridHook(fake);
@@ -650,11 +637,13 @@ function buildWeekdayRow(instance, grid) {
   const names = defaultWeekdayNames({ locale: s.locale });
   const fd = s.firstDayOfWeek % 7;
   const clickable = s.dayNameClickable === true;
-  const row = createEl('div', 'lp-row lp-row--head');
+  const row = createEl('div', 'lp-row lp-row--head', { role: 'row' });
   for (let i = 0; i < 7; i++) {
     const idx = (fd + i) % 7;
     const tag = clickable ? 'button' : 'div';
-    const attrs = clickable ? { type: 'button', 'data-lp-day-name': String(idx) } : {};
+    const attrs = clickable
+      ? { type: 'button', 'data-lp-day-name': String(idx), role: 'columnheader' }
+      : { role: 'columnheader' };
     const extraClass = clickable ? ' lp-head-cell--clickable' : '';
     const cell = createEl(tag, 'lp-head-cell' + extraClass, attrs);
     if (s.weekendIndexes.indexOf(idx) >= 0) {
@@ -692,7 +681,7 @@ function buildDayGrid(instance, grid, y, m) {
   let row = null;
   for (let cell = 0; cell < totalCells; cell++) {
     if (cell % 7 === 0) {
-      row = createEl('div', 'lp-row');
+      row = createEl('div', 'lp-row', { role: 'row' });
       grid.appendChild(row);
     }
     let ts;
@@ -818,7 +807,16 @@ function defaultDayCell(instance, ctx) {
   if (ctx.isFocused) {
     extra.push(c.cellFocused);
   }
-  const el = createEl('button', extra.join(' '), { type: 'button', 'data-lp-day': String(ctx.date) });
+  const label = formatDate(s.format, ctx.date, null);
+  const el = createEl('button', extra.join(' '), {
+    type: 'button',
+    'data-lp-day': String(ctx.date),
+    role: 'gridcell',
+    tabindex: ctx.isFocused ? '0' : '-1',
+    'aria-label': label,
+    'aria-selected': ctx.isSelected ? 'true' : 'false',
+    'aria-disabled': ctx.isDisabled || (ctx.isOutside && !s.selectOtherMonths) ? 'true' : 'false'
+  });
   const { d } = tsToYmd(ctx.date);
   el.textContent = String(d);
   if (ctx.isDisabled) {
@@ -847,27 +845,39 @@ function renderMonthView(instance, container) {
   container.appendChild(header);
 
   const viewBody = createEl('div', c.viewBody);
-  const grid = createEl('div', c.grid + ' lp-month-grid');
+  const grid = createEl('div', c.grid + ' lp-month-grid', { role: 'grid', 'aria-label': 'Months' });
   const months = defaultMonthNames({ locale: s.locale }, s.monthsField);
-  for (let mi = 0; mi < 12; mi++) {
-    const ts = ymdToTsStartOfDay(y, mi, 1);
-    const el = createEl('button', c.cell, { type: 'button', 'data-lp-month': String(mi) });
-    el.textContent = months[mi];
-    const out = s.onRenderCell({
-      date: new Date(ts),
-      cellType: 'month',
-      datepicker: instance
-    });
-    if (out && typeof out === 'object') {
-      applyRenderCellPatch(el, out);
+  for (let r = 0; r < 4; r++) {
+    const rowEl = createEl('div', 'lp-grid-row lp-grid-row--contents', { role: 'row' });
+    for (let col = 0; col < 3; col++) {
+      const mi = r * 3 + col;
+      const ts = ymdToTsStartOfDay(y, mi, 1);
+      const isFocused = s.focusDate != null && isSameDay(s.focusDate, ts);
+      const monthCellClass =
+        c.cell + (mi === m ? ' ' + c.cellSelected : '') + (isFocused ? ' ' + c.cellFocused : '');
+      const el = createEl('button', monthCellClass, {
+        type: 'button',
+        'data-lp-month': String(mi),
+        role: 'gridcell',
+        tabindex: isFocused ? '0' : '-1',
+        'aria-selected': mi === m ? 'true' : 'false',
+        'aria-label': months[mi] + ' ' + String(y)
+      });
+      el.textContent = months[mi];
+      const out = s.onRenderCell({
+        date: new Date(ts),
+        cellType: 'month',
+        datepicker: instance
+      });
+      if (out && typeof out === 'object') {
+        applyRenderCellPatch(el, out);
+      }
+      if (!el.getAttribute('data-lp-month')) {
+        el.setAttribute('data-lp-month', String(mi));
+      }
+      rowEl.appendChild(el);
     }
-    if (!el.getAttribute('data-lp-month')) {
-      el.setAttribute('data-lp-month', String(mi));
-    }
-    if (mi === m) {
-      el.className = el.className + ' ' + c.cellSelected;
-    }
-    grid.appendChild(el);
+    grid.appendChild(rowEl);
   }
   viewBody.appendChild(grid);
   container.appendChild(viewBody);
@@ -890,27 +900,39 @@ function renderYearView(instance, container) {
   container.appendChild(header);
 
   const viewBody = createEl('div', c.viewBody);
-  const grid = createEl('div', c.grid + ' lp-year-grid');
-  for (let i = 0; i < 12; i++) {
-    const yy = start + i;
-    const ts = ymdToTsStartOfDay(yy, 0, 1);
-    const el = createEl('button', c.cell, { type: 'button', 'data-lp-year': String(yy) });
-    el.textContent = String(yy);
-    const out = s.onRenderCell({
-      date: new Date(ts),
-      cellType: 'year',
-      datepicker: instance
-    });
-    if (out && typeof out === 'object') {
-      applyRenderCellPatch(el, out);
+  const grid = createEl('div', c.grid + ' lp-year-grid', { role: 'grid', 'aria-label': 'Years' });
+  for (let r = 0; r < 4; r++) {
+    const rowEl = createEl('div', 'lp-grid-row lp-grid-row--contents', { role: 'row' });
+    for (let col = 0; col < 3; col++) {
+      const i = r * 3 + col;
+      const yy = start + i;
+      const ts = ymdToTsStartOfDay(yy, 0, 1);
+      const isFocused = s.focusDate != null && isSameDay(s.focusDate, ts);
+      const yearCellClass =
+        c.cell + (yy === y ? ' ' + c.cellSelected : '') + (isFocused ? ' ' + c.cellFocused : '');
+      const el = createEl('button', yearCellClass, {
+        type: 'button',
+        'data-lp-year': String(yy),
+        role: 'gridcell',
+        tabindex: isFocused ? '0' : '-1',
+        'aria-selected': yy === y ? 'true' : 'false',
+        'aria-label': String(yy)
+      });
+      el.textContent = String(yy);
+      const out = s.onRenderCell({
+        date: new Date(ts),
+        cellType: 'year',
+        datepicker: instance
+      });
+      if (out && typeof out === 'object') {
+        applyRenderCellPatch(el, out);
+      }
+      if (!el.getAttribute('data-lp-year')) {
+        el.setAttribute('data-lp-year', String(yy));
+      }
+      rowEl.appendChild(el);
     }
-    if (!el.getAttribute('data-lp-year')) {
-      el.setAttribute('data-lp-year', String(yy));
-    }
-    if (yy === y) {
-      el.className = el.className + ' ' + c.cellSelected;
-    }
-    grid.appendChild(el);
+    grid.appendChild(rowEl);
   }
   viewBody.appendChild(grid);
   container.appendChild(viewBody);

@@ -1,4 +1,4 @@
-import { addMonths, addYears, clampViewToAllowed, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './utils.js';
+import { addMonths, addYears, clampViewToAllowed, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './utils.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -40,6 +40,80 @@ export function navigateNextPrev(state, dir) {
     const { ts } = addMonths(state.viewDate, dir);
     next.viewDate = ts;
   }
+  return next;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir -1 | 1
+ * @returns {import('./state.js').LightpickrInternalState}
+ */
+export function navigateMonthKeepFocusDay(state, dir) {
+  const nextNav = navigateNextPrev(state, dir);
+  if (nextNav === state) {
+    return nextNav;
+  }
+  const next = Object.assign({}, nextNav);
+  if ((state.currentView === 'day' || state.currentView === 'time') && state.focusDate != null) {
+    const { d } = tsToYmd(state.focusDate);
+    const { y, m } = tsToYmd(next.viewDate);
+    const dim = daysInMonth(y, m);
+    next.focusDate = ymdToTsStartOfDay(y, m, Math.min(d, dim));
+  }
+  return next;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir -1 | 1
+ * @returns {import('./state.js').LightpickrInternalState}
+ */
+export function navigateYearKeepFocusDay(state, dir) {
+  if (state.currentView === 'year') {
+    const next = Object.assign({}, state);
+    const base = state.focusDate != null ? state.focusDate : state.viewDate;
+    const ny = tsToYmd(base).y + dir;
+    next.viewDate = ymdToTsStartOfDay(ny, 0, 1);
+    next.focusDate = ymdToTsStartOfDay(ny, 0, 1);
+    return next;
+  }
+  if (state.currentView === 'month') {
+    const next = Object.assign({}, state);
+    const { ts } = addYears(state.viewDate, dir);
+    const { y, m } = tsToYmd(ts);
+    next.viewDate = ymdToTsStartOfDay(y, m, 1);
+    next.focusDate = ymdToTsStartOfDay(y, m, 1);
+    return next;
+  }
+  if (state.currentView !== 'day' && state.currentView !== 'time') {
+    return state;
+  }
+  const next = Object.assign({}, state);
+  const base = state.focusDate != null ? state.focusDate : state.viewDate;
+  const { ts } = addYears(base, dir);
+  const { y, m } = tsToYmd(ts);
+  next.viewDate = ymdToTsStartOfDay(y, m, 1);
+  next.focusDate = startOfDayTs(ts);
+  return next;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir -1 | 1
+ * @returns {import('./state.js').LightpickrInternalState}
+ */
+export function navigateMonthKeepFocusMonth(state, dir) {
+  if (state.currentView !== 'month') {
+    return state;
+  }
+  const nextNav = navigateNextPrev(state, dir);
+  if (nextNav === state) {
+    return nextNav;
+  }
+  const next = Object.assign({}, nextNav);
+  const keepM = tsToYmd(state.focusDate != null ? state.focusDate : state.viewDate).m;
+  const { y } = tsToYmd(next.viewDate);
+  next.focusDate = ymdToTsStartOfDay(y, keepM, 1);
   return next;
 }
 
