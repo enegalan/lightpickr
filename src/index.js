@@ -76,7 +76,9 @@ function Lightpickr(target, options) {
   this._options = Object.assign({}, options || {});
   this._state = createStateFromOptions(this._options);
   if (this._options.inline == null) {
-    this._state.inline = !isTextInputLike(this.$el);
+    // When isMobile is enabled, default to a modal popover even when the target
+    // is a wrapper element (common pattern: wrapper contains an input).
+    this._state.inline = this._state.isMobile ? false : !isTextInputLike(this.$el);
   }
   this.$datepicker = document.createElement('div');
   this.$datepicker.className = this._state.classes.container;
