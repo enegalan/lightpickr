@@ -1,61 +1,34 @@
 # Lightpickr
 
+[![npm version](https://img.shields.io/npm/v/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
+[![license](https://img.shields.io/npm/l/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
+
 **Dependency-free** JavaScript datepicker with a ready-made UI, CSS-variable theming, ranges, optional time, and plugins.
 
 ---
 
-## Quick start
+## Install
 
 ```bash
-npm install
-npm run build
+npm install lightpickr
 ```
 
-In your HTML:
+## Usage
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+const picker = new Lightpickr('#my-input' [, options]);
+```
+
+**CDN:**
 
 ```html
-<link rel="stylesheet" href="dist/lightpickr.css" />
-<script src="dist/lightpickr.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/lightpickr/lightpickr.css" />
+<script src="https://unpkg.com/lightpickr/dist/lightpickr.js"></script>
 <script>
-  const picker = new Lightpickr('#my-input', { enableTime: true });
+  const picker = new Lightpickr('#my-input' [, options]);
 </script>
-```
-
-- `dist/lightpickr.js` — single browser bundle (IIFE), global `Lightpickr`
-- `dist/lightpickr.css` — base styles; color and spacing via **custom properties** (`--lp-*`)
-
----
-
-## Usage examples
-
-**Single date** (default):
-
-```js
-new Lightpickr('#date');
-```
-
-**Range** (first click start, second end; multiple ranges depend on `multiple`):
-
-```js
-new Lightpickr('#range', { range: true });
-```
-
-**Multiple separate dates** (max 5):
-
-```js
-new Lightpickr('#many', { multiple: 5 });
-```
-
-**With time:**
-
-```js
-new Lightpickr('#appointment', { enableTime: true });
-```
-
-**Always-visible calendar** (target is a container, not only an `input`):
-
-```js
-new Lightpickr('#calendar-root', { inline: true });
 ```
 
 ---
@@ -128,7 +101,7 @@ new Lightpickr('#calendar-root', { inline: true });
 |--------|------|-------------|
 | `$el` | `HTMLElement` | Element you passed as `target` (resolved from a selector). |
 | `$datepicker` | `HTMLDivElement` | Root of the calendar UI (`data-lp-root`). Inline: inside `$el`; popover: appended to `document.body`. |
-| `$pointer` | `HTMLElement` | Popover arrow node (string `position` mode; style with CSS / `--lp-pointer-visible`). Meaningless in inline mode. |
+| `$pointer` | `HTMLElement` | Popover pointer element; only used when `position` is a string. Shown when `.lp` has `--lp-pointer-visible: 1` (see [Position and anchor](#position-and-anchor-popover)). Unused in inline mode. |
 | `visible` | `boolean` | Whether the calendar is shown (`true` always when `inline`; popover toggles with `show` / `hide`). |
 | `isDestroyed` | `boolean` | Set to `true` after `destroy()`; further use of the instance is unsafe. |
 
@@ -264,7 +237,7 @@ picker.use(function (instance) {
 
 ## Position and anchor (popover)
 
-**`anchor`** — If you mount the picker on a **wrapper** that also contains another inline calendar, the popover may align incorrectly. Pass `#id` or an `HTMLElement` for `getBoundingClientRect()` and for treating clicks as “inside the field.”
+**`anchor`** — If you mount the picker on a **wrapper** that also contains another inline calendar, the popover may align incorrectly. Pass `#id` or an `HTMLElement` for `getBoundingClientRect()` and for treating clicks as "inside the field."
 
 If you omit `anchor`, the **first `input` or `textarea`** under the target that is **not** inside another Lightpickr root (`[data-lp-root]`) is used. If the target is already an input/textarea, that element is used.
 
@@ -281,7 +254,7 @@ position(ctx) {
 }
 ```
 
-Arrow in string mode: `--lp-pointer-visible: 1` on `.lp`.
+**Popover arrow:** With a two-word `position` string, the library can show a small pointer from the panel toward the anchor. It reads `--lp-pointer-visible` on the calendar root (`.lp`): **`1`** means show and position the pointer; anything else hides it. The default CSS sets **`1`** on `.lp--popover` and **`0`** on the mobile centered popover (no pointer). Use your own rules on `.lp` to adapt the pointer to your needs.
 
 ---
 

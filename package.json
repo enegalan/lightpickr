@@ -1,9 +1,17 @@
 {
   "name": "lightpickr",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Lightweight dependency-free JavaScript datepicker",
   "type": "module",
   "main": "dist/lightpickr.js",
+  "module": "dist/lightpickr.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/lightpickr.esm.js",
+      "default": "./dist/lightpickr.js"
+    },
+    "./lightpickr.css": "./dist/lightpickr.css"
+  },
   "files": [
     "dist",
     "src"
