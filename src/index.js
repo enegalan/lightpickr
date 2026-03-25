@@ -3,11 +3,9 @@ import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setVie
 import { applyDaySelection, applyRangeEndpointDrag, clearSelectionState, selectDateExplicit, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, normalizeRangePairs, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './core/utils.js';
 import { setTimePart } from './core/time.js';
-import { attachDelegatedHandlers, getViewDatesFromState, renderFull, syncPendingRangeHoverClasses, syncTimePanelDom } from './render/renderer.js';
-import { parseDayCellTimestamp } from './render/dom.js';
+import { attachDelegatedHandlers, getViewDatesFromState, renderContainer, syncPendingRangeHoverClasses, syncTimePanelDom } from './render/renderer.js';
 import { applyStringPosition } from './core/positioning.js';
 import { isDayNavigationKey, nextStateAfterDayViewKey, nextStateAfterMonthGridKey, nextStateAfterViewHierarchyKey, nextStateAfterYearGridKey, stateWithDefaultDayFocus, stateWithDefaultMonthGridFocus, stateWithDefaultYearGridFocus } from './core/keyboard.js';
-import { scheduleAnimationFrame } from './core/scheduling.js';
 
 /**
  * @private
@@ -115,6 +113,22 @@ function shouldCloseAfterSelect(state) {
 
 /**
  * @private
+ * @returns {void}
+ */
+function scheduleFocusActiveKeyboardCell(self) {
+  if (typeof globalThis.requestAnimationFrame === 'function') {
+    globalThis.requestAnimationFrame(function () {
+      self._focusActiveKeyboardCell();
+    });
+  } else {
+    setTimeout(function () {
+      self._focusActiveKeyboardCell();
+    }, 0);
+  }
+}
+
+/**
+ * @private
  * @param {string|HTMLElement} target
  * @param {import('./core/state.js').LightpickrOptions} options
  * @returns {void}
@@ -170,7 +184,7 @@ function Lightpickr(target, options) {
   this.$pointer.setAttribute('aria-hidden', 'true');
 
   this._mount();
-  renderFull(this);
+  renderContainer(this);
   attachDelegatedHandlers(this, this.$datepicker);
   this._bindCalendarKeyboard();
   this._bindTarget();
@@ -202,10 +216,7 @@ Lightpickr.prototype.show = function () {
   this._attachEscapeListener();
   this._commit(next, { emitSelect: false, popoverInitialOpen: true });
   this._state.onShow(true, { datepicker: this });
-  const self = this;
-  scheduleAnimationFrame(function () {
-    self._focusActiveKeyboardCell();
-  });
+  scheduleFocusActiveKeyboardCell(this);
 };
 
 /**
@@ -592,7 +603,7 @@ Lightpickr.prototype._attachRangeDragHandlers = function () {
     if (!(dayBtn.classList.contains(this._state.classes.cellRangeStart) || dayBtn.classList.contains(this._state.classes.cellRangeEnd))) {
       return;
     }
-    const ts = parseDayCellTimestamp(dayBtn);
+    const ts = parseElementNumber(dayBtn, 'data-lp-day');
     if (ts == null) {
       return;
     }
@@ -631,7 +642,7 @@ Lightpickr.prototype._attachRangeDragHandlers = function () {
     if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
       return;
     }
-    const ts = parseDayCellTimestamp(dayBtn);
+    const ts = parseElementNumber(dayBtn, 'data-lp-day');
     if (ts == null) {
       return;
     }
@@ -933,10 +944,7 @@ Lightpickr.prototype._onDatepickerKeydown = function (ev) {
     ev.preventDefault();
     if (keyboardStateMeaningfullyChanged(s, next)) {
       this._commit(next, { emitSelect: false });
-      const self = this;
-      scheduleAnimationFrame(function () {
-        self._focusActiveKeyboardCell();
-      });
+      scheduleFocusActiveKeyboardCell(this);
     }
     return;
   }
@@ -965,10 +973,7 @@ Lightpickr.prototype._onDatepickerKeydown = function (ev) {
     );
     if (next !== working) {
       this._commit(next, { emitSelect: false });
-      const self = this;
-      scheduleAnimationFrame(function () {
-        self._focusActiveKeyboardCell();
-      });
+      scheduleFocusActiveKeyboardCell(this);
     }
     return;
   }
@@ -988,10 +993,7 @@ Lightpickr.prototype._onDatepickerKeydown = function (ev) {
     const next = nextStateAfterYearGridKey(working, key, ev.shiftKey, getViewDatesFromState(working, 'year'));
     if (next !== working) {
       this._commit(next, { emitSelect: false });
-      const self = this;
-      scheduleAnimationFrame(function () {
-        self._focusActiveKeyboardCell();
-      });
+      scheduleFocusActiveKeyboardCell(this);
     }
     return;
   }
@@ -1012,10 +1014,7 @@ Lightpickr.prototype._onDatepickerKeydown = function (ev) {
   const next = nextStateAfterDayViewKey(this._state, key, ev.shiftKey, getViewDatesFromState(this._state, 'day'));
   if (next !== this._state) {
     this._commit(next, { emitSelect: false });
-    const self = this;
-    scheduleAnimationFrame(function () {
-      self._focusActiveKeyboardCell();
-    });
+    scheduleFocusActiveKeyboardCell(this);
   }
 };
 
@@ -1037,7 +1036,7 @@ Lightpickr.prototype._commit = function (next, opts) {
   if (next.pendingRangeStart == null) {
     this._pendingRangeHoverTs = null;
   }
-  renderFull(this);
+  renderContainer(this);
   attachDelegatedHandlers(this, this.$datepicker);
   this._attachRangeDragHandlers();
   this._syncFooterHandlers();

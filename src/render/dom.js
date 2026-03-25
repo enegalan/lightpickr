@@ -43,13 +43,17 @@ export function delegate(root, selector, type, handler) {
 
 /**
  * @param {Element} element
+ * @param {string} attr
  * @returns {number|null}
  */
-export function parseDayCellTimestamp(element) {
-  const raw = element.getAttribute('data-lp-day');
+export function parseElementNumber(element, attr) {
+  if (!(element instanceof Element)) {
+    return null;
+  }
+  const raw = element.getAttribute(attr);
   if (raw == null) {
     return null;
   }
-  const ts = Number(raw);
-  return Number.isFinite(ts) ? ts : null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
 }

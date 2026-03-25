@@ -112,7 +112,7 @@ export function addYears(ts, delta) {
   const ny = y + delta;
   const dim = daysInMonth(ny, m);
   const dd = Math.min(d, dim);
-  return { y: ny, m, m, ts: ymdToTsStartOfDay(ny, m, dd) };
+  return { y: ny, m, ts: ymdToTsStartOfDay(ny, m, dd) };
 }
 
 /**
