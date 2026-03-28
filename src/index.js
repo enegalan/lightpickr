@@ -3,7 +3,11 @@ import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setVie
 import { applyDaySelection, applyRangeEndpointDrag, clearSelectionState, selectDateExplicit, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, normalizeRangePairs, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './core/utils.js';
 import { setTimePart } from './core/time.js';
-import { attachDelegatedHandlers, getViewDatesFromState, renderContainer, syncPendingRangeHoverClasses, syncTimePanelDom } from './render/renderer.js';
+import { syncTimePanelDom } from './render/time-panel.js';
+import { attachDelegatedHandlers, syncPendingRangeHoverClasses } from './render/handlers.js';
+import { renderContainer } from './render/renderer.js';
+import { getViewDatesFromState } from './render/context.js';
+import { parseElementNumber } from './render/dom.js';
 import { applyStringPosition } from './core/positioning.js';
 import { isDayNavigationKey, nextStateAfterDayViewKey, nextStateAfterMonthGridKey, nextStateAfterViewHierarchyKey, nextStateAfterYearGridKey, stateWithDefaultDayFocus, stateWithDefaultMonthGridFocus, stateWithDefaultYearGridFocus } from './core/keyboard.js';
 
@@ -124,6 +128,49 @@ function scheduleFocusActiveKeyboardCell(self) {
     setTimeout(function () {
       self._focusActiveKeyboardCell();
     }, 0);
+  }
+}
+
+/**
+ * @private
+ * @param {{ onRender?: () => void, onSelect?: () => void }[]} plugins
+ * @param {'onRender'|'onSelect'} methodName
+ * @returns {void}
+ */
+function _invokePluginHook(plugins, methodName) {
+  for (let i = 0; i < plugins.length; i++) {
+    const fn = plugins[i][methodName];
+    if (typeof fn === 'function') {
+      fn();
+    }
+  }
+}
+
+/**
+ * @private
+ * @param {{ _state: import('./core/state.js').LightpickrInternalState, _commit: function }} picker
+ * @param {KeyboardEvent} ev
+ * @param {'month'|'year'} kind
+ * @returns {void}
+ */
+function _applyMonthYearGridKeydown(picker, ev, kind) {
+  const view = kind;
+  const seedFn = kind === 'month' ? stateWithDefaultMonthGridFocus : stateWithDefaultYearGridFocus;
+  const nextFn = kind === 'month' ? nextStateAfterMonthGridKey : nextStateAfterYearGridKey;
+  let working = picker._state;
+  if (working.focusDate == null) {
+    const seeded = seedFn(working, getViewDatesFromState(working, view));
+    if (seeded !== working) {
+      ev.preventDefault();
+      picker._commit(seeded, { emitSelect: false });
+      working = picker._state;
+    }
+  }
+  ev.preventDefault();
+  const next = nextFn(working, ev.key, ev.shiftKey, getViewDatesFromState(working, view));
+  if (next !== working) {
+    picker._commit(next, { emitSelect: false });
+    scheduleFocusActiveKeyboardCell(picker);
   }
 }
 
@@ -954,47 +1001,12 @@ Lightpickr.prototype._onDatepickerKeydown = function (ev) {
   }
 
   if (s.currentView === 'month') {
-    const monthDates = getViewDatesFromState(s, 'month');
-    let working = s;
-    if (s.focusDate == null) {
-      const seeded = stateWithDefaultMonthGridFocus(s, monthDates);
-      if (seeded !== s) {
-        ev.preventDefault();
-        this._commit(seeded, { emitSelect: false });
-        working = this._state;
-      }
-    }
-    ev.preventDefault();
-    const next = nextStateAfterMonthGridKey(
-      working,
-      key,
-      ev.shiftKey,
-      getViewDatesFromState(working, 'month')
-    );
-    if (next !== working) {
-      this._commit(next, { emitSelect: false });
-      scheduleFocusActiveKeyboardCell(this);
-    }
+    _applyMonthYearGridKeydown(this, ev, 'month');
     return;
   }
 
   if (s.currentView === 'year') {
-    const yearDates = getViewDatesFromState(s, 'year');
-    let working = s;
-    if (s.focusDate == null) {
-      const seeded = stateWithDefaultYearGridFocus(s, yearDates);
-      if (seeded !== s) {
-        ev.preventDefault();
-        this._commit(seeded, { emitSelect: false });
-        working = this._state;
-      }
-    }
-    ev.preventDefault();
-    const next = nextStateAfterYearGridKey(working, key, ev.shiftKey, getViewDatesFromState(working, 'year'));
-    if (next !== working) {
-      this._commit(next, { emitSelect: false });
-      scheduleFocusActiveKeyboardCell(this);
-    }
+    _applyMonthYearGridKeydown(this, ev, 'year');
     return;
   }
 
@@ -1059,12 +1071,7 @@ Lightpickr.prototype._commit = function (next, opts) {
  * @returns {void}
  */
 Lightpickr.prototype._pluginOnRender = function () {
-  for (let i = 0; i < this._plugins.length; i++) {
-    const p = this._plugins[i];
-    if (p.onRender) {
-      p.onRender();
-    }
-  }
+  _invokePluginHook(this._plugins, 'onRender');
 };
 
 /**
@@ -1072,12 +1079,7 @@ Lightpickr.prototype._pluginOnRender = function () {
  * @returns {void}
  */
 Lightpickr.prototype._pluginOnSelect = function () {
-  for (let i = 0; i < this._plugins.length; i++) {
-    const p = this._plugins[i];
-    if (p.onSelect) {
-      p.onSelect();
-    }
-  }
+  _invokePluginHook(this._plugins, 'onSelect');
 };
 
 /**

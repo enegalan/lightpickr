@@ -116,6 +116,14 @@ export function addYears(ts, delta) {
 }
 
 /**
+ * @param {number} n
+ * @returns {string}
+ */
+export function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+/**
  * @param {string} format
  * @param {number} ts
  * @param {{ hours?: number, minutes?: number }} [timePart]
@@ -123,7 +131,6 @@ export function addYears(ts, delta) {
  */
 export function formatDate(format, ts, timePart) {
   const { y, m, d } = tsToYmd(ts);
-  const pad2 = (n) => String(n).padStart(2, '0');
   const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : new Date(ts).getHours();
   const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : new Date(ts).getMinutes();
   return format

@@ -40,45 +40,55 @@ export function readPopoverGap(el) {
  * @param {number} gy
  * @returns {{ top: number, left: number }}
  */
+/**
+ * @param {DOMRect} r
+ * @param {number} w
+ * @param {string} sec
+ * @param {number} gx
+ * @returns {number}
+ */
+function popoverLeftForBottomOrTop(r, w, sec, gx) {
+  if (sec === 'right') {
+    return r.right - w - gx;
+  }
+  if (sec === 'center') {
+    return r.left + (r.width - w) / 2;
+  }
+  return r.left + gx;
+}
+
+/**
+ * @param {DOMRect} r
+ * @param {number} h
+ * @param {string} sec
+ * @param {number} gy
+ * @returns {number}
+ */
+function popoverTopForLeftOrRight(r, h, sec, gy) {
+  if (sec === 'bottom') {
+    return r.bottom - h - gy;
+  }
+  if (sec === 'center') {
+    return r.top + (r.height - h) / 2;
+  }
+  return r.top + gy;
+}
+
 export function computePopoverCoords(r, w, h, main, sec, gx, gy) {
   let top = 0;
   let left = 0;
   if (main === 'bottom') {
     top = r.bottom + gy;
-    if (sec === 'right') {
-      left = r.right - w - gx;
-    } else if (sec === 'center') {
-      left = r.left + (r.width - w) / 2;
-    } else {
-      left = r.left + gx;
-    }
+    left = popoverLeftForBottomOrTop(r, w, sec, gx);
   } else if (main === 'top') {
     top = r.top - h - gy;
-    if (sec === 'right') {
-      left = r.right - w - gx;
-    } else if (sec === 'center') {
-      left = r.left + (r.width - w) / 2;
-    } else {
-      left = r.left + gx;
-    }
+    left = popoverLeftForBottomOrTop(r, w, sec, gx);
   } else if (main === 'right') {
     left = r.right + gx;
-    if (sec === 'bottom') {
-      top = r.bottom - h - gy;
-    } else if (sec === 'center') {
-      top = r.top + (r.height - h) / 2;
-    } else {
-      top = r.top + gy;
-    }
+    top = popoverTopForLeftOrRight(r, h, sec, gy);
   } else if (main === 'left') {
     left = r.left - w - gx;
-    if (sec === 'bottom') {
-      top = r.bottom - h - gy;
-    } else if (sec === 'center') {
-      top = r.top + (r.height - h) / 2;
-    } else {
-      top = r.top + gy;
-    }
+    top = popoverTopForLeftOrRight(r, h, sec, gy);
   } else {
     return computePopoverCoords(r, w, h, 'bottom', 'left', gx, gy);
   }

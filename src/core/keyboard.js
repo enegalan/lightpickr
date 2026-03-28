@@ -1,3 +1,4 @@
+import { yearGridYearValues } from './calendar-grid.js';
 import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
 import { isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from './utils.js';
 
@@ -264,10 +265,10 @@ export function nextStateAfterViewHierarchyKey(state, key, altKey) {
  */
 function yearGridTimestamps(state) {
   const y = tsToYmd(state.viewDate).y;
-  const start = y - 5;
+  const years = yearGridYearValues(y);
   const out = [];
-  for (let i = 0; i < 12; i++) {
-    out.push(ymdToTsStartOfDay(start + i, 0, 1));
+  for (let i = 0; i < years.length; i++) {
+    out.push(ymdToTsStartOfDay(years[i], 0, 1));
   }
   return out;
 }

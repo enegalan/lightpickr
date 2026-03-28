@@ -18,12 +18,12 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
 
 /**
  * @typedef {Object} LightpickrRenderHooks
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [container]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [header]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [nav]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [grid]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [time]
- * @property {(ctx: import('../render/renderer.js').RenderCtx) => HTMLElement} [footer]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [container]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [header]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [nav]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [grid]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [time]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [footer]
  */
 
 /**
