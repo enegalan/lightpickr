@@ -133,33 +133,21 @@ function _defaultDayCell(instance, ctx) {
   const s = instance._state;
   const c = s.classes;
   const extra = [c.cell];
-
-  if (ctx.isSelected) {
-    extra.push(c.cellSelected);
-  }
-  if (ctx.isDisabled) {
-    extra.push(c.cellDisabled);
-  }
-  if (ctx.isToday) {
-    extra.push(c.cellToday);
-  }
-  if (ctx.isInRange) {
-    extra.push(c.cellRange);
-  }
-  if (ctx.isRangeStart) {
-    extra.push(c.cellRangeStart);
-  }
-  if (ctx.isRangeEnd) {
-    extra.push(c.cellRangeEnd);
-  }
-  if (ctx.isOutside) {
-    extra.push(c.cellOutside);
-  }
-  if (ctx.isWeekend) {
-    extra.push(c.cellWeekend);
-  }
-  if (ctx.isFocused) {
-    extra.push(c.cellFocused);
+  const flagClassPairs = [
+    [ctx.isSelected, c.cellSelected],
+    [ctx.isDisabled, c.cellDisabled],
+    [ctx.isToday, c.cellToday],
+    [ctx.isInRange, c.cellRange],
+    [ctx.isRangeStart, c.cellRangeStart],
+    [ctx.isRangeEnd, c.cellRangeEnd],
+    [ctx.isOutside, c.cellOutside],
+    [ctx.isWeekend, c.cellWeekend],
+    [ctx.isFocused, c.cellFocused]
+  ];
+  for (let i = 0; i < flagClassPairs.length; i++) {
+    if (flagClassPairs[i][0]) {
+      extra.push(flagClassPairs[i][1]);
+    }
   }
 
   const { d } = tsToYmd(ctx.date);
