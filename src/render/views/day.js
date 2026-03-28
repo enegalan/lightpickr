@@ -1,5 +1,5 @@
 import { buildDayMonthCells } from '../../core/calendar-grid.js';
-import { formatDate, tsToYmd, defaultWeekdayNames } from '../../core/utils.js';
+import { formatDate, tsToYmd, defaultWeekdayNames, getTranslations } from '../../core/utils.js';
 import { createEl } from '../dom.js';
 import { buildDayCtx, buildDefaultNav } from '../context.js';
 import { applyRenderCellPatch } from '../render-cell.js';
@@ -33,7 +33,7 @@ export function renderDayView(instance, container) {
   const viewBody = createEl('div', c.viewBody);
   const monthsWrap = createEl('div', c.grid + ' lp-months');
   const block = createEl('div', 'lp-month-block');
-  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': 'Calendar dates' });
+  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(s).ariaDayGrid });
 
   const gridEl = gridHook?.(ctx);
   if (gridEl) {

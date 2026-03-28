@@ -33,16 +33,6 @@ export function readPopoverGap(el) {
 /**
  * @param {DOMRect} r
  * @param {number} w
- * @param {number} h
- * @param {string} main
- * @param {string} sec
- * @param {number} gx
- * @param {number} gy
- * @returns {{ top: number, left: number }}
- */
-/**
- * @param {DOMRect} r
- * @param {number} w
  * @param {string} sec
  * @param {number} gx
  * @returns {number}
@@ -74,6 +64,16 @@ function popoverTopForLeftOrRight(r, h, sec, gy) {
   return r.top + gy;
 }
 
+/**
+ * @param {DOMRect} r
+ * @param {number} w
+ * @param {number} h
+ * @param {string} main
+ * @param {string} sec
+ * @param {number} gx
+ * @param {number} gy
+ * @returns {{ top: number, left: number }}
+ */
 export function computePopoverCoords(r, w, h, main, sec, gx, gy) {
   let top = 0;
   let left = 0;

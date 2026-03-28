@@ -45,7 +45,7 @@ const picker = new Lightpickr('#my-input' [, options]);
 | `minDate` | `number \| Date \| string \| null` | `null` | Interpreted at start of day. |
 | `maxDate` | `number \| Date \| string \| null` | `null` | Interpreted at start of day. |
 | `disabledDates` | `array` | `[]` | Day-level; entries as number, `Date`, or string. |
-| `locale` | `'default' \| object` | `'default'` | Supports `months`, `monthsShort`, `monthsLong`, `weekdays`, `firstDay`. |
+| `locale` | `'default' \| object` | `'default'` | English by default. Available locales are in `lightpickr/locale/`. Object may include `months` / `monthsShort` / `monthsLong` (length 12), `weekdays` (length 7, Sun-first), `firstDay`, `ariaDayGrid`, `ariaMonthGrid`, `ariaYearGrid`, `ariaTimeHours`, `ariaTimeMinutes`, `btnToday`, `btnClear`, `am`, `pm`. |
 | `firstDay` | `number` | `1` | First weekday. Priority: `firstDay` → `firstDayOfWeek` → `locale.firstDay` → `1`. |
 | `firstDayOfWeek` | `number` | `1` | Backward-compatible alias for `firstDay`. |
 | `weekends` | `number[]` | `[6, 0]` | Weekend day indexes used for weekend cell styling. |

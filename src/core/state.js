@@ -1,3 +1,4 @@
+import lightpickrDefaults from './defaults.js';
 import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalizeMultipleOption, normalizeShowEvents, normalizeTimeBounds, normalizeViewOption, normalizeWeekendIndexes, normalizeRangePairs, startOfDayTs, trimFifo, toTimestamp } from './utils.js';
 
 /**
@@ -14,6 +15,15 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  * @property {string[]} [monthsLong]
  * @property {string[]} [weekdays]
  * @property {number} [firstDay]
+ * @property {string} [ariaDayGrid]
+ * @property {string} [ariaMonthGrid]
+ * @property {string} [ariaYearGrid]
+ * @property {string} [ariaTimeHours]
+ * @property {string} [ariaTimeMinutes]
+ * @property {string} [btnToday]
+ * @property {string} [btnClear]
+ * @property {string} [am]
+ * @property {string} [pm]
  */
 
 /**
@@ -199,36 +209,6 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  */
 
 /**
- * @type {LightpickrClassMap}
- */
-const defaultClasses = {
-  container: 'lp',
-  header: 'lp-header',
-  nav: 'lp-nav',
-  grid: 'lp-grid',
-  cell: 'lp-cell',
-  cellSelected: 'lp-cell--selected',
-  cellDisabled: 'lp-cell--disabled',
-  cellToday: 'lp-cell--today',
-  cellRange: 'lp-cell--range',
-  cellRangeStart: 'lp-cell--range-start',
-  cellRangeEnd: 'lp-cell--range-end',
-  cellRangePreview: 'lp-cell--range-preview',
-  cellRangePreviewMid: 'lp-cell--range-preview-mid',
-  cellRangePreviewStartCap: 'lp-cell--range-preview-start-cap',
-  cellRangePreviewEndCap: 'lp-cell--range-preview-end-cap',
-  cellOutside: 'lp-cell--outside',
-  cellWeekend: 'lp-cell--weekend',
-  cellFocused: 'lp-cell--focused',
-  navButton: 'lp-nav-btn',
-  titleButton: 'lp-title-btn',
-  timePanel: 'lp-time',
-  footer: 'lp-footer',
-  popoverPointer: 'lp-popover-pointer lp--pointer',
-  viewBody: 'lp-view-body'
-};
-
-/**
  * @param {LightpickrInternalState} state
  * @param {(Date|string|number)[] | false | undefined} selectedDates
  * @returns {number[]|number[][]}
@@ -258,10 +238,17 @@ function parseInitialSelectedDates(state, selectedDates) {
 }
 
 /**
- * @param {Partial<LightpickrOptions>} raw
+ * @param {Partial<LightpickrOptions>} incomingRaw
  * @returns {LightpickrInternalState}
  */
-export function createStateFromOptions(raw) {
+export function createStateFromOptions(incomingRaw) {
+  const incoming = incomingRaw ?? {};
+
+  const raw = { ...lightpickrDefaults, ...incoming };
+
+  raw.classes = { ...lightpickrDefaults.classes, ...(incoming.classes ?? {}) };
+  raw.render = { ...lightpickrDefaults.render, ...(incoming.render ?? {}) };
+  raw.navTitles = { ...lightpickrDefaults.navTitles, ...(incoming.navTitles ?? {}) };
   const onlyTime = Boolean(raw.onlyTime);
   const range = onlyTime ? false : Boolean(raw.range);
   const { multipleLimit, multipleEnabled } = normalizeMultipleOption(onlyTime ? false : raw.multiple);
@@ -288,10 +275,13 @@ export function createStateFromOptions(raw) {
     footer: raw.render && raw.render.footer ? raw.render.footer : null
   };
 
-  const cls = Object.assign({}, defaultClasses, raw.classes || {});
+  const cls = Object.assign({}, raw.classes);
 
   const showEvents = normalizeShowEvents(raw.showEvent);
-  const monthsField = typeof raw.monthsField === 'string' && raw.monthsField.trim() ? raw.monthsField.trim() : 'monthsShort';
+  const monthsField =
+    typeof raw.monthsField === 'string' && raw.monthsField.trim()
+      ? raw.monthsField.trim()
+      : /** @type {string} */ (lightpickrDefaults.monthsField);
 
   const firstDay =
     normalizeFirstDay(raw.firstDay) ??
@@ -308,14 +298,7 @@ export function createStateFromOptions(raw) {
       ? raw.autoClose
       : raw.closeOnSelect !== false;
 
-  const navTitles = Object.assign(
-    {
-      days: 'MMMM, <i>yyyy</i>',
-      months: 'yyyy',
-      years: 'yyyy1 - yyyy2'
-    },
-    raw.navTitles && typeof raw.navTitles === 'object' ? raw.navTitles : {}
-  );
+  const navTitles = Object.assign({}, raw.navTitles);
 
   const tb = normalizeTimeBounds(raw.minHours, raw.maxHours, raw.minMinutes, raw.maxMinutes, raw.hoursStep, raw.minutesStep);
 
@@ -334,25 +317,19 @@ export function createStateFromOptions(raw) {
     firstDayOfWeek: firstDay,
     weekendIndexes: normalizeWeekendIndexes(raw.weekends),
     isMobile: Boolean(raw.isMobile),
-    format: typeof raw.format === 'string' ? raw.format : 'YYYY-MM-DD',
     monthsField,
     allowedViews,
     showOtherMonths: raw.showOtherMonths !== false,
     selectOtherMonths: raw.selectOtherMonths !== false,
     moveToOtherMonthsOnSelect: raw.moveToOtherMonthsOnSelect !== false,
     disableNavWhenOutOfRange: raw.disableNavWhenOutOfRange !== false,
-    multipleSeparator: typeof raw.multipleSeparator === 'string' ? raw.multipleSeparator : ', ',
+    format: typeof raw.format === 'string' ? raw.format : /** @type {string} */ (lightpickrDefaults.format),
+    multipleSeparator: typeof raw.multipleSeparator === 'string' ? raw.multipleSeparator : /** @type {string} */ (lightpickrDefaults.multipleSeparator),
     dynamicRange: raw.dynamicRange !== false,
     buttons: raw.buttons != null ? raw.buttons : false,
     closeOnSelect,
-    prevHtml:
-      typeof raw.prevHtml === 'string'
-        ? raw.prevHtml
-        : '<svg><path d="M17,12 l -5,5 l 5,5"></path></svg>',
-    nextHtml:
-      typeof raw.nextHtml === 'string'
-        ? raw.nextHtml
-        : '<svg><path d="M14,12 l 5,5 l -5,5"></path></svg>',
+    prevHtml: typeof raw.prevHtml === 'string' ? raw.prevHtml : /** @type {string} */ (lightpickrDefaults.prevHtml),
+    nextHtml: typeof raw.nextHtml === 'string' ? raw.nextHtml : /** @type {string} */ (lightpickrDefaults.nextHtml),
     navTitles,
     minHours: tb.minHours,
     maxHours: tb.maxHours,
@@ -387,7 +364,7 @@ export function createStateFromOptions(raw) {
         ? raw.position
         : typeof raw.position === 'string'
           ? raw.position
-          : 'bottom left',
+          : /** @type {string} */ (lightpickrDefaults.position),
     anchor: raw.anchor != null ? raw.anchor : null
   };
   nextState.selectedDates = parseInitialSelectedDates(nextState, raw.selectedDates);

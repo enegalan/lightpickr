@@ -1,5 +1,21 @@
+import { readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const localeDir = join(__dirname, 'src', 'locale');
+
+/**
+ * @returns {string[]}
+ */
+function readLocaleCodes() {
+  return readdirSync(localeDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isFile() && dirent.name.endsWith('.js'))
+    .map((dirent) => dirent.name.replace(/\.js$/, ''))
+    .sort();
+}
 
 /**
  * @param {object} [rootOpts] Terser minify root options (e.g. module, toplevel)
@@ -26,7 +42,8 @@ function terserPlugin(rootOpts) {
   });
 }
 
-export default {
+/** @type {import('rollup').RollupOptions} */
+const mainBundle = {
   input: 'src/index.js',
   output: [
     {
@@ -49,3 +66,21 @@ export default {
     })
   ]
 };
+
+/**
+ * @param {string} code
+ * @returns {import('rollup').RollupOptions}
+ */
+function localeBundle(code) {
+  return {
+    input: `src/locale/${code}.js`,
+    output: {
+      file: `dist/locale/${code}.js`,
+      format: 'es',
+      sourcemap: false,
+      plugins: [terserPlugin({ module: true, toplevel: true })]
+    }
+  };
+}
+
+export default [mainBundle, ...readLocaleCodes().map(localeBundle)];

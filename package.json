@@ -10,7 +10,8 @@
       "import": "./dist/lightpickr.esm.js",
       "default": "./dist/lightpickr.js"
     },
-    "./lightpickr.css": "./dist/lightpickr.css"
+    "./lightpickr.css": "./dist/lightpickr.css",
+    "./locale/*": "./dist/locale/*.js"
   },
   "files": [
     "dist",

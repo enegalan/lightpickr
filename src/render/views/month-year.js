@@ -1,4 +1,4 @@
-import { isSameDay, tsToYmd, ymdToTsStartOfDay, defaultMonthNames } from '../../core/utils.js';
+import { isSameDay, tsToYmd, ymdToTsStartOfDay, defaultMonthNames, getTranslations } from '../../core/utils.js';
 import { yearGridYearValues } from '../../core/calendar-grid.js';
 import { createEl } from '../dom.js';
 import { buildDefaultNav } from '../context.js';
@@ -24,7 +24,7 @@ export function renderMonthView(instance, container) {
   container.appendChild(header);
 
   const viewBody = createEl('div', c.viewBody);
-  const grid = createEl('div', c.grid + ' lp-month-grid', { role: 'grid', 'aria-label': 'Months' });
+  const grid = createEl('div', c.grid + ' lp-month-grid', { role: 'grid', 'aria-label': getTranslations(s).ariaMonthGrid });
   const months = defaultMonthNames({ locale: s.locale }, s.monthsField);
 
   _appendThreeColumnGrid(grid, (mi) => {
@@ -80,7 +80,7 @@ export function renderYearView(instance, container) {
   container.appendChild(header);
 
   const viewBody = createEl('div', c.viewBody);
-  const grid = createEl('div', c.grid + ' lp-year-grid', { role: 'grid', 'aria-label': 'Years' });
+  const grid = createEl('div', c.grid + ' lp-year-grid', { role: 'grid', 'aria-label': getTranslations(s).ariaYearGrid });
 
   _appendThreeColumnGrid(grid, (i) => {
     const yy = years[i];

@@ -1,4 +1,4 @@
-import { pad2 } from '../core/utils.js';
+import { pad2, getTranslations } from '../core/utils.js';
 import { createEl } from './dom.js';
 import { buildDayCtx } from './context.js';
 
@@ -20,7 +20,8 @@ export function renderTimePanel(instance, container) {
   }
 
   const { hours: h, minutes: m } = s.timePart;
-  const clock = _formatClock12Parts(h, m);
+  const ui = getTranslations(s);
+  const clock = _formatClock12Parts(h, m, ui.am, ui.pm);
 
   const layout = createEl('div', 'lp-time-layout');
 
@@ -46,7 +47,7 @@ export function renderTimePanel(instance, container) {
       max: String(max),
       step: String(step),
       'data-lp-time': type,
-      'aria-label': type === 'hours' ? 'Hours' : 'Minutes',
+      'aria-label': type === 'hours' ? ui.ariaTimeHours : ui.ariaTimeMinutes,
       'aria-valuemin': String(min),
       'aria-valuemax': String(max)
     });
@@ -92,8 +93,9 @@ export function syncTimePanelDom(instance) {
   }
 
   const s = instance._state;
+  const ui = getTranslations(s);
   const { hours, minutes } = s.timePart;
-  const { hourStr, minuteStr, ampm, fullLabel } = _formatClock12Parts(hours, minutes);
+  const { hourStr, minuteStr, ampm, fullLabel } = _formatClock12Parts(hours, minutes, ui.am, ui.pm);
 
   hoursSpan.textContent = hourStr;
   minutesSpan.textContent = minuteStr;
@@ -125,13 +127,15 @@ export function syncTimePanelDom(instance) {
  * @private
  * @param {number} hours24
  * @param {number} minutes
- * @returns {{ hourStr: string, minuteStr: string, ampm: 'AM'|'PM', fullLabel: string }}
+ * @param {string} amStr
+ * @param {string} pmStr
+ * @returns {{ hourStr: string, minuteStr: string, ampm: string, fullLabel: string }}
  */
-function _formatClock12Parts(hours24, minutes) {
+function _formatClock12Parts(hours24, minutes, amStr, pmStr) {
   const h = Math.max(0, Math.min(23, Math.floor(hours24)));
   const m = Math.max(0, Math.min(59, Math.floor(minutes)));
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  const ampm = h < 12 ? 'AM' : 'PM';
+  const ampm = h < 12 ? amStr : pmStr;
   const hourStr = pad2(h12);
   const minuteStr = pad2(m);
   return {

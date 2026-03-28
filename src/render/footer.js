@@ -1,3 +1,4 @@
+import { getTranslations } from '../core/utils.js';
 import { createEl } from './dom.js';
 import { buildDayCtx } from './context.js';
 
@@ -40,11 +41,12 @@ export function renderFooter(instance, container) {
 
     if (def.preset === 'today' || def.preset === 'clear') {
       const action = def.preset;
+      const ui = getTranslations(s);
       el = createEl('button', 'lp-footer-btn', {
         type: 'button',
         'data-lp-footer-action': action
       });
-      el.textContent = action === 'today' ? 'Today' : 'Clear';
+      el.textContent = action === 'today' ? ui.btnToday : ui.btnClear;
     } else {
       const tag = def.tagName || 'button';
       const cls = 'lp-footer-btn' + (def.className ? ' ' + def.className : '');

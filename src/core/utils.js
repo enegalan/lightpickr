@@ -1,3 +1,8 @@
+import lightpickrDefaults from './defaults.js';
+
+/** @type {Readonly<Record<string, string>>} */
+export const DEFAULT_TRANSLATIONS = Object.freeze(_localeStringFields(lightpickrDefaults.locale));
+
 /**
  * @param {number} ts
  * @returns {{ y: number, m: number, d: number }}
@@ -73,7 +78,7 @@ export function toTimestamp(value) {
     return Number.isFinite(t) ? t : null;
   }
   if (typeof value === 'string') {
-    return timestampFromDateString(value);
+    return _timestampFromDateString(value);
   }
   return null;
 }
@@ -175,7 +180,7 @@ export function defaultMonthNames(opts, monthsField) {
       return locale.months;
     }
   }
-  return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return defaultMonthNames({ locale: lightpickrDefaults.locale }, monthsField);
 }
 
 /**
@@ -186,7 +191,20 @@ export function defaultWeekdayNames(opts) {
   if (opts.locale && typeof opts.locale === 'object' && Array.isArray(opts.locale.weekdays)) {
     return opts.locale.weekdays;
   }
-  return ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  return defaultWeekdayNames({ locale: lightpickrDefaults.locale });
+}
+
+/**
+ * @param {import('./state.js').LightpickrOptions|import('./state.js').LightpickrInternalState} opts
+ * @returns {Readonly<typeof DEFAULT_TRANSLATIONS>}
+ */
+export function getTranslations(opts) {
+  const out = Object.assign({}, DEFAULT_TRANSLATIONS);
+  const loc = opts && opts.locale;
+  if (loc && typeof loc === 'object') {
+    Object.assign(out, _localeStringFields(loc, Object.keys(out)));
+  }
+  return /** @type {Readonly<typeof DEFAULT_TRANSLATIONS>} */ (out);
 }
 
 /**
@@ -420,6 +438,7 @@ export function trimFifo(items, max) {
 }
 
 /**
+ * @private
  * @param {number} y
  * @param {number} mo 1-12
  * @param {number} d
@@ -428,7 +447,7 @@ export function trimFifo(items, max) {
  * @param {number} [sec]
  * @returns {number|null}
  */
-function localTimestampFromParts(y, mo, d, h, mi, sec) {
+function _localTimestampFromParts(y, mo, d, h, mi, sec) {
   if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
     return null;
   }
@@ -452,7 +471,7 @@ function localTimestampFromParts(y, mo, d, h, mi, sec) {
  * @param {string} str
  * @returns {number|null}
  */
-function timestampFromDateString(str) {
+function _timestampFromDateString(str) {
   const trimmed = String(str).trim();
   if (!trimmed) {
     return null;
@@ -473,9 +492,9 @@ function timestampFromDateString(str) {
       if (h < 0 || h > 23 || mi < 0 || mi > 59 || s < 0 || s > 59) {
         return null;
       }
-      return localTimestampFromParts(y, mo, d, h, mi, s);
+      return _localTimestampFromParts(y, mo, d, h, mi, s);
     }
-    return localTimestampFromParts(y, mo, d);
+    return _localTimestampFromParts(y, mo, d);
   }
   if (/^\d{4}[/.]\d/.test(trimmed)) {
     return null;
@@ -492,4 +511,23 @@ function timestampFromDateString(str) {
   }
   const parsed = Date.parse(trimmed);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
+ * @private
+ * @param {Record<string, unknown>} source
+ * @param {readonly string[]} [onlyKeys] when set, only these keys are taken from source
+ * @returns {Record<string, string>}
+ */
+function _localeStringFields(source, onlyKeys) {
+  const keys = onlyKeys != null ? onlyKeys : Object.keys(source);
+  const out = {};
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
+    const v = source[k];
+    if (typeof v === 'string' && v.trim()) {
+      out[k] = v.trim();
+    }
+  }
+  return out;
 }
