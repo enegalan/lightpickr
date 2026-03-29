@@ -23,30 +23,30 @@ export function renderTimePanel(instance, container) {
   const ui = getTranslations(s);
   const clock = _formatClock12Parts(h, m, ui.am, ui.pm);
 
-  const layout = createEl('div', 'lp-time-layout');
+  const layout = createEl('div', s.classes.timeLayout);
 
-  const display = createEl('div', 'lp-time-display-block');
+  const display = createEl('div', s.classes.timeDisplayBlock);
   const makeSpan = (cls, text) => {
     const el = createEl('span', cls);
     el.textContent = text;
     return el;
   };
 
-  display.appendChild(makeSpan('lp-time-display-hours', clock.hourStr));
-  display.appendChild(makeSpan('lp-time-display-sep', ':'));
-  display.appendChild(makeSpan('lp-time-display-minutes', clock.minuteStr));
+  display.appendChild(makeSpan(s.classes.timeDisplayHours, clock.hourStr));
+  display.appendChild(makeSpan(s.classes.timeDisplaySep, ':'));
+  display.appendChild(makeSpan(s.classes.timeDisplayMinutes, clock.minuteStr));
   display.appendChild(document.createTextNode(' '));
-  display.appendChild(makeSpan('lp-time-display-ampm', clock.ampm));
+  display.appendChild(makeSpan(s.classes.timeDisplayAmpm, clock.ampm));
 
-  const slidersCol = createEl('div', 'lp-time-sliders-col');
+  const slidersCol = createEl('div', s.classes.timeSlidersCol);
 
   const makeSlider = (type, value, min, max, step) => {
-    const el = createEl('input', `lp-time-slider lp-time-slider--${type}`, {
+    const el = createEl('input', s.classes.timeSlider + ' ' + s.classes.timeSlider + '--' + type, {
       type: 'range',
       min: String(min),
       max: String(max),
       step: String(step),
-      'data-lp-time': type,
+      [s.attributes.time]: type,
       'aria-label': type === 'hours' ? ui.ariaTimeHours : ui.ariaTimeMinutes,
       'aria-valuemin': String(min),
       'aria-valuemax': String(max)
@@ -58,10 +58,10 @@ export function renderTimePanel(instance, container) {
     return el;
   };
 
-  const rowHours = createEl('div', 'lp-time-slider-row lp-time-slider-row--hours');
+  const rowHours = createEl('div', s.classes.timeSliderRow + ' ' + s.classes.timeSliderRow + '--hours');
   rowHours.appendChild(makeSlider('hours', h, s.minHours, s.maxHours, s.hoursStep));
 
-  const rowMinutes = createEl('div', 'lp-time-slider-row lp-time-slider-row--minutes');
+  const rowMinutes = createEl('div', s.classes.timeSliderRow + ' ' + s.classes.timeSliderRow + '--minutes');
   rowMinutes.appendChild(makeSlider('minutes', m, s.minMinutes, s.maxMinutes, s.minutesStep));
 
   slidersCol.appendChild(rowHours);
@@ -80,14 +80,14 @@ export function renderTimePanel(instance, container) {
  */
 export function syncTimePanelDom(instance) {
   const root = instance.$datepicker;
-  const block = root.querySelector('.lp-time-display-block');
+  const block = root.querySelector('.' + s.classes.timeDisplayBlock);
   if (!block) {
     return;
   }
 
-  const hoursSpan = block.querySelector('.lp-time-display-hours');
-  const minutesSpan = block.querySelector('.lp-time-display-minutes');
-  const ampmSpan = block.querySelector('.lp-time-display-ampm');
+  const hoursSpan = block.querySelector('.' + s.classes.timeDisplayHours);
+  const minutesSpan = block.querySelector('.' + s.classes.timeDisplayMinutes);
+  const ampmSpan = block.querySelector('.' + s.classes.timeDisplayAmpm);
   if (!hoursSpan || !minutesSpan || !ampmSpan) {
     return;
   }
@@ -101,8 +101,8 @@ export function syncTimePanelDom(instance) {
   minutesSpan.textContent = minuteStr;
   ampmSpan.textContent = ampm;
 
-  const hoursRange = root.querySelector('input[data-lp-time="hours"]');
-  const minutesRange = root.querySelector('input[data-lp-time="minutes"]');
+  const hoursRange = root.querySelector('input[' + s.attributes.time + '="hours"]');
+  const minutesRange = root.querySelector('input[' + s.attributes.time + '="minutes"]');
 
   const hv = String(hours);
   const mv = String(minutes);

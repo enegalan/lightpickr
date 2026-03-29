@@ -2,7 +2,7 @@ import { isSameDay, tsToYmd, ymdToTsStartOfDay, defaultMonthNames, getTranslatio
 import { yearGridYearValues } from '../../core/calendar-grid.js';
 import { createEl } from '../dom.js';
 import { buildDefaultNav } from '../context.js';
-import { applyRenderCellPatch } from '../render-cell.js';
+import { applyRenderCellPatch } from '../cell.js';
 
 /** @private */
 const THREE_COL_GRID_ROWS = 4;
@@ -15,23 +15,22 @@ const THREE_COL_GRID_COLS = 3;
  * @returns {void}
  */
 export function renderMonthView(instance, container) {
-  const s = instance._state;
-  const { y, m } = tsToYmd(s.viewDate);
-  const canGoUp = s.allowedViews.indexOf('year') >= 0;
-  const months = defaultMonthNames({ locale: s.locale }, s.monthsField);
+  const { y, m } = tsToYmd(instance._state.viewDate);
+  const canGoUp = instance._state.allowedViews.indexOf('year') >= 0;
+  const months = defaultMonthNames({ locale: instance._state.locale }, instance._state.monthsField);
 
   _renderThreeColumnGridView(
     instance,
     container,
     'month',
     canGoUp,
-    'lp-month-grid',
-    getTranslations(s).ariaMonthGrid,
+    instance._state.classes.monthGrid,
+    getTranslations(instance._state).ariaMonthGrid,
     (mi) => {
       const ts = ymdToTsStartOfDay(y, mi, 1);
       return _buildMonthYearGridCell(
         instance,
-        'data-lp-month',
+        instance._state.attributes.month,
         String(mi),
         mi === m,
         ts,
@@ -49,8 +48,7 @@ export function renderMonthView(instance, container) {
  * @returns {void}
  */
 export function renderYearView(instance, container) {
-  const s = instance._state;
-  const y = tsToYmd(s.viewDate).y;
+  const y = tsToYmd(instance._state.viewDate).y;
   const years = yearGridYearValues(y);
 
   _renderThreeColumnGridView(
@@ -58,13 +56,13 @@ export function renderYearView(instance, container) {
     container,
     'year',
     false,
-    'lp-year-grid',
-    getTranslations(s).ariaYearGrid,
+    instance._state.classes.yearGrid,
+    getTranslations(instance._state).ariaYearGrid,
     (i) => {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);
       const yyStr = String(yy);
-      return _buildMonthYearGridCell(instance, 'data-lp-year', yyStr, yy === y, ts, 'year', yyStr, yyStr);
+      return _buildMonthYearGridCell(instance, instance._state.attributes.year, yyStr, yy === y, ts, 'year', yyStr, yyStr);
     }
   );
 }
@@ -82,9 +80,8 @@ export function renderYearView(instance, container) {
  * @returns {HTMLElement}
  */
 function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, cellType, ariaLabel, textContent) {
-  const s = instance._state;
-  const c = s.classes;
-  const isFocused = s.focusDate != null && isSameDay(s.focusDate, ts);
+  const c = instance._state.classes;
+  const isFocused = instance._state.focusDate != null && isSameDay(instance._state.focusDate, ts);
   const cellClass =
     c.cell + (selected ? ' ' + c.cellSelected : '') + (isFocused ? ' ' + c.cellFocused : '');
   const attrs = {
@@ -98,7 +95,7 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
   const el = createEl('button', cellClass, attrs);
   el.textContent = textContent;
 
-  const out = s.onRenderCell({
+  const out = instance._state.onRenderCell({
     date: new Date(ts),
     cellType,
     datepicker: instance
@@ -134,24 +131,17 @@ function _renderThreeColumnGridView(instance, container, view, canGoUp, gridExtr
 
   const viewBody = createEl('div', c.viewBody);
   const grid = createEl('div', c.grid + ' ' + gridExtraClass, { role: 'grid', 'aria-label': ariaLabel });
-  _appendThreeColumnGrid(grid, buildCell);
-  viewBody.appendChild(grid);
-  container.appendChild(viewBody);
-}
 
-/**
- * @private
- * @param {HTMLElement} grid
- * @param {(cellIndex: number) => HTMLElement} buildCell
- * @returns {void}
- */
-function _appendThreeColumnGrid(grid, buildCell) {
   let index = 0;
   for (let r = 0; r < THREE_COL_GRID_ROWS; r++) {
-    const rowEl = createEl('div', 'lp-grid-row lp-grid-row--contents', { role: 'row' });
+    const rowEl = createEl('div', c.gridRow + ' ' + c.gridRow + '--contents', { role: 'row' });
     for (let col = 0; col < THREE_COL_GRID_COLS; col++) {
       rowEl.appendChild(buildCell(index++));
     }
     grid.appendChild(rowEl);
   }
+
+  viewBody.appendChild(grid);
+  container.appendChild(viewBody);
 }
+

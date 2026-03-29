@@ -141,12 +141,6 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  */
 
 /**
- * @callback LightpickrPositionFn
- * @param {LightpickrPositionCtx} ctx
- * @returns {void | ((hideDone: () => void) => void)}
- */
-
-/**
  * @typedef {Object} LightpickrInternalState
  * @property {boolean} inline
  * @property {boolean} range
@@ -373,9 +367,47 @@ export function createStateFromOptions(incomingRaw) {
 
 /**
  * @param {LightpickrInternalState} state
+ * @param {Partial<LightpickrOptions>} patch
+ * @returns {LightpickrInternalState}
+ */
+export function mergeOptionsIntoState(state, patch) {
+  const raw = Object.assign(_extractRawOptions(state), patch);
+  if (patch.render) {
+    raw.render = Object.assign({}, state.render, patch.render);
+  }
+  if (patch.classes) {
+    raw.classes = Object.assign({}, state.classes, patch.classes);
+  }
+  const next = createStateFromOptions(raw);
+  next.selectedDates = patch.selectedDates !== undefined ? next.selectedDates : state.selectedDates;
+  next.pendingRangeStart = state.pendingRangeStart;
+  next.rangeAnchor = state.rangeAnchor;
+  next.viewDate = patch.startDate !== undefined ? next.viewDate : state.viewDate;
+  next.focusDate = state.focusDate;
+  next.visible = state.visible;
+  if (patch.onlyTime === true) {
+    next.currentView = 'time';
+  } else if (patch.onlyTime === false) {
+    next.currentView = state.currentView === 'time' ? 'day' : state.currentView;
+  } else {
+    next.currentView =
+      patch.view !== undefined || patch.allowedViews !== undefined
+        ? clampViewToAllowed(next.allowedViews, next.currentView === 'time' ? 'day' : next.currentView)
+        : state.currentView;
+    if (next.onlyTime && next.currentView !== 'time') {
+      next.currentView = 'time';
+    }
+  }
+  next.timePart = Object.assign({}, state.timePart);
+  return next;
+}
+
+/**
+ * @private
+ * @param {LightpickrInternalState} state
  * @returns {LightpickrOptions}
  */
-export function extractRawOptions(state) {
+function _extractRawOptions(state) {
   return {
     inline: state.inline,
     multiple: state.multipleEnabled ? (Number.isFinite(state.multipleLimit) ? state.multipleLimit : true) : false,
@@ -429,41 +461,4 @@ export function extractRawOptions(state) {
     position: state.position,
     anchor: state.anchor
   };
-}
-
-/**
- * @param {LightpickrInternalState} state
- * @param {Partial<LightpickrOptions>} patch
- * @returns {LightpickrInternalState}
- */
-export function mergeOptionsIntoState(state, patch) {
-  const raw = Object.assign(extractRawOptions(state), patch);
-  if (patch.render) {
-    raw.render = Object.assign({}, state.render, patch.render);
-  }
-  if (patch.classes) {
-    raw.classes = Object.assign({}, state.classes, patch.classes);
-  }
-  const next = createStateFromOptions(raw);
-  next.selectedDates = patch.selectedDates !== undefined ? next.selectedDates : state.selectedDates;
-  next.pendingRangeStart = state.pendingRangeStart;
-  next.rangeAnchor = state.rangeAnchor;
-  next.viewDate = patch.startDate !== undefined ? next.viewDate : state.viewDate;
-  next.focusDate = state.focusDate;
-  next.visible = state.visible;
-  if (patch.onlyTime === true) {
-    next.currentView = 'time';
-  } else if (patch.onlyTime === false) {
-    next.currentView = state.currentView === 'time' ? 'day' : state.currentView;
-  } else {
-    next.currentView =
-      patch.view !== undefined || patch.allowedViews !== undefined
-        ? clampViewToAllowed(next.allowedViews, next.currentView === 'time' ? 'day' : next.currentView)
-        : state.currentView;
-    if (next.onlyTime && next.currentView !== 'time') {
-      next.currentView = 'time';
-    }
-  }
-  next.timePart = Object.assign({}, state.timePart);
-  return next;
 }

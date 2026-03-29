@@ -1,7 +1,7 @@
-import { yearBlockStartYear, yearGridYearValues, YEAR_GRID_COUNT, dayViewTimestampsForMonth } from '../core/calendar-grid.js';
+import { yearBlockStartYear, yearGridYearValues, YEAR_GRID_COUNT, buildDayMonthCells } from '../core/calendar-grid.js';
 import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay, defaultMonthNames } from '../core/utils.js';
 import { isDateDisabled } from '../core/selection.js';
-import { navNextDisabled, navPrevDisabled } from '../core/navigation.js';
+import { isNavOutOfRange } from '../core/navigation.js';
 import { createEl } from './dom.js';
 
 /**
@@ -32,7 +32,10 @@ export function getViewDatesFromState(state, view) {
   const { y, m } = tsToYmd(state.viewDate);
 
   if (v === 'day') {
-    return dayViewTimestampsForMonth(y, m, state.firstDayOfWeek);
+    const cells = buildDayMonthCells(y, m, state.firstDayOfWeek);
+    for (let i = 0; i < cells.length; i++) {
+      out.push(cells[i].ts);
+    }
   } else if (v === 'month') {
     for (let mi = 0; mi < 12; mi++) {
       out.push(ymdToTsStartOfDay(y, mi, 1));
@@ -85,7 +88,7 @@ export function publicStateSnapshot(instance) {
 export function buildDayCtx(instance, dayTs, outside) {
   const s = instance._state;
   const d = startOfDayTs(dayTs);
-  const flags = dayFlags(s, d, startOfDayTs(Date.now()));
+  const flags = _dayFlags(s, d);
   return {
     date: d,
     viewDate: s.viewDate,
@@ -106,33 +109,6 @@ export function buildDayCtx(instance, dayTs, outside) {
 /**
  * @param {object} instance
  * @param {'day'|'month'|'year'} view
- * @returns {string}
- */
-export function formatNavTitle(instance, view) {
-  const s = instance._state;
-  const titles = s.navTitles || {};
-  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
-  const resolver = titles[key];
-  if (typeof resolver === 'function') {
-    return String(resolver(instance));
-  }
-
-  const rawTemplate = typeof resolver === 'string' ? resolver : '';
-  const { y, m } = tsToYmd(s.viewDate);
-  const blockStart = yearBlockStartYear(y);
-  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
-  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
-  return rawTemplate
-    .replace(/yyyy1/g, String(blockStart))
-    .replace(/yyyy2/g, String(blockStart + YEAR_GRID_COUNT - 1))
-    .replace(/MMMM/g, monthLong || monthShort)
-    .replace(/yyyy/g, String(y))
-    .replace(/YYYY/g, String(y));
-}
-
-/**
- * @param {object} instance
- * @param {'day'|'month'|'year'} view
  * @param {boolean} canGoUp
  * @returns {HTMLElement}
  */
@@ -142,13 +118,13 @@ export function buildDefaultNav(instance, view, canGoUp) {
 
   const nav = createEl('div', c.nav);
 
-  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
+  const prev = createEl('button', c.navButton, { type: 'button', [s.attributes.nav]: 'prev' });
   prev.innerHTML = s.prevHtml;
-  const prevDisabled = navPrevDisabled(s);
+  const prevDisabled = isNavOutOfRange(s, -1);
 
-  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
+  const next = createEl('button', c.navButton, { type: 'button', [s.attributes.nav]: 'next' });
   next.innerHTML = s.nextHtml;
-  const nextDisabled = navNextDisabled(s);
+  const nextDisabled = isNavOutOfRange(s, 1);
 
   if (prevDisabled) {
     prev.disabled = true;
@@ -160,8 +136,8 @@ export function buildDefaultNav(instance, view, canGoUp) {
   }
 
   const titleTag = canGoUp ? 'button' : 'span';
-  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', 'data-lp-nav': 'title' } : {});
-  title.innerHTML = formatNavTitle(instance, view);
+  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', [s.attributes.nav]: 'title' } : {});
+  title.innerHTML = _formatNavTitle(instance, view);
 
   nav.appendChild(prev);
   nav.appendChild(title);
@@ -170,12 +146,26 @@ export function buildDefaultNav(instance, view, canGoUp) {
 }
 
 /**
- * @param {import('../core/state.js').LightpickrInternalState} s
- * @param {number} d
- * @param {number} today
+ * @param {import('../core/state.js').LightpickrClassMap} c
  * @returns {object}
  */
-export function dayFlags(s, d, today) {
+export function previewClassNames(c) {
+  return {
+    rangePreview: c.cellRangePreview,
+    rangePreviewMid: c.cellRangePreviewMid,
+    rangePreviewStartCap: c.cellRangePreviewStartCap,
+    rangePreviewEndCap: c.cellRangePreviewEndCap
+  };
+}
+
+/**
+ * @private
+ * @param {import('../core/state.js').LightpickrInternalState} s
+ * @param {number} d
+ * @returns {object}
+ */
+function _dayFlags(s, d) {
+  const today = startOfDayTs(Date.now());
   let isSelected = false;
   let isInRange = false;
   let isRangeStart = false;
@@ -216,14 +206,29 @@ export function dayFlags(s, d, today) {
 }
 
 /**
- * @param {import('../core/state.js').LightpickrClassMap} c
- * @returns {object}
+ * @private
+ * @param {object} instance
+ * @param {'day'|'month'|'year'} view
+ * @returns {string}
  */
-export function previewClassNames(c) {
-  return {
-    rangePreview: c.cellRangePreview,
-    rangePreviewMid: c.cellRangePreviewMid,
-    rangePreviewStartCap: c.cellRangePreviewStartCap,
-    rangePreviewEndCap: c.cellRangePreviewEndCap
-  };
+function _formatNavTitle(instance, view) {
+  const s = instance._state;
+  const titles = s.navTitles || {};
+  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
+  const resolver = titles[key];
+  if (typeof resolver === 'function') {
+    return String(resolver(instance));
+  }
+
+  const rawTemplate = typeof resolver === 'string' ? resolver : '';
+  const { y, m } = tsToYmd(s.viewDate);
+  const blockStart = yearBlockStartYear(y);
+  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
+  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
+  return rawTemplate
+    .replace(/yyyy1/g, String(blockStart))
+    .replace(/yyyy2/g, String(blockStart + YEAR_GRID_COUNT - 1))
+    .replace(/MMMM/g, monthLong || monthShort)
+    .replace(/yyyy/g, String(y))
+    .replace(/YYYY/g, String(y));
 }

@@ -12,7 +12,7 @@ export function syncPendingRangeHoverClasses(instance) {
   const c = s.classes;
 
   const { rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap } = previewClassNames(c);
-  const buttons = root.querySelectorAll('[data-lp-day]');
+  const buttons = root.querySelectorAll('[' + s.attributes.day + ']');
   for (let i = 0; i < buttons.length; i++) {
     const el = buttons[i];
     el.classList.remove(rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap);
@@ -38,7 +38,7 @@ export function syncPendingRangeHoverClasses(instance) {
 
   for (let i = 0; i < buttons.length; i++) {
     const el = /** @type {HTMLButtonElement} */ (buttons[i]);
-    const ts = parseElementNumber(el, 'data-lp-day');
+    const ts = parseElementNumber(el, s.attributes.day);
     if (ts == null) {
       continue;
     }
@@ -79,19 +79,19 @@ export function attachDelegatedHandlers(instance, root) {
   const offs = instance._delegateOffs || [];
   offs.forEach((fn) => fn());
 
-  const off1 = delegate(root, '[data-lp-day]', 'click', function (_ev, el) {
-    const ts = parseElementNumber(el, 'data-lp-day');
+  const off1 = delegate(root, '[' + s.attributes.day + ']', 'click', function (_ev, el) {
+    const ts = parseElementNumber(el, s.attributes.day);
     if (ts == null) {
       return;
     }
     instance._handleDayClick(ts);
   });
 
-  const off2 = delegate(root, '[data-lp-nav]', 'click', function (_ev, el) {
+  const off2 = delegate(root, '[' + s.attributes.nav + ']', 'click', function (_ev, el) {
     if (el instanceof HTMLButtonElement && el.disabled) {
       return;
     }
-    const act = el.getAttribute('data-lp-nav');
+    const act = el.getAttribute(s.attributes.nav);
     if (act === 'prev') {
       instance.prev();
     } else if (act === 'next') {
@@ -101,24 +101,24 @@ export function attachDelegatedHandlers(instance, root) {
     }
   });
 
-  const off3 = delegate(root, '[data-lp-month]', 'click', function (_ev, el) {
-    const monthIndex = parseElementNumber(el, 'data-lp-month');
+  const off3 = delegate(root, '[' + s.attributes.month + ']', 'click', function (_ev, el) {
+    const monthIndex = parseElementNumber(el, s.attributes.month);
     if (monthIndex == null) {
       return;
     }
     instance._handleMonthPick(monthIndex);
   });
 
-  const off4 = delegate(root, '[data-lp-year]', 'click', function (_ev, el) {
-    const y = parseElementNumber(el, 'data-lp-year');
+  const off4 = delegate(root, '[' + s.attributes.year + ']', 'click', function (_ev, el) {
+    const y = parseElementNumber(el, s.attributes.year);
     if (y == null) {
       return;
     }
     instance._handleYearPick(y);
   });
 
-  const offDayName = delegate(root, '[data-lp-day-name]', 'click', function (_ev, el) {
-    const dayIndex = parseElementNumber(el, 'data-lp-day-name');
+  const offDayName = delegate(root, '[' + s.attributes.dayName + ']', 'click', function (_ev, el) {
+    const dayIndex = parseElementNumber(el, s.attributes.dayName);
     if (dayIndex == null) {
       return;
     }
@@ -146,8 +146,8 @@ export function attachDelegatedHandlers(instance, root) {
     if (el == null) {
       return;
     }
-    const dayBtn = el.closest('[data-lp-day]');
-    const ts = parseElementNumber(dayBtn, 'data-lp-day');
+    const dayBtn = el.closest('[' + s.attributes.day + ']');
+    const ts = parseElementNumber(dayBtn, s.attributes.day);
     if (ts == null) {
       return;
     }

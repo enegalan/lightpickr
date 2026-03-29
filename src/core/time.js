@@ -14,36 +14,3 @@ export function setTimePart(state, hours, minutes) {
   return next;
 }
 
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @param {number} deltaHours
- * @returns {import('./state.js').LightpickrInternalState}
- */
-export function bumpHours(state, deltaHours) {
-  let h = state.timePart.hours + deltaHours;
-  while (h < 0) {
-    h += 24;
-  }
-  while (h > 23) {
-    h -= 24;
-  }
-  return setTimePart(state, h, state.timePart.minutes);
-}
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @param {number} deltaMinutes
- * @returns {import('./state.js').LightpickrInternalState}
- */
-export function bumpMinutes(state, deltaMinutes) {
-  let total = state.timePart.hours * 60 + state.timePart.minutes + deltaMinutes;
-  while (total < 0) {
-    total += 24 * 60;
-  }
-  while (total >= 24 * 60) {
-    total -= 24 * 60;
-  }
-  const h = Math.floor(total / 60);
-  const m = total % 60;
-  return setTimePart(state, h, m);
-}

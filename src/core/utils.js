@@ -1,4 +1,5 @@
 import lightpickrDefaults from './defaults.js';
+import { VIEW_ORDER } from './navigation.js';
 
 /** @type {Readonly<Record<string, string>>} */
 export const DEFAULT_TRANSLATIONS = Object.freeze(_localeStringFields(lightpickrDefaults.locale));
@@ -170,7 +171,7 @@ export function normalizeMultipleOption(multiple) {
  * @returns {string[]}
  */
 export function defaultMonthNames(opts, monthsField) {
-  const field = typeof monthsField === 'string' && monthsField.trim() ? monthsField.trim() : 'monthsShort';
+  const field = typeof monthsField === 'string' && monthsField.trim() ? monthsField.trim() : lightpickrDefaults.monthsField;
   if (opts.locale && typeof opts.locale === 'object') {
     const locale = opts.locale;
     if (Array.isArray(locale[field]) && locale[field].length === 12) {
@@ -282,7 +283,7 @@ export function normalizeAllowedViews(allowedViews) {
     add(allowedViews);
   }
   if (!out.length) {
-    return ['day', 'month', 'year'];
+    return VIEW_ORDER;
   }
   return out;
 }
@@ -296,13 +297,12 @@ export function clampViewToAllowed(allowedViews, requestedView) {
   if (allowedViews.indexOf(requestedView) >= 0) {
     return requestedView;
   }
-  const order = ['day', 'month', 'year'];
-  const reqIdx = order.indexOf(requestedView);
+  const reqIdx = VIEW_ORDER.indexOf(requestedView);
   let best = allowedViews[0];
   let bestDist = Number.POSITIVE_INFINITY;
   for (let i = 0; i < allowedViews.length; i++) {
     const cand = allowedViews[i];
-    const dist = Math.abs(order.indexOf(cand) - reqIdx);
+    const dist = Math.abs(VIEW_ORDER.indexOf(cand) - reqIdx);
     if (dist < bestDist) {
       bestDist = dist;
       best = cand;

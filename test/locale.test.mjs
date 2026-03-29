@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
 
 import { defaultMonthNames, defaultWeekdayNames, DEFAULT_TRANSLATIONS, getTranslations } from '../src/core/utils.js';
+import lightpickrDefaults from '../src/core/defaults.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const localeDir = join(__dirname, '../src/locale');
@@ -75,13 +76,13 @@ for (const { code, locale } of localeBundles) {
   test(`locale/${code}.js: Lightpickr DOM`, () => {
     const input = document.querySelector('#x');
     const picker = new Lightpickr(input, { inline: true, locale });
-    const headCells = picker.$datepicker.querySelectorAll('.lp-row--head .lp-head-cell');
+    const headCells = picker.$datepicker.querySelectorAll('.' + lightpickrDefaults.classes.row + '--head .' + lightpickrDefaults.classes.headCell);
     assert.equal(headCells.length, 7);
     const expected = weekdayHeadLabels(locale.weekdays, DEFAULT_FIRST_DAY);
     for (let i = 0; i < 7; i++) {
       assert.equal(headCells[i].textContent, expected[i]);
     }
-    const dayGrid = picker.$datepicker.querySelector('.lp-grid[role="grid"]');
+    const dayGrid = picker.$datepicker.querySelector('.' + lightpickrDefaults.classes.grid + '[role="grid"]');
     assert.ok(dayGrid);
     assert.equal(dayGrid.getAttribute('aria-label'), locale.ariaDayGrid);
     picker.destroy();
@@ -95,7 +96,7 @@ test('footer: custom btn labels', () => {
     locale: { btnToday: 'Hoy', btnClear: 'Vac' },
     buttons: ['today', 'clear']
   });
-  const footerBtns = pickerFooter.$datepicker.querySelectorAll('[data-lp-footer-action]');
+  const footerBtns = pickerFooter.$datepicker.querySelectorAll('[' + lightpickrDefaults.attributes.footerAction + ']');
   assert.equal(footerBtns[0].textContent, 'Hoy');
   assert.equal(footerBtns[1].textContent, 'Vac');
   pickerFooter.destroy();

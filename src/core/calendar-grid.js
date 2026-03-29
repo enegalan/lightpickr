@@ -34,10 +34,8 @@ export function yearGridYearValues(centerYear) {
  * @returns {{ ts: number, outside: boolean }[]}
  */
 export function buildDayMonthCells(y, m, firstDayOfWeek) {
-  const fd = firstDayOfWeek % 7;
-  const first = firstWeekdayOfMonth(y, m);
   const dim = daysInMonth(y, m);
-  const leading = (first - fd + 7) % 7;
+  const leading = (firstWeekdayOfMonth(y, m) - (firstDayOfWeek % 7) + 7) % 7;
 
   const prevY = m - 1 < 0 ? y - 1 : y;
   const prevM = m - 1 < 0 ? 11 : m - 1;
@@ -45,8 +43,7 @@ export function buildDayMonthCells(y, m, firstDayOfWeek) {
 
   let dayNum = 1;
   let nextMonthDay = 1;
-  const rows = Math.ceil((leading + dim) / 7);
-  const totalCells = Math.max(6, rows) * 7;
+  const totalCells = Math.max(6, Math.ceil((leading + dim) / 7)) * 7;
 
   const out = [];
   for (let cell = 0; cell < totalCells; cell++) {
@@ -65,21 +62,6 @@ export function buildDayMonthCells(y, m, firstDayOfWeek) {
       outside = true;
     }
     out.push({ ts, outside });
-  }
-  return out;
-}
-
-/**
- * @param {number} y
- * @param {number} m
- * @param {number} firstDayOfWeek
- * @returns {number[]}
- */
-export function dayViewTimestampsForMonth(y, m, firstDayOfWeek) {
-  const cells = buildDayMonthCells(y, m, firstDayOfWeek);
-  const out = [];
-  for (let i = 0; i < cells.length; i++) {
-    out.push(cells[i].ts);
   }
   return out;
 }
