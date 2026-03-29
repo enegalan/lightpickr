@@ -1,6 +1,6 @@
 import { yearGridYearValues } from './calendar-grid.js';
 import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
-import { isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from './utils.js';
+import { isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /** @type {number} */
 const GRID_COLS_MONTH_YEAR = 3;
@@ -219,14 +219,14 @@ export function nextStateAfterYearGridKey(state, key, shiftKey, yearGridDates) {
  * @returns {import('./state.js').LightpickrInternalState|null}
  */
 export function nextStateAfterViewHierarchyKey(state, key, altKey) {
-  if (state.onlyTime || (Boolean(altKey) && (key === 'ArrowUp' || key === 'ArrowDown'))) {
+  if (state.onlyTime) {
     return null;
   }
-  if (key === 'ArrowUp') {
-    return navigateUp(state);
-  }
-  if (key === 'ArrowDown') {
-    return navigateDown(state);
+  if (key === 'ArrowUp' || key === 'ArrowDown') {
+    if (!altKey) {
+      return null;
+    }
+    return key === 'ArrowUp' ? navigateUp(state) : navigateDown(state);
   }
   return null;
 }

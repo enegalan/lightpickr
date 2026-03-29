@@ -1,5 +1,6 @@
 import defaultLocale from '../locale/en.js';
 
+/** @type {import('./state.js').LightpickrOptions} */
 export default {
   classes: {
     container: 'lp',
@@ -80,6 +81,8 @@ export default {
   format: 'YYYY-MM-DD',
   monthsField: 'monthsShort',
   view: 'day',
+  viewOrder: ['day', 'month', 'year'],
+  weekendIndexes: [6, 0],
   showOtherMonths: true,
   selectOtherMonths: true,
   moveToOtherMonthsOnSelect: true,

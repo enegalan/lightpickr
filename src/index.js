@@ -1,8 +1,7 @@
 import { createStateFromOptions, mergeOptionsIntoState } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
 import { applyDaySelection, applyRangeEndpointDrag, clearSelectionState, selectDateExplicit, unselectDate } from './core/selection.js';
-import { cloneSelectedDates, formatDate, normalizeRangePairs, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './core/utils.js';
-import { setTimePart } from './core/time.js';
+import { setTimePart, cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay, parseSelectedDates } from './utils/time.js';
 import { syncTimePanelDom } from './render/time-panel.js';
 import { attachDelegatedHandlers, syncPendingRangeHoverClasses } from './render/handlers.js';
 import { renderContainer } from './render/container.js';
@@ -17,7 +16,7 @@ import lightpickrDefaults from './core/defaults.js';
  * @param {import('./core/state.js').LightpickrOptions} options
  * @returns {void}
  */
-export function Lightpickr(target, options) {
+function Lightpickr(target, options) {
   const el = target instanceof HTMLElement ? target : document.querySelector(target);
   if (!el) {
     throw new Error('Lightpickr: target not found');
@@ -189,7 +188,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
       return;
     }
     const next = Object.assign({}, this._state);
-    next.selectedDates = normalizeRangePairs(date, this._state.multipleLimit);
+    next.selectedDates = /** @type {number[][]} */ (parseSelectedDates({ range: true, multipleEnabled: false, multipleLimit: this._state.multipleLimit }, date));
     this._commit(next, { emitSelect: true, selectTrigger: 'select' });
     if (opts && opts.close && this._state.closeOnSelect) {
       this.hide();
@@ -416,7 +415,7 @@ Lightpickr.prototype.use = function (plugin) {
  * @returns {void}
  */
 Lightpickr.prototype._mount = function () {
-  this.$datepicker.setAttribute(this._state.classes.root, '');
+  this.$datepicker.setAttribute(this._state.attributes.root, '');
   if (this._state.inline) {
     this.$el.appendChild(this.$datepicker);
     this.$datepicker.classList.add(this._state.classes.inline);
@@ -444,18 +443,18 @@ Lightpickr.prototype._mount = function () {
  * @returns {void}
  */
 Lightpickr.prototype._syncFooterHandlers = function () {
-  const actions = this.$datepicker.querySelectorAll('[' + this._state.classes.footerAction + ']');
+  const actions = this.$datepicker.querySelectorAll('[' + this._state.attributes.footerAction + ']');
   for (let i = 0; i < actions.length; i++) {
     const el = actions[i];
     if (!(el instanceof HTMLElement)) {
       continue;
     }
-    if (el.getAttribute(this._state.classes.footerBound) === '1') {
+    if (el.getAttribute(this._state.attributes.footerBound) === '1') {
       continue;
     }
-    el.setAttribute(this._state.classes.footerBound, '1');
+    el.setAttribute(this._state.attributes.footerBound, '1');
     el.addEventListener('click', () => {
-      const action = el.getAttribute(this._state.classes.footerAction);
+      const action = el.getAttribute(this._state.attributes.footerAction);
       if (action === 'today') {
         const next = Object.assign({}, this._state);
         const now = new Date();
@@ -481,14 +480,14 @@ Lightpickr.prototype._attachRangeDragHandlers = function () {
     if (!(ev.target instanceof HTMLElement)) {
       return;
     }
-    const dayBtn = ev.target.closest('[' + this._state.classes.day + ']');
+    const dayBtn = ev.target.closest('[' + this._state.attributes.day + ']');
     if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
       return;
     }
     if (!(dayBtn.classList.contains(this._state.classes.cellRangeStart) || dayBtn.classList.contains(this._state.classes.cellRangeEnd))) {
       return;
     }
-    const ts = parseElementNumber(dayBtn, this._state.classes.day);
+    const ts = parseElementNumber(dayBtn, this._state.attributes.day);
     if (ts == null) {
       return;
     }
@@ -523,11 +522,11 @@ Lightpickr.prototype._attachRangeDragHandlers = function () {
     if (!(target instanceof HTMLElement)) {
       return;
     }
-    const dayBtn = target.closest('[' + this._state.classes.day + ']');
+    const dayBtn = target.closest('[' + this._state.attributes.day + ']');
     if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
       return;
     }
-    const ts = parseElementNumber(dayBtn, this._state.classes.day);
+    const ts = parseElementNumber(dayBtn, this._state.attributes.day);
     if (ts == null) {
       return;
     }
@@ -567,7 +566,7 @@ Lightpickr.prototype._defaultPositionReference = function () {
   const fields = root.querySelectorAll('input, textarea');
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
-    const hostRoot = field.closest('[' + this._state.classes.root + ']');
+    const hostRoot = field.closest('[' + this._state.attributes.root + ']');
     if (hostRoot && root.contains(hostRoot) && hostRoot !== this.$datepicker) {
       continue;
     }
@@ -730,7 +729,7 @@ Lightpickr.prototype._focusActiveKeyboardCell = function () {
   if (this.isDestroyed) {
     return;
   }
-  const sel = '[' + this._state.classes.day + '][tabindex="0"], [' + this._state.classes.month + '][tabindex="0"], [' + this._state.classes.year + '][tabindex="0"]';
+  const sel = '[' + this._state.attributes.day + '][tabindex="0"], [' + this._state.attributes.month + '][tabindex="0"], [' + this._state.attributes.year + '][tabindex="0"]';
   const el = this.$datepicker.querySelector(sel);
   if (el instanceof HTMLElement) {
     el.focus();
@@ -1129,7 +1128,7 @@ Lightpickr.prototype._onTimeInputChange = function (ev) {
   if (!(t instanceof HTMLInputElement) || !this.$datepicker.contains(t)) {
     return;
   }
-  const kind = t.getAttribute(this._state.classes.time);
+  const kind = t.getAttribute(this._state.attributes.time);
   const applyTime = (h, mm) => {
     if (!Number.isFinite(h) || !Number.isFinite(mm)) {
       return;
@@ -1180,7 +1179,6 @@ Object.defineProperties(Lightpickr.prototype, {
     }
   }
 });
-
 
 /**
  * @private
@@ -1345,3 +1343,5 @@ function _applyMonthYearGridKeydown(picker, ev, kind) {
     _scheduleFocusActiveKeyboardCell(picker);
   }
 }
+
+export default Lightpickr;

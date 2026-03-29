@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { startOfDayTs, toTimestamp } from '../src/core/utils.js';
+import { startOfDayTs, toTimestamp } from '../src/utils/time.js';
 
 assert.equal(toTimestamp('2026-03-15'), startOfDayTs(new Date(2026, 2, 15).getTime()));
 assert.equal(toTimestamp('2026-03-15T14:30'), new Date(2026, 2, 15, 14, 30, 0, 0).getTime());

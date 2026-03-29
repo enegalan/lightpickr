@@ -1,24 +1,23 @@
-import { startOfDayTs } from '../core/utils.js';
+import { startOfDayTs } from '../utils/time.js';
 import { delegate, parseElementNumber } from './dom.js';
-import { previewClassNames } from './context.js';
 
 /**
  * @param {object} instance
  * @returns {void}
  */
 export function syncPendingRangeHoverClasses(instance) {
-  const root = instance.$datepicker;
-  const s = instance._state;
-  const c = s.classes;
+  const rangePreview = instance._state.classes.cellRangePreview;
+  const rangePreviewMid = instance._state.classes.cellRangePreviewMid;
+  const rangePreviewStartCap = instance._state.classes.cellRangePreviewStartCap;
+  const rangePreviewEndCap = instance._state.classes.cellRangePreviewEndCap;
 
-  const { rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap } = previewClassNames(c);
-  const buttons = root.querySelectorAll('[' + s.attributes.day + ']');
+  const buttons = instance.$datepicker.querySelectorAll('[' + instance._state.attributes.day + ']');
   for (let i = 0; i < buttons.length; i++) {
     const el = buttons[i];
     el.classList.remove(rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap);
   }
 
-  if (!s.range || s.pendingRangeStart == null) {
+  if (!instance._state.range || instance._state.pendingRangeStart == null) {
     return;
   }
 
@@ -27,7 +26,7 @@ export function syncPendingRangeHoverClasses(instance) {
     return;
   }
 
-  const anchor = startOfDayTs(s.pendingRangeStart);
+  const anchor = startOfDayTs(instance._state.pendingRangeStart);
   const hover = startOfDayTs(hoverRaw);
   if (anchor === hover) {
     return;
@@ -38,7 +37,7 @@ export function syncPendingRangeHoverClasses(instance) {
 
   for (let i = 0; i < buttons.length; i++) {
     const el = /** @type {HTMLButtonElement} */ (buttons[i]);
-    const ts = parseElementNumber(el, s.attributes.day);
+    const ts = parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       continue;
     }
@@ -79,19 +78,19 @@ export function attachDelegatedHandlers(instance, root) {
   const offs = instance._delegateOffs || [];
   offs.forEach((fn) => fn());
 
-  const off1 = delegate(root, '[' + s.attributes.day + ']', 'click', function (_ev, el) {
-    const ts = parseElementNumber(el, s.attributes.day);
+  const off1 = delegate(root, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
+    const ts = parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
     instance._handleDayClick(ts);
   });
 
-  const off2 = delegate(root, '[' + s.attributes.nav + ']', 'click', function (_ev, el) {
+  const off2 = delegate(root, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
     if (el instanceof HTMLButtonElement && el.disabled) {
       return;
     }
-    const act = el.getAttribute(s.attributes.nav);
+    const act = el.getAttribute(instance._state.attributes.nav);
     if (act === 'prev') {
       instance.prev();
     } else if (act === 'next') {
@@ -101,24 +100,24 @@ export function attachDelegatedHandlers(instance, root) {
     }
   });
 
-  const off3 = delegate(root, '[' + s.attributes.month + ']', 'click', function (_ev, el) {
-    const monthIndex = parseElementNumber(el, s.attributes.month);
+  const off3 = delegate(root, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
+    const monthIndex = parseElementNumber(el, instance._state.attributes.month);
     if (monthIndex == null) {
       return;
     }
     instance._handleMonthPick(monthIndex);
   });
 
-  const off4 = delegate(root, '[' + s.attributes.year + ']', 'click', function (_ev, el) {
-    const y = parseElementNumber(el, s.attributes.year);
+  const off4 = delegate(root, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
+    const y = parseElementNumber(el, instance._state.attributes.year);
     if (y == null) {
       return;
     }
     instance._handleYearPick(y);
   });
 
-  const offDayName = delegate(root, '[' + s.attributes.dayName + ']', 'click', function (_ev, el) {
-    const dayIndex = parseElementNumber(el, s.attributes.dayName);
+  const offDayName = delegate(root, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
+    const dayIndex = parseElementNumber(el, instance._state.attributes.dayName);
     if (dayIndex == null) {
       return;
     }
@@ -146,8 +145,8 @@ export function attachDelegatedHandlers(instance, root) {
     if (el == null) {
       return;
     }
-    const dayBtn = el.closest('[' + s.attributes.day + ']');
-    const ts = parseElementNumber(dayBtn, s.attributes.day);
+    const dayBtn = el.closest('[' + instance._state.attributes.day + ']');
+    const ts = parseElementNumber(dayBtn, instance._state.attributes.day);
     if (ts == null) {
       return;
     }

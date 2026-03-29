@@ -1,4 +1,5 @@
-import { isSameDay, tsToYmd, ymdToTsStartOfDay, defaultMonthNames, getTranslations } from '../../core/utils.js';
+import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
+import { isSameDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { yearGridYearValues } from '../../core/calendar-grid.js';
 import { createEl } from '../dom.js';
 import { buildDefaultNav } from '../context.js';

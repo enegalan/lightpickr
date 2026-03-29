@@ -1,8 +1,7 @@
 import { YEAR_GRID_COUNT, YEAR_GRID_RADIUS } from './calendar-grid.js';
-import { addMonths, addYears, clampViewToAllowed, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './utils.js';
-
-/** @type {('day'|'month'|'year')[]} */
-export const VIEW_ORDER = ['day', 'month', 'year'];
+import { clampView } from '../utils/view.js';
+import { addMonths, addYears, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
+import lightpickrDefaults from './defaults.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -111,7 +110,7 @@ export function navigateMonthKeepFocusMonth(state, dir) {
  */
 export function navigateUp(state) {
   const next = Object.assign({}, state);
-  const idx = VIEW_ORDER.indexOf(state.currentView);
+  const idx = lightpickrDefaults.viewOrder.indexOf(state.currentView);
   if (state.currentView === 'time') {
     if (state.onlyTime) {
       return next;
@@ -119,9 +118,9 @@ export function navigateUp(state) {
     next.currentView = 'day';
     return next;
   }
-  if (idx >= 0 && idx < VIEW_ORDER.length - 1) {
-    const requested = VIEW_ORDER[idx + 1];
-    next.currentView = clampViewToAllowed(state.allowedViews, requested);
+  if (idx >= 0 && idx < lightpickrDefaults.viewOrder.length - 1) {
+    const requested = lightpickrDefaults.viewOrder[idx + 1];
+    next.currentView = clampView(state.allowedViews, requested);
   }
   return next;
 }
@@ -132,10 +131,10 @@ export function navigateUp(state) {
  */
 export function navigateDown(state) {
   const next = Object.assign({}, state);
-  const idx = VIEW_ORDER.indexOf(state.currentView);
+  const idx = lightpickrDefaults.viewOrder.indexOf(state.currentView);
   if (idx > 0) {
-    const requested = VIEW_ORDER[idx - 1];
-    next.currentView = clampViewToAllowed(state.allowedViews, requested);
+    const requested = lightpickrDefaults.viewOrder[idx - 1];
+    next.currentView = clampView(state.allowedViews, requested);
   }
   return next;
 }
@@ -151,9 +150,9 @@ export function setCurrentViewState(state, view, params) {
   if (state.onlyTime) {
     next.currentView = 'time';
   } else if (view === 'time') {
-    next.currentView = state.enableTime ? 'time' : clampViewToAllowed(state.allowedViews, 'day');
+    next.currentView = state.enableTime ? 'time' : clampView(state.allowedViews, 'day');
   } else {
-    next.currentView = clampViewToAllowed(state.allowedViews, view);
+    next.currentView = clampView(state.allowedViews, view);
   }
   if (params && params.date != null) {
     const raw = toTimestamp(params.date);

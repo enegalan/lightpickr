@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
 
-import { defaultMonthNames, defaultWeekdayNames, DEFAULT_TRANSLATIONS, getTranslations } from '../src/core/utils.js';
+import { defaultMonthNames, defaultWeekdayNames, DEFAULT_TRANSLATIONS, getTranslations } from '../src/utils/locale.js';
 import lightpickrDefaults from '../src/core/defaults.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -1,4 +1,4 @@
-import { getTranslations } from '../core/utils.js';
+import { getTranslations } from '../utils/locale.js';
 import { createEl } from './dom.js';
 import { buildDayCtx } from './context.js';
 

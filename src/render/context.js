@@ -1,5 +1,6 @@
 import { yearBlockStartYear, yearGridYearValues, YEAR_GRID_COUNT, buildDayMonthCells } from '../core/calendar-grid.js';
-import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay, defaultMonthNames } from '../core/utils.js';
+import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay } from '../utils/time.js';
+import { defaultMonthNames } from '../utils/locale.js';
 import { isDateDisabled } from '../core/selection.js';
 import { isNavOutOfRange } from '../core/navigation.js';
 import { createEl } from './dom.js';
@@ -54,28 +55,27 @@ export function getViewDatesFromState(state, view) {
  * @returns {object}
  */
 export function publicStateSnapshot(instance) {
-  const s = instance._state;
   return {
-    inline: s.inline,
-    range: s.range,
-    multipleLimit: s.multipleLimit,
-    multipleEnabled: s.multipleEnabled,
-    enableTime: s.enableTime,
-    onlyTime: s.onlyTime,
-    minDate: s.minDate,
-    maxDate: s.maxDate,
-    disabledDates: s.disabledDatesSorted.slice(),
-    locale: s.locale,
-    firstDayOfWeek: s.firstDayOfWeek,
-    weekendIndexes: s.weekendIndexes.slice(),
-    format: s.format,
-    currentView: s.currentView,
-    viewDate: s.viewDate,
-    focusDate: s.focusDate,
-    visible: s.visible,
-    selectedDates: cloneSelectedDates(s.selectedDates),
-    timePart: Object.assign({}, s.timePart),
-    allowedViews: s.allowedViews.slice()
+    inline: instance._state.inline,
+    range: instance._state.range,
+    multipleLimit: instance._state.multipleLimit,
+    multipleEnabled: instance._state.multipleEnabled,
+    enableTime: instance._state.enableTime,
+    onlyTime: instance._state.onlyTime,
+    minDate: instance._state.minDate,
+    maxDate: instance._state.maxDate,
+    disabledDates: instance._state.disabledDatesSorted.slice(),
+    locale: instance._state.locale,
+    firstDayOfWeek: instance._state.firstDayOfWeek,
+    weekendIndexes: instance._state.weekendIndexes.slice(),
+    format: instance._state.format,
+    currentView: instance._state.currentView,
+    viewDate: instance._state.viewDate,
+    focusDate: instance._state.focusDate,
+    visible: instance._state.visible,
+    selectedDates: cloneSelectedDates(instance._state.selectedDates),
+    timePart: Object.assign({}, instance._state.timePart),
+    allowedViews: instance._state.allowedViews.slice()
   };
 }
 
@@ -86,21 +86,20 @@ export function publicStateSnapshot(instance) {
  * @returns {RenderCtx}
  */
 export function buildDayCtx(instance, dayTs, outside) {
-  const s = instance._state;
   const d = startOfDayTs(dayTs);
-  const flags = _dayFlags(s, d);
+  const flags = _dayFlags(instance._state, d);
   return {
     date: d,
-    viewDate: s.viewDate,
+    viewDate: instance._state.viewDate,
     isSelected: flags.isSelected,
     isDisabled: flags.isDisabled,
     isToday: flags.isToday,
     isInRange: flags.isInRange,
     isRangeStart: flags.isRangeStart,
     isRangeEnd: flags.isRangeEnd,
-    isFocused: s.focusDate != null && isSameDay(s.focusDate, d),
+    isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, d),
     isOutside: outside,
-    isWeekend: s.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
+    isWeekend: instance._state.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
     state: publicStateSnapshot(instance),
     instance: instance
   };
@@ -113,18 +112,17 @@ export function buildDayCtx(instance, dayTs, outside) {
  * @returns {HTMLElement}
  */
 export function buildDefaultNav(instance, view, canGoUp) {
-  const s = instance._state;
-  const c = s.classes;
+  const c = instance._state.classes;
 
   const nav = createEl('div', c.nav);
 
-  const prev = createEl('button', c.navButton, { type: 'button', [s.attributes.nav]: 'prev' });
-  prev.innerHTML = s.prevHtml;
-  const prevDisabled = isNavOutOfRange(s, -1);
+  const prev = createEl('button', c.navButton, { type: 'button', [instance._state.attributes.nav]: 'prev' });
+  prev.innerHTML = instance._state.prevHtml;
+  const prevDisabled = isNavOutOfRange(instance._state, -1);
 
-  const next = createEl('button', c.navButton, { type: 'button', [s.attributes.nav]: 'next' });
-  next.innerHTML = s.nextHtml;
-  const nextDisabled = isNavOutOfRange(s, 1);
+  const next = createEl('button', c.navButton, { type: 'button', [instance._state.attributes.nav]: 'next' });
+  next.innerHTML = instance._state.nextHtml;
+  const nextDisabled = isNavOutOfRange(instance._state, 1);
 
   if (prevDisabled) {
     prev.disabled = true;
@@ -136,26 +134,13 @@ export function buildDefaultNav(instance, view, canGoUp) {
   }
 
   const titleTag = canGoUp ? 'button' : 'span';
-  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', [s.attributes.nav]: 'title' } : {});
+  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', [instance._state.attributes.nav]: 'title' } : {});
   title.innerHTML = _formatNavTitle(instance, view);
 
   nav.appendChild(prev);
   nav.appendChild(title);
   nav.appendChild(next);
   return nav;
-}
-
-/**
- * @param {import('../core/state.js').LightpickrClassMap} c
- * @returns {object}
- */
-export function previewClassNames(c) {
-  return {
-    rangePreview: c.cellRangePreview,
-    rangePreviewMid: c.cellRangePreviewMid,
-    rangePreviewStartCap: c.cellRangePreviewStartCap,
-    rangePreviewEndCap: c.cellRangePreviewEndCap
-  };
 }
 
 /**

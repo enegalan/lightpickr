@@ -1,5 +1,6 @@
 import { buildDayMonthCells } from '../../core/calendar-grid.js';
-import { formatDate, tsToYmd, defaultWeekdayNames, getTranslations } from '../../core/utils.js';
+import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
+import { formatDate, tsToYmd } from '../../utils/time.js';
 import { createEl } from '../dom.js';
 import { buildDayCtx, buildDefaultNav } from '../context.js';
 import { applyRenderCellPatch } from '../cell.js';

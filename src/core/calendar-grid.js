@@ -1,4 +1,4 @@
-import { daysInMonth, firstWeekdayOfMonth, ymdToTsStartOfDay } from './utils.js';
+import { daysInMonth, firstWeekdayOfMonth, ymdToTsStartOfDay } from '../utils/time.js';
 
 /** @type {number} */
 export const YEAR_GRID_RADIUS = 5;

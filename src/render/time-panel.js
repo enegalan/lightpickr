@@ -1,4 +1,5 @@
-import { pad2, getTranslations } from '../core/utils.js';
+import { getTranslations } from '../utils/locale.js';
+import { pad2 } from '../utils/common.js';
 import { createEl } from './dom.js';
 import { buildDayCtx } from './context.js';
 
@@ -80,29 +81,28 @@ export function renderTimePanel(instance, container) {
  */
 export function syncTimePanelDom(instance) {
   const root = instance.$datepicker;
-  const block = root.querySelector('.' + s.classes.timeDisplayBlock);
+  const block = root.querySelector('.' + instance._state.classes.timeDisplayBlock);
   if (!block) {
     return;
   }
 
-  const hoursSpan = block.querySelector('.' + s.classes.timeDisplayHours);
-  const minutesSpan = block.querySelector('.' + s.classes.timeDisplayMinutes);
-  const ampmSpan = block.querySelector('.' + s.classes.timeDisplayAmpm);
+  const hoursSpan = block.querySelector('.' + instance._state.classes.timeDisplayHours);
+  const minutesSpan = block.querySelector('.' + instance._state.classes.timeDisplayMinutes);
+  const ampmSpan = block.querySelector('.' + instance._state.classes.timeDisplayAmpm);
   if (!hoursSpan || !minutesSpan || !ampmSpan) {
     return;
   }
 
-  const s = instance._state;
-  const ui = getTranslations(s);
-  const { hours, minutes } = s.timePart;
+  const ui = getTranslations(instance._state);
+  const { hours, minutes } = instance._state.timePart;
   const { hourStr, minuteStr, ampm, fullLabel } = _formatClock12Parts(hours, minutes, ui.am, ui.pm);
 
   hoursSpan.textContent = hourStr;
   minutesSpan.textContent = minuteStr;
   ampmSpan.textContent = ampm;
 
-  const hoursRange = root.querySelector('input[' + s.attributes.time + '="hours"]');
-  const minutesRange = root.querySelector('input[' + s.attributes.time + '="minutes"]');
+  const hoursRange = root.querySelector('input[' + instance._state.attributes.time + '="hours"]');
+  const minutesRange = root.querySelector('input[' + instance._state.attributes.time + '="minutes"]');
 
   const hv = String(hours);
   const mv = String(minutes);

@@ -1,4 +1,5 @@
-import { cloneSelectedDates, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp, trimFifo } from './utils.js';
+import { cloneSelectedDates, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { trimFifo } from '../utils/common.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state

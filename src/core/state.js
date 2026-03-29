@@ -1,5 +1,7 @@
+import { clampView } from '../utils/view.js';
+import { parseSelectedDates, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { normalizeShowEvents, normalizeWeekendIndexes, normalizeAllowedViews, normalizeFirstDay } from '../utils/normalize.js';
 import lightpickrDefaults from './defaults.js';
-import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalizeMultipleOption, normalizeShowEvents, normalizeTimeBounds, normalizeViewOption, normalizeWeekendIndexes, normalizeRangePairs, startOfDayTs, trimFifo, toTimestamp } from './utils.js';
 
 /**
  * @typedef {Object} LightpickrNavTitles
@@ -74,6 +76,22 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  */
 
 /**
+ * @typedef {Object} LightpickrPositionCtx
+ * @property {HTMLDivElement} $datepicker
+ * @property {HTMLElement} $target
+ * @property {HTMLElement} $anchor
+ * @property {HTMLElement} $pointer
+ * @property {boolean} isViewChange
+ * @property {() => void} done
+ */
+
+/**
+ * @callback LightpickrPositionFn
+ * @param {LightpickrPositionCtx} ctx
+ * @returns {void | (() => void)}
+ */
+
+/**
  * @typedef {Object} LightpickrOptions
  * @property {boolean} [inline]
  * @property {boolean|number} [multiple]
@@ -126,18 +144,10 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  * @property {() => void} [onDestroy]
  * @property {Partial<LightpickrRenderHooks>} [render]
  * @property {Partial<LightpickrClassMap>} [classes]
+ * @property {Record<string, string>} [attributes]
+ * @property {Record<string, string>} [properties]
  * @property {string | LightpickrPositionFn} [position]
  * @property {string | HTMLElement | null} [anchor]
- */
-
-/**
- * @typedef {Object} LightpickrPositionCtx
- * @property {HTMLDivElement} $datepicker
- * @property {HTMLElement} $target
- * @property {HTMLElement} $anchor
- * @property {HTMLElement} $pointer
- * @property {boolean} isViewChange
- * @property {() => void} done
  */
 
 /**
@@ -190,6 +200,8 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  * @property {() => void} onDestroy
  * @property {LightpickrRenderHooks} render
  * @property {LightpickrClassMap} classes
+ * @property {Record<string, string>} attributes
+ * @property {Record<string, string>} properties
  * @property {'day'|'month'|'year'|'time'} currentView
  * @property {number} viewDate
  * @property {number|null} focusDate
@@ -203,35 +215,6 @@ import { clampViewToAllowed, normalizeAllowedViews, normalizeFirstDay, normalize
  */
 
 /**
- * @param {LightpickrInternalState} state
- * @param {(Date|string|number)[] | false | undefined} selectedDates
- * @returns {number[]|number[][]}
- */
-function parseInitialSelectedDates(state, selectedDates) {
-  if (!Array.isArray(selectedDates)) {
-    return [];
-  }
-  if (state.range) {
-    return normalizeRangePairs(selectedDates, state.multipleLimit);
-  }
-  const normalized = [];
-  for (let i = 0; i < selectedDates.length; i++) {
-    const ts = toTimestamp(selectedDates[i]);
-    if (ts == null) {
-      continue;
-    }
-    const day = startOfDayTs(ts);
-    if (normalized.indexOf(day) < 0) {
-      normalized.push(day);
-    }
-  }
-  if (state.multipleEnabled) {
-    return trimFifo(normalized, state.multipleLimit);
-  }
-  return normalized.length ? [normalized[0]] : [];
-}
-
-/**
  * @param {Partial<LightpickrOptions>} incomingRaw
  * @returns {LightpickrInternalState}
  */
@@ -243,9 +226,26 @@ export function createStateFromOptions(incomingRaw) {
   raw.classes = { ...lightpickrDefaults.classes, ...(incoming.classes ?? {}) };
   raw.render = { ...lightpickrDefaults.render, ...(incoming.render ?? {}) };
   raw.navTitles = { ...lightpickrDefaults.navTitles, ...(incoming.navTitles ?? {}) };
+  raw.attributes = { ...lightpickrDefaults.attributes, ...(incoming.attributes ?? {}) };
+  raw.properties = { ...lightpickrDefaults.properties, ...(incoming.properties ?? {}) };
   const onlyTime = Boolean(raw.onlyTime);
   const range = onlyTime ? false : Boolean(raw.range);
-  const { multipleLimit, multipleEnabled } = normalizeMultipleOption(onlyTime ? false : raw.multiple);
+  const multiple = onlyTime ? false : raw.multiple;
+  let multipleLimit = 1;
+  let multipleEnabled = false;
+  if (multiple === true) {
+    multipleLimit = Number.POSITIVE_INFINITY;
+    multipleEnabled = true;
+  } else if (multiple === false || multiple == null || multiple === 0 || multiple === 1) {
+    multipleLimit = 1;
+    multipleEnabled = false;
+  } else {
+    const n = Number(multiple);
+    if (Number.isFinite(n) && n > 1) {
+      multipleLimit = Math.floor(n);
+      multipleEnabled = true;
+    }
+  }
   const minTs = toTimestamp(raw.minDate);
   const maxTs = toTimestamp(raw.maxDate);
   const disabled = Array.isArray(raw.disabledDates) ? raw.disabledDates.map(toTimestamp).filter((t) => t != null) : [];
@@ -261,12 +261,12 @@ export function createStateFromOptions(incomingRaw) {
 
   /** @type {LightpickrRenderHooks} */
   const render = {
-    container: raw.render && raw.render.container ? raw.render.container : null,
-    header: raw.render && raw.render.header ? raw.render.header : null,
-    nav: raw.render && raw.render.nav ? raw.render.nav : null,
-    grid: raw.render && raw.render.grid ? raw.render.grid : null,
-    time: raw.render && raw.render.time ? raw.render.time : null,
-    footer: raw.render && raw.render.footer ? raw.render.footer : null
+    container: raw.render?.container ?? null,
+    header: raw.render?.header ?? null,
+    nav: raw.render?.nav ?? null,
+    grid: raw.render?.grid ?? null,
+    time: raw.render?.time ?? null,
+    footer: raw.render?.footer ?? null
   };
 
   const cls = Object.assign({}, raw.classes);
@@ -284,8 +284,7 @@ export function createStateFromOptions(incomingRaw) {
     1;
 
   const allowedViews = normalizeAllowedViews(raw.allowedViews);
-  const requestedView = normalizeViewOption(raw.view);
-  const initialView = clampViewToAllowed(allowedViews, requestedView);
+  const initialView = clampView(allowedViews, raw.view);
 
   const closeOnSelect =
     typeof raw.autoClose === 'boolean'
@@ -294,7 +293,14 @@ export function createStateFromOptions(incomingRaw) {
 
   const navTitles = Object.assign({}, raw.navTitles);
 
-  const tb = normalizeTimeBounds(raw.minHours, raw.maxHours, raw.minMinutes, raw.maxMinutes, raw.hoursStep, raw.minutesStep);
+  const minHours = Number.isFinite(Number(raw.minHours)) ? Math.max(0, Math.min(23, Math.floor(Number(raw.minHours)))) : 0;
+  const rawMaxHours = Number.isFinite(Number(raw.maxHours)) ? Math.floor(Number(raw.maxHours)) : 24;
+  const maxHours = Math.max(minHours, Math.min(23, rawMaxHours >= 24 ? 23 : rawMaxHours));
+  const minMinutes = Number.isFinite(Number(raw.minMinutes)) ? Math.max(0, Math.min(59, Math.floor(Number(raw.minMinutes)))) : 0;
+  const rawMaxMinutes = Number.isFinite(Number(raw.maxMinutes)) ? Math.max(minMinutes, Math.min(59, Math.floor(Number(raw.maxMinutes)))) : 59;
+  const maxMinutes = Math.max(minMinutes, rawMaxMinutes >= 59 ? 59 : rawMaxMinutes);
+  const hoursStep = Number.isFinite(Number(raw.hoursStep)) ? Math.max(1, Math.floor(Number(raw.hoursStep))) : 1;
+  const minutesStep = Number.isFinite(Number(raw.minutesStep)) ? Math.max(1, Math.floor(Number(raw.minutesStep))) : 1;
 
   const nextState = {
     inline: raw.inline != null ? Boolean(raw.inline) : false,
@@ -325,12 +331,12 @@ export function createStateFromOptions(incomingRaw) {
     prevHtml: typeof raw.prevHtml === 'string' ? raw.prevHtml : /** @type {string} */ (lightpickrDefaults.prevHtml),
     nextHtml: typeof raw.nextHtml === 'string' ? raw.nextHtml : /** @type {string} */ (lightpickrDefaults.nextHtml),
     navTitles,
-    minHours: tb.minHours,
-    maxHours: tb.maxHours,
-    minMinutes: tb.minMinutes,
-    maxMinutes: tb.maxMinutes,
-    hoursStep: tb.hoursStep,
-    minutesStep: tb.minutesStep,
+    minHours,
+    maxHours,
+    minMinutes,
+    maxMinutes,
+    hoursStep,
+    minutesStep,
     dayNameClickable: typeof raw.onClickDayName === 'function',
     onSelect: typeof raw.onSelect === 'function' ? raw.onSelect : function () {},
     onBeforeSelect: typeof raw.onBeforeSelect === 'function' ? raw.onBeforeSelect : function () { return true; },
@@ -345,6 +351,8 @@ export function createStateFromOptions(incomingRaw) {
     onDestroy: typeof raw.onDestroy === 'function' ? raw.onDestroy : function () {},
     render,
     classes: cls,
+    attributes: Object.assign({}, raw.attributes),
+    properties: Object.assign({}, raw.properties),
     currentView: onlyTime ? 'time' : initialView,
     viewDate,
     focusDate: null,
@@ -361,7 +369,7 @@ export function createStateFromOptions(incomingRaw) {
           : /** @type {string} */ (lightpickrDefaults.position),
     anchor: raw.anchor != null ? raw.anchor : null
   };
-  nextState.selectedDates = parseInitialSelectedDates(nextState, raw.selectedDates);
+  nextState.selectedDates = parseSelectedDates(nextState, raw.selectedDates);
   return nextState;
 }
 
@@ -378,6 +386,12 @@ export function mergeOptionsIntoState(state, patch) {
   if (patch.classes) {
     raw.classes = Object.assign({}, state.classes, patch.classes);
   }
+  if (patch.attributes) {
+    raw.attributes = Object.assign({}, state.attributes, patch.attributes);
+  }
+  if (patch.properties) {
+    raw.properties = Object.assign({}, state.properties, patch.properties);
+  }
   const next = createStateFromOptions(raw);
   next.selectedDates = patch.selectedDates !== undefined ? next.selectedDates : state.selectedDates;
   next.pendingRangeStart = state.pendingRangeStart;
@@ -392,7 +406,7 @@ export function mergeOptionsIntoState(state, patch) {
   } else {
     next.currentView =
       patch.view !== undefined || patch.allowedViews !== undefined
-        ? clampViewToAllowed(next.allowedViews, next.currentView === 'time' ? 'day' : next.currentView)
+        ? clampView(next.allowedViews, next.currentView === 'time' ? 'day' : next.currentView)
         : state.currentView;
     if (next.onlyTime && next.currentView !== 'time') {
       next.currentView = 'time';
@@ -458,6 +472,8 @@ function _extractRawOptions(state) {
     onDestroy: state.onDestroy,
     render: state.render,
     classes: state.classes,
+    attributes: state.attributes,
+    properties: state.properties,
     position: state.position,
     anchor: state.anchor
   };
