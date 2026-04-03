@@ -820,7 +820,23 @@ Lightpickr.prototype._onDatepickerKeydown = function (ev) {
   const monthOrYear = (this._state.currentView === 'month' || this._state.currentView === 'year') ? this._state.currentView : null;
 
   if (monthOrYear !== null) {
-    _applyMonthYearGridKeydown(this, ev, monthOrYear);
+    const seedFn = monthOrYear === 'month' ? stateWithDefaultMonthGridFocus : stateWithDefaultYearGridFocus;
+    const nextFn = monthOrYear === 'month' ? nextStateAfterMonthGridKey : nextStateAfterYearGridKey;
+    let working = this._state;
+    if (working.focusDate == null) {
+      const seeded = seedFn(working, getViewDatesFromState(working, monthOrYear));
+      if (seeded !== working) {
+        ev.preventDefault();
+        this._commit(seeded, { emitSelect: false });
+        working = this._state;
+      }
+    }
+    ev.preventDefault();
+    const next = nextFn(working, ev.key, ev.shiftKey, getViewDatesFromState(working, monthOrYear));
+    if (next !== working) {
+      this._commit(next, { emitSelect: false });
+      _scheduleFocusActiveKeyboardCell(this);
+    }
     return;
   }
 
@@ -1019,7 +1035,6 @@ Lightpickr.prototype._emitTimeChange = function () {
     datepicker: this
   });
 };
-
 
 /**
  * @private
@@ -1314,33 +1329,6 @@ function _invokePluginHook(plugins, methodName) {
     if (typeof fn === 'function') {
       fn();
     }
-  }
-}
-
-/**
- * @private
- * @param {{ _state: import('./core/state.js').LightpickrInternalState, _commit: function }} picker
- * @param {KeyboardEvent} ev
- * @param {'month'|'year'} kind
- * @returns {void}
- */
-function _applyMonthYearGridKeydown(picker, ev, kind) {
-  const seedFn = kind === 'month' ? stateWithDefaultMonthGridFocus : stateWithDefaultYearGridFocus;
-  const nextFn = kind === 'month' ? nextStateAfterMonthGridKey : nextStateAfterYearGridKey;
-  let working = picker._state;
-  if (working.focusDate == null) {
-    const seeded = seedFn(working, getViewDatesFromState(working, kind));
-    if (seeded !== working) {
-      ev.preventDefault();
-      picker._commit(seeded, { emitSelect: false });
-      working = picker._state;
-    }
-  }
-  ev.preventDefault();
-  const next = nextFn(working, ev.key, ev.shiftKey, getViewDatesFromState(working, kind));
-  if (next !== working) {
-    picker._commit(next, { emitSelect: false });
-    _scheduleFocusActiveKeyboardCell(picker);
   }
 }
 

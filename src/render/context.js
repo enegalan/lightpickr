@@ -52,35 +52,6 @@ export function getViewDatesFromState(state, view) {
 
 /**
  * @param {object} instance
- * @returns {object}
- */
-export function publicStateSnapshot(instance) {
-  return {
-    inline: instance._state.inline,
-    range: instance._state.range,
-    multipleLimit: instance._state.multipleLimit,
-    multipleEnabled: instance._state.multipleEnabled,
-    enableTime: instance._state.enableTime,
-    onlyTime: instance._state.onlyTime,
-    minDate: instance._state.minDate,
-    maxDate: instance._state.maxDate,
-    disabledDates: instance._state.disabledDatesSorted.slice(),
-    locale: instance._state.locale,
-    firstDayOfWeek: instance._state.firstDayOfWeek,
-    weekendIndexes: instance._state.weekendIndexes.slice(),
-    format: instance._state.format,
-    currentView: instance._state.currentView,
-    viewDate: instance._state.viewDate,
-    focusDate: instance._state.focusDate,
-    visible: instance._state.visible,
-    selectedDates: cloneSelectedDates(instance._state.selectedDates),
-    timePart: Object.assign({}, instance._state.timePart),
-    allowedViews: instance._state.allowedViews.slice()
-  };
-}
-
-/**
- * @param {object} instance
  * @param {number} dayTs
  * @param {boolean} outside
  * @returns {RenderCtx}
@@ -99,8 +70,8 @@ export function buildDayCtx(instance, dayTs, outside) {
     isRangeEnd: flags.isRangeEnd,
     isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, d),
     isOutside: outside,
-    isWeekend: instance._state.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
-    state: publicStateSnapshot(instance),
+    isWeekend: instance._state.weekends.indexOf(new Date(d).getDay()) >= 0,
+    state: _publicStateSnapshot(instance),
     instance: instance
   };
 }
@@ -141,6 +112,36 @@ export function buildDefaultNav(instance, view, canGoUp) {
   nav.appendChild(title);
   nav.appendChild(next);
   return nav;
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {object}
+ */
+function _publicStateSnapshot(instance) {
+  return {
+    inline: instance._state.inline,
+    range: instance._state.range,
+    multipleLimit: instance._state.multipleLimit,
+    multipleEnabled: instance._state.multipleEnabled,
+    enableTime: instance._state.enableTime,
+    onlyTime: instance._state.onlyTime,
+    minDate: instance._state.minDate,
+    maxDate: instance._state.maxDate,
+    disabledDates: instance._state.disabledDatesSorted.slice(),
+    locale: instance._state.locale,
+    firstDayOfWeek: instance._state.firstDayOfWeek,
+    weekends: instance._state.weekends.slice(),
+    format: instance._state.format,
+    currentView: instance._state.currentView,
+    viewDate: instance._state.viewDate,
+    focusDate: instance._state.focusDate,
+    visible: instance._state.visible,
+    selectedDates: cloneSelectedDates(instance._state.selectedDates),
+    timePart: Object.assign({}, instance._state.timePart),
+    allowedViews: instance._state.allowedViews.slice()
+  };
 }
 
 /**

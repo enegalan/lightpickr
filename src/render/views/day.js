@@ -80,7 +80,7 @@ function _buildWeekdayRow(instance, grid) {
       baseClass,
       attrs
     );
-    if (s.weekendIndexes.indexOf(idx) >= 0) {
+    if (s.weekends.indexOf(idx) >= 0) {
       cell.classList.add(s.classes.headCell + '--weekend');
     }
     cell.textContent = names[idx];

@@ -77,6 +77,45 @@ export function syncPendingRangeHoverClasses(instance) {
 export function attachDelegatedHandlers(instance, root) {
   const offs = instance._delegateOffs || [];
   offs.forEach((fn) => fn());
+  _clearPressedCellActive(instance);
+
+  const s = instance._state;
+  const cellBtnSel = 'button.' + s.classes.cell;
+
+  const offCellPointerDown = delegate(root, cellBtnSel, 'pointerdown', function (ev, el) {
+    if (!(el instanceof HTMLButtonElement) || el.disabled) {
+      return;
+    }
+    if (ev.pointerType === 'mouse' && ev.button !== 0) {
+      return;
+    }
+    _clearPressedCellActive(instance);
+    el.classList.add(s.classes.cellActive);
+    instance._pressedCellEl = el;
+  });
+
+  const onDocPointerEnd = function () {
+    _clearPressedCellActive(instance);
+  };
+  document.addEventListener('pointerup', onDocPointerEnd);
+  document.addEventListener('pointercancel', onDocPointerEnd);
+
+  const onCellPointerOut = function (ev) {
+    const pressed = instance._pressedCellEl;
+    const rel = ev.relatedTarget;
+    if (pressed == null || ev.target !== pressed || (rel instanceof Node && pressed.contains(rel))) {
+      return;
+    }
+    _clearPressedCellActive(instance);
+  };
+  root.addEventListener('pointerout', onCellPointerOut, true);
+
+  const offCellActive = function () {
+    document.removeEventListener('pointerup', onDocPointerEnd);
+    document.removeEventListener('pointercancel', onDocPointerEnd);
+    root.removeEventListener('pointerout', onCellPointerOut, true);
+    _clearPressedCellActive(instance);
+  };
 
   const off1 = delegate(root, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
     const ts = parseElementNumber(el, instance._state.attributes.day);
@@ -165,16 +204,25 @@ export function attachDelegatedHandlers(instance, root) {
     }
   };
 
-  root.addEventListener('mouseover', onRangeHoverOver);
   root.addEventListener('pointerover', onRangeHoverOver);
-  root.addEventListener('mouseleave', onRangeHoverLeave);
   root.addEventListener('pointerleave', onRangeHoverLeave);
   const off6 = function () {
-    root.removeEventListener('mouseover', onRangeHoverOver);
     root.removeEventListener('pointerover', onRangeHoverOver);
-    root.removeEventListener('mouseleave', onRangeHoverLeave);
     root.removeEventListener('pointerleave', onRangeHoverLeave);
   };
 
-  instance._delegateOffs = [off1, off2, off3, off4, offDayName, off5, off6];
+  instance._delegateOffs = [offCellPointerDown, offCellActive, off1, off2, off3, off4, offDayName, off5, off6];
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {void}
+ */
+function _clearPressedCellActive(instance) {
+  const el = instance._pressedCellEl;
+  if (el) {
+    el.classList.remove(instance._state.classes.cellActive);
+    instance._pressedCellEl = null;
+  }
 }

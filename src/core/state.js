@@ -67,6 +67,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {string} [cellRangePreviewEndCap]
  * @property {string} [cellOutside]
  * @property {string} [cellFocused]
+ * @property {string} [cellActive]
  * @property {string} [navButton]
  * @property {string} [titleButton]
  * @property {string} [timePanel]
@@ -164,7 +165,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {number[]} disabledDatesSorted
  * @property {string|LightpickrLocale} locale
  * @property {number} firstDayOfWeek
- * @property {number[]} weekendIndexes
+ * @property {number[]} weekends
  * @property {boolean} isMobile
  * @property {string} format
  * @property {string} monthsField
@@ -315,7 +316,7 @@ export function createStateFromOptions(incomingRaw) {
     disabledDatesSorted: disabled.map(startOfDayTs),
     locale: raw.locale != null ? raw.locale : 'default',
     firstDayOfWeek: firstDay,
-    weekendIndexes: normalizeWeekendIndexes(raw.weekends),
+    weekends: normalizeWeekendIndexes(raw.weekends),
     isMobile: Boolean(raw.isMobile),
     monthsField,
     allowedViews,
@@ -435,7 +436,7 @@ function _extractRawOptions(state) {
     locale: state.locale,
     firstDay: state.firstDayOfWeek,
     firstDayOfWeek: state.firstDayOfWeek,
-    weekends: state.weekendIndexes.slice(),
+    weekends: state.weekends.slice(),
     isMobile: state.isMobile,
     format: state.format,
     monthsField: state.monthsField,

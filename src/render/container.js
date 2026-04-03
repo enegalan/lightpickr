@@ -1,4 +1,4 @@
-import { publicStateSnapshot, buildDayCtx } from './context.js';
+import { buildDayCtx } from './context.js';
 import { renderTimePanel } from './time-panel.js';
 import { renderDayView } from './views/day.js';
 import { renderMonthView, renderYearView } from './views/month-year.js';
@@ -22,7 +22,6 @@ export function renderContainer(instance) {
   let container = root;
   if (hooks.container) {
     const ctx = buildDayCtx(instance, s.viewDate, false);
-    ctx.state = publicStateSnapshot(instance);
     const custom = hooks.container(ctx);
     if (custom) {
       root.appendChild(custom);

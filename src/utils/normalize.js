@@ -1,5 +1,13 @@
 import lightpickrDefaults from '../core/defaults.js';
 
+/** @type {Map<string, 'day'|'month'|'year'>} */
+const VIEW_INPUT_ALIASES = new Map();
+for (let i = 0; i < lightpickrDefaults.viewOrder.length; i++) {
+  const id = lightpickrDefaults.viewOrder[i];
+  VIEW_INPUT_ALIASES.set(id, id);
+  VIEW_INPUT_ALIASES.set(id + 's', id);
+}
+
 /** @type {readonly string[]} */
 const DEFAULT_SHOW_EVENTS = [lightpickrDefaults.showEvent];
 
@@ -37,7 +45,7 @@ export function normalizeShowEvents(showEvent) {
  */
 export function normalizeWeekendIndexes(weekends) {
   if (!Array.isArray(weekends)) {
-    return lightpickrDefaults.weekendIndexes.slice();
+    return lightpickrDefaults.weekends.slice();
   }
   const seen = new Set();
   const out = [];
@@ -48,7 +56,7 @@ export function normalizeWeekendIndexes(weekends) {
       out.push(idx);
     }
   }
-  return out.length ? out : lightpickrDefaults.weekendIndexes.slice();
+  return out.length ? out : lightpickrDefaults.weekends.slice();
 }
 
 /**
@@ -56,16 +64,10 @@ export function normalizeWeekendIndexes(weekends) {
  * @returns {'day'|'month'|'year'}
  */
 export function normalizeView(view) {
-  if (view === 'day' || view === 'days') {
+  if (typeof view !== 'string') {
     return 'day';
   }
-  if (view === 'month' || view === 'months') {
-    return 'month';
-  }
-  if (view === 'year' || view === 'years') {
-    return 'year';
-  }
-  return 'day';
+  return VIEW_INPUT_ALIASES.get(view) ?? 'day';
 }
 
 /**
@@ -76,8 +78,11 @@ export function normalizeAllowedViews(views) {
   const out = [];
   const seen = new Set();
   const add = function (raw) {
-    const v = normalizeView(raw);
-    if ((raw === 'day' || raw === 'days' || raw === 'month' || raw === 'months' || raw === 'year' || raw === 'years') && !seen.has(v)) {
+    if (typeof raw !== 'string' || !VIEW_INPUT_ALIASES.has(raw)) {
+      return;
+    }
+    const v = /** @type {'day'|'month'|'year'} */ (VIEW_INPUT_ALIASES.get(raw));
+    if (!seen.has(v)) {
       seen.add(v);
       out.push(v);
     }
