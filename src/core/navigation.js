@@ -1,21 +1,7 @@
 import { YEAR_GRID_COUNT, YEAR_GRID_RADIUS } from './calendar-grid.js';
-import { addMonths, addYears, clampViewToAllowed, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from './utils.js';
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @returns {boolean}
- */
-export function navPrevDisabled(state) {
-  return isNavOutOfRange(state, -1);
-}
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @returns {boolean}
- */
-export function navNextDisabled(state) {
-  return isNavOutOfRange(state, 1);
-}
+import { clampView } from '../utils/view.js';
+import { addMonths, addYears, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
+import lightpickrDefaults from './defaults.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -124,8 +110,7 @@ export function navigateMonthKeepFocusMonth(state, dir) {
  */
 export function navigateUp(state) {
   const next = Object.assign({}, state);
-  const order = ['day', 'month', 'year'];
-  const idx = order.indexOf(state.currentView);
+  const idx = lightpickrDefaults.viewOrder.indexOf(state.currentView);
   if (state.currentView === 'time') {
     if (state.onlyTime) {
       return next;
@@ -133,9 +118,9 @@ export function navigateUp(state) {
     next.currentView = 'day';
     return next;
   }
-  if (idx >= 0 && idx < order.length - 1) {
-    const requested = /** @type {'day'|'month'|'year'} */ (order[idx + 1]);
-    next.currentView = clampViewToAllowed(state.allowedViews, requested);
+  if (idx >= 0 && idx < lightpickrDefaults.viewOrder.length - 1) {
+    const requested = lightpickrDefaults.viewOrder[idx + 1];
+    next.currentView = clampView(state.allowedViews, requested);
   }
   return next;
 }
@@ -146,11 +131,10 @@ export function navigateUp(state) {
  */
 export function navigateDown(state) {
   const next = Object.assign({}, state);
-  const order = ['day', 'month', 'year'];
-  const idx = order.indexOf(state.currentView);
+  const idx = lightpickrDefaults.viewOrder.indexOf(state.currentView);
   if (idx > 0) {
-    const requested = /** @type {'day'|'month'|'year'} */ (order[idx - 1]);
-    next.currentView = clampViewToAllowed(state.allowedViews, requested);
+    const requested = lightpickrDefaults.viewOrder[idx - 1];
+    next.currentView = clampView(state.allowedViews, requested);
   }
   return next;
 }
@@ -166,9 +150,9 @@ export function setCurrentViewState(state, view, params) {
   if (state.onlyTime) {
     next.currentView = 'time';
   } else if (view === 'time') {
-    next.currentView = state.enableTime ? 'time' : clampViewToAllowed(state.allowedViews, 'day');
+    next.currentView = state.enableTime ? 'time' : clampView(state.allowedViews, 'day');
   } else {
-    next.currentView = clampViewToAllowed(state.allowedViews, view);
+    next.currentView = clampView(state.allowedViews, view);
   }
   if (params && params.date != null) {
     const raw = toTimestamp(params.date);
@@ -212,11 +196,12 @@ export function setFocusDateState(state, date) {
 }
 
 /**
+ * @private
  * @param {import('./state.js').LightpickrInternalState} state
  * @param {number} dir
  * @returns {{ startYear: number, startMonth: number, startDay: number, endYear: number, endMonth: number, endDay: number }|null}
  */
-function navTargetPeriodYmd(state, dir) {
+function _navTargetPeriodYmd(state, dir) {
   switch (state.currentView) {
     case 'day':
     case 'time': {
@@ -259,11 +244,16 @@ function navTargetPeriodYmd(state, dir) {
   }
 }
 
-function isNavOutOfRange(state, dir) {
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir
+ * @returns {boolean}
+ */
+export function isNavOutOfRange(state, dir) {
   if (!state.disableNavWhenOutOfRange || (state.minDate == null && state.maxDate == null)) {
     return false;
   }
-  const period = navTargetPeriodYmd(state, dir);
+  const period = _navTargetPeriodYmd(state, dir);
   if (period == null) {
     return false;
   }

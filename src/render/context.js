@@ -1,7 +1,8 @@
-import { yearBlockStartYear, yearGridYearValues, YEAR_GRID_COUNT, dayViewTimestampsForMonth } from '../core/calendar-grid.js';
-import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay, defaultMonthNames } from '../core/utils.js';
+import { yearBlockStartYear, yearGridYearValues, YEAR_GRID_COUNT, buildDayMonthCells } from '../core/calendar-grid.js';
+import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay } from '../utils/time.js';
+import { defaultMonthNames } from '../utils/locale.js';
 import { isDateDisabled } from '../core/selection.js';
-import { navNextDisabled, navPrevDisabled } from '../core/navigation.js';
+import { isNavOutOfRange } from '../core/navigation.js';
 import { createEl } from './dom.js';
 
 /**
@@ -32,7 +33,10 @@ export function getViewDatesFromState(state, view) {
   const { y, m } = tsToYmd(state.viewDate);
 
   if (v === 'day') {
-    return dayViewTimestampsForMonth(y, m, state.firstDayOfWeek);
+    const cells = buildDayMonthCells(y, m, state.firstDayOfWeek);
+    for (let i = 0; i < cells.length; i++) {
+      out.push(cells[i].ts);
+    }
   } else if (v === 'month') {
     for (let mi = 0; mi < 12; mi++) {
       out.push(ymdToTsStartOfDay(y, mi, 1));
@@ -48,86 +52,28 @@ export function getViewDatesFromState(state, view) {
 
 /**
  * @param {object} instance
- * @returns {object}
- */
-export function publicStateSnapshot(instance) {
-  const s = instance._state;
-  return {
-    inline: s.inline,
-    range: s.range,
-    multipleLimit: s.multipleLimit,
-    multipleEnabled: s.multipleEnabled,
-    enableTime: s.enableTime,
-    onlyTime: s.onlyTime,
-    minDate: s.minDate,
-    maxDate: s.maxDate,
-    disabledDates: s.disabledDatesSorted.slice(),
-    locale: s.locale,
-    firstDayOfWeek: s.firstDayOfWeek,
-    weekendIndexes: s.weekendIndexes.slice(),
-    format: s.format,
-    currentView: s.currentView,
-    viewDate: s.viewDate,
-    focusDate: s.focusDate,
-    visible: s.visible,
-    selectedDates: cloneSelectedDates(s.selectedDates),
-    timePart: Object.assign({}, s.timePart),
-    allowedViews: s.allowedViews.slice()
-  };
-}
-
-/**
- * @param {object} instance
  * @param {number} dayTs
  * @param {boolean} outside
  * @returns {RenderCtx}
  */
 export function buildDayCtx(instance, dayTs, outside) {
-  const s = instance._state;
   const d = startOfDayTs(dayTs);
-  const flags = dayFlags(s, d, startOfDayTs(Date.now()));
+  const flags = _dayFlags(instance._state, d);
   return {
     date: d,
-    viewDate: s.viewDate,
+    viewDate: instance._state.viewDate,
     isSelected: flags.isSelected,
     isDisabled: flags.isDisabled,
     isToday: flags.isToday,
     isInRange: flags.isInRange,
     isRangeStart: flags.isRangeStart,
     isRangeEnd: flags.isRangeEnd,
-    isFocused: s.focusDate != null && isSameDay(s.focusDate, d),
+    isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, d),
     isOutside: outside,
-    isWeekend: s.weekendIndexes.indexOf(new Date(d).getDay()) >= 0,
-    state: publicStateSnapshot(instance),
+    isWeekend: instance._state.weekends.indexOf(new Date(d).getDay()) >= 0,
+    state: _publicStateSnapshot(instance),
     instance: instance
   };
-}
-
-/**
- * @param {object} instance
- * @param {'day'|'month'|'year'} view
- * @returns {string}
- */
-export function formatNavTitle(instance, view) {
-  const s = instance._state;
-  const titles = s.navTitles || {};
-  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
-  const resolver = titles[key];
-  if (typeof resolver === 'function') {
-    return String(resolver(instance));
-  }
-
-  const rawTemplate = typeof resolver === 'string' ? resolver : '';
-  const { y, m } = tsToYmd(s.viewDate);
-  const blockStart = yearBlockStartYear(y);
-  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
-  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
-  return rawTemplate
-    .replace(/yyyy1/g, String(blockStart))
-    .replace(/yyyy2/g, String(blockStart + YEAR_GRID_COUNT - 1))
-    .replace(/MMMM/g, monthLong || monthShort)
-    .replace(/yyyy/g, String(y))
-    .replace(/YYYY/g, String(y));
 }
 
 /**
@@ -137,18 +83,17 @@ export function formatNavTitle(instance, view) {
  * @returns {HTMLElement}
  */
 export function buildDefaultNav(instance, view, canGoUp) {
-  const s = instance._state;
-  const c = s.classes;
+  const c = instance._state.classes;
 
   const nav = createEl('div', c.nav);
 
-  const prev = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'prev' });
-  prev.innerHTML = s.prevHtml;
-  const prevDisabled = navPrevDisabled(s);
+  const prev = createEl('button', c.navButton, { type: 'button', [instance._state.attributes.nav]: 'prev' });
+  prev.innerHTML = instance._state.prevHtml;
+  const prevDisabled = isNavOutOfRange(instance._state, -1);
 
-  const next = createEl('button', c.navButton, { type: 'button', 'data-lp-nav': 'next' });
-  next.innerHTML = s.nextHtml;
-  const nextDisabled = navNextDisabled(s);
+  const next = createEl('button', c.navButton, { type: 'button', [instance._state.attributes.nav]: 'next' });
+  next.innerHTML = instance._state.nextHtml;
+  const nextDisabled = isNavOutOfRange(instance._state, 1);
 
   if (prevDisabled) {
     prev.disabled = true;
@@ -160,8 +105,8 @@ export function buildDefaultNav(instance, view, canGoUp) {
   }
 
   const titleTag = canGoUp ? 'button' : 'span';
-  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', 'data-lp-nav': 'title' } : {});
-  title.innerHTML = formatNavTitle(instance, view);
+  const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', [instance._state.attributes.nav]: 'title' } : {});
+  title.innerHTML = _formatNavTitle(instance, view);
 
   nav.appendChild(prev);
   nav.appendChild(title);
@@ -170,12 +115,43 @@ export function buildDefaultNav(instance, view, canGoUp) {
 }
 
 /**
- * @param {import('../core/state.js').LightpickrInternalState} s
- * @param {number} d
- * @param {number} today
+ * @private
+ * @param {object} instance
  * @returns {object}
  */
-export function dayFlags(s, d, today) {
+function _publicStateSnapshot(instance) {
+  return {
+    inline: instance._state.inline,
+    range: instance._state.range,
+    multipleLimit: instance._state.multipleLimit,
+    multipleEnabled: instance._state.multipleEnabled,
+    enableTime: instance._state.enableTime,
+    onlyTime: instance._state.onlyTime,
+    minDate: instance._state.minDate,
+    maxDate: instance._state.maxDate,
+    disabledDates: instance._state.disabledDatesSorted.slice(),
+    locale: instance._state.locale,
+    firstDayOfWeek: instance._state.firstDayOfWeek,
+    weekends: instance._state.weekends.slice(),
+    format: instance._state.format,
+    currentView: instance._state.currentView,
+    viewDate: instance._state.viewDate,
+    focusDate: instance._state.focusDate,
+    visible: instance._state.visible,
+    selectedDates: cloneSelectedDates(instance._state.selectedDates),
+    timePart: Object.assign({}, instance._state.timePart),
+    allowedViews: instance._state.allowedViews.slice()
+  };
+}
+
+/**
+ * @private
+ * @param {import('../core/state.js').LightpickrInternalState} s
+ * @param {number} d
+ * @returns {object}
+ */
+function _dayFlags(s, d) {
+  const today = startOfDayTs(Date.now());
   let isSelected = false;
   let isInRange = false;
   let isRangeStart = false;
@@ -216,14 +192,29 @@ export function dayFlags(s, d, today) {
 }
 
 /**
- * @param {import('../core/state.js').LightpickrClassMap} c
- * @returns {object}
+ * @private
+ * @param {object} instance
+ * @param {'day'|'month'|'year'} view
+ * @returns {string}
  */
-export function previewClassNames(c) {
-  return {
-    rangePreview: c.cellRangePreview,
-    rangePreviewMid: c.cellRangePreviewMid,
-    rangePreviewStartCap: c.cellRangePreviewStartCap,
-    rangePreviewEndCap: c.cellRangePreviewEndCap
-  };
+function _formatNavTitle(instance, view) {
+  const s = instance._state;
+  const titles = s.navTitles || {};
+  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
+  const resolver = titles[key];
+  if (typeof resolver === 'function') {
+    return String(resolver(instance));
+  }
+
+  const rawTemplate = typeof resolver === 'string' ? resolver : '';
+  const { y, m } = tsToYmd(s.viewDate);
+  const blockStart = yearBlockStartYear(y);
+  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
+  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
+  return rawTemplate
+    .replace(/yyyy1/g, String(blockStart))
+    .replace(/yyyy2/g, String(blockStart + YEAR_GRID_COUNT - 1))
+    .replace(/MMMM/g, monthLong || monthShort)
+    .replace(/yyyy/g, String(y))
+    .replace(/YYYY/g, String(y));
 }

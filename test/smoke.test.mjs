@@ -1,6 +1,8 @@
 import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
 
+import lightpickrDefaults from '../src/core/defaults.js';
+
 const dom = new JSDOM('<!doctype html><html><body><input id="d" /><div id="c"></div></body></html>', {
   pretendToBeVisual: true,
   url: 'https://example.test/'
@@ -59,8 +61,8 @@ document.body.appendChild(onlyTimeHost);
 const ot = new Lightpickr(onlyTimeHost, { inline: true, onlyTime: true });
 assert.equal(ot._state.onlyTime, true);
 assert.equal(ot._state.enableTime, true);
-assert.ok(ot.$datepicker.querySelector('.lp-time'));
-assert.equal(ot.$datepicker.querySelector('.lp-header'), null);
+assert.ok(ot.$datepicker.querySelector('.' + lightpickrDefaults.classes.timePanel));
+assert.equal(ot.$datepicker.querySelector('.' + lightpickrDefaults.classes.header), null);
 ot.destroy();
 onlyTimeHost.remove();
 

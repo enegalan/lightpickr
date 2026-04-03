@@ -37,6 +37,7 @@
 
   --lp-title-button-bg: transparent;
   --lp-title-button-bg-hover: rgba(0, 0, 0, 0.04);
+  --lp-title-button-bg-active: rgba(0, 0, 0, 0.08);
   --lp-title-button-color: var(--lp-color);
   --lp-title-button-border: 1px solid transparent;
   --lp-title-button-radius: var(--lp-border-radius);
@@ -57,6 +58,7 @@
   --lp-cell-bg: transparent;
   --lp-cell-bg-hover: rgba(0, 0, 0, 0.04);
   --lp-cell-bg-active: rgba(0, 0, 0, 0.08);
+  --lp-cell-bg-active-selected: rgb(25, 67, 185);
   --lp-cell-color: var(--lp-color);
   --lp-cell-border: 1px solid transparent;
 
@@ -396,6 +398,10 @@
   background: var(--lp-title-button-bg-hover);
 }
 
+.lp-title-btn:not(.lp-title-btn--disabled):active {
+  background: var(--lp-title-button-bg-active);
+}
+
 .lp-nav-btn svg {
   width: 2rem;
   height: 2rem;
@@ -474,7 +480,7 @@
   color: var(--lp-cell-color);
 }
 
-.lp-cell:hover:not(:disabled):not(.lp-cell--selected) {
+.lp-cell:hover:not(:disabled):not(.lp-cell--selected):not(.lp-cell--active) {
   background: var(--lp-cell-bg-hover);
 }
 
@@ -482,7 +488,12 @@
   background: var(--lp-accent-hover);
 }
 
-.lp-cell:active:not(:disabled) {
+.lp-cell.lp-cell--selected.lp-cell--active:not(:disabled) {
+  background: var(--lp-cell-bg-active-selected);
+}
+
+.lp-cell.lp-cell--selected:not(.lp-cell--active):not(.lp-cell--selected):not(:disabled),
+.lp-cell.lp-cell--active:not(.lp-cell--selected):not(:disabled) {
   background: var(--lp-cell-bg-active);
 }
 

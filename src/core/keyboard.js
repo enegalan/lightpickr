@@ -1,18 +1,9 @@
 import { yearGridYearValues } from './calendar-grid.js';
 import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
-import { isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from './utils.js';
+import { isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /** @type {number} */
 const GRID_COLS_MONTH_YEAR = 3;
-
-/**
- * @param {string} key
- * @param {boolean} altKey
- * @returns {boolean}
- */
-export function isAltViewHierarchyKey(key, altKey) {
-  return Boolean(altKey) && (key === 'ArrowUp' || key === 'ArrowDown');
-}
 
 /**
  * @param {string} key
@@ -32,20 +23,6 @@ export function isDayNavigationKey(key) {
 }
 
 /**
- * @param {number[]} dates
- * @param {number} ts
- * @returns {number}
- */
-export function findDayIndexInGrid(dates, ts) {
-  for (let i = 0; i < dates.length; i++) {
-    if (isSameDay(dates[i], ts)) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-/**
  * @param {import('./state.js').LightpickrInternalState} state
  * @param {number[]} dayGridDates
  * @returns {import('./state.js').LightpickrInternalState}
@@ -54,7 +31,7 @@ export function stateWithDefaultDayFocus(state, dayGridDates) {
   if (!dayGridDates.length) {
     return state;
   }
-  if (state.focusDate != null && findDayIndexInGrid(dayGridDates, state.focusDate) >= 0) {
+  if (state.focusDate != null && _findDayIndexInGrid(dayGridDates, state.focusDate) >= 0) {
     return state;
   }
   let cand = null;
@@ -69,11 +46,11 @@ export function stateWithDefaultDayFocus(state, dayGridDates) {
       cand = ranges[ranges.length - 1][0];
     }
   }
-  if (cand != null && findDayIndexInGrid(dayGridDates, cand) >= 0) {
+  if (cand != null && _findDayIndexInGrid(dayGridDates, cand) >= 0) {
     return setFocusDateState(state, cand);
   }
   const today = startOfDayTs(Date.now());
-  if (findDayIndexInGrid(dayGridDates, today) >= 0) {
+  if (_findDayIndexInGrid(dayGridDates, today) >= 0) {
     return setFocusDateState(state, today);
   }
   return setFocusDateState(state, dayGridDates[0]);
@@ -96,7 +73,7 @@ export function nextStateAfterDayViewKey(state, key, shiftKey, dayGridDates) {
   if (!dayGridDates.length) {
     return state;
   }
-  let idx = state.focusDate != null ? findDayIndexInGrid(dayGridDates, state.focusDate) : 0;
+  let idx = state.focusDate != null ? _findDayIndexInGrid(dayGridDates, state.focusDate) : 0;
   if (idx < 0) {
     idx = 0;
   }
@@ -186,11 +163,11 @@ export function nextStateAfterMonthGridKey(state, key, shiftKey, monthGridDates)
   if (!monthGridDates.length) {
     return state;
   }
-  let idx = state.focusDate != null ? findDayIndexInGrid(monthGridDates, state.focusDate) : 0;
+  let idx = state.focusDate != null ? _findDayIndexInGrid(monthGridDates, state.focusDate) : 0;
   if (idx < 0) {
     idx = 0;
   }
-  idx = moveIndexThreeColGrid(idx, key, monthGridDates.length);
+  idx = _moveIndexThreeColGrid(idx, key, monthGridDates.length);
   idx = Math.max(0, Math.min(monthGridDates.length - 1, idx));
   return setFocusDateState(state, monthGridDates[idx]);
 }
@@ -211,7 +188,7 @@ export function nextStateAfterYearGridKey(state, key, shiftKey, yearGridDates) {
     if (nextNav === state) {
       return nextNav;
     }
-    return stateWithDefaultYearGridFocus(nextNav, yearGridTimestamps(nextNav));
+    return stateWithDefaultYearGridFocus(nextNav, _yearGridTimestamps(nextNav));
   }
   if (key === 'PageDown') {
     if (shiftKey) {
@@ -221,16 +198,16 @@ export function nextStateAfterYearGridKey(state, key, shiftKey, yearGridDates) {
     if (nextNav === state) {
       return nextNav;
     }
-    return stateWithDefaultYearGridFocus(nextNav, yearGridTimestamps(nextNav));
+    return stateWithDefaultYearGridFocus(nextNav, _yearGridTimestamps(nextNav));
   }
   if (!yearGridDates.length) {
     return state;
   }
-  let idx = state.focusDate != null ? findDayIndexInGrid(yearGridDates, state.focusDate) : 0;
+  let idx = state.focusDate != null ? _findDayIndexInGrid(yearGridDates, state.focusDate) : 0;
   if (idx < 0) {
     idx = 0;
   }
-  idx = moveIndexThreeColGrid(idx, key, yearGridDates.length);
+  idx = _moveIndexThreeColGrid(idx, key, yearGridDates.length);
   idx = Math.max(0, Math.min(yearGridDates.length - 1, idx));
   return setFocusDateState(state, yearGridDates[idx]);
 }
@@ -242,28 +219,24 @@ export function nextStateAfterYearGridKey(state, key, shiftKey, yearGridDates) {
  * @returns {import('./state.js').LightpickrInternalState|null}
  */
 export function nextStateAfterViewHierarchyKey(state, key, altKey) {
-  if (!isAltViewHierarchyKey(key, altKey)) {
-    return null;
-  }
   if (state.onlyTime) {
     return null;
   }
-  if (key === 'ArrowUp') {
-    return navigateUp(state);
-  }
-  if (key === 'ArrowDown') {
-    return navigateDown(state);
+  if (key === 'ArrowUp' || key === 'ArrowDown') {
+    if (!altKey) {
+      return null;
+    }
+    return key === 'ArrowUp' ? navigateUp(state) : navigateDown(state);
   }
   return null;
 }
-
 
 /**
  * @private
  * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]}
  */
-function yearGridTimestamps(state) {
+function _yearGridTimestamps(state) {
   const y = tsToYmd(state.viewDate).y;
   const years = yearGridYearValues(y);
   const out = [];
@@ -280,7 +253,7 @@ function yearGridTimestamps(state) {
  * @param {number} len
  * @returns {number}
  */
-function moveIndexThreeColGrid(idx, key, len) {
+function _moveIndexThreeColGrid(idx, key, len) {
   if (key === 'Home') {
     return Math.min(len - 1, Math.floor(idx / GRID_COLS_MONTH_YEAR) * GRID_COLS_MONTH_YEAR);
   }
@@ -300,4 +273,19 @@ function moveIndexThreeColGrid(idx, key, len) {
     return idx + GRID_COLS_MONTH_YEAR;
   }
   return idx;
+}
+
+/**
+ * @private
+ * @param {number[]} dates
+ * @param {number} ts
+ * @returns {number}
+ */
+function _findDayIndexInGrid(dates, ts) {
+  for (let i = 0; i < dates.length; i++) {
+    if (isSameDay(dates[i], ts)) {
+      return i;
+    }
+  }
+  return -1;
 }

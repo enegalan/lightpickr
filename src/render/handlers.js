@@ -1,24 +1,23 @@
-import { startOfDayTs } from '../core/utils.js';
+import { startOfDayTs } from '../utils/time.js';
 import { delegate, parseElementNumber } from './dom.js';
-import { previewClassNames } from './context.js';
 
 /**
  * @param {object} instance
  * @returns {void}
  */
 export function syncPendingRangeHoverClasses(instance) {
-  const root = instance.$datepicker;
-  const s = instance._state;
-  const c = s.classes;
+  const rangePreview = instance._state.classes.cellRangePreview;
+  const rangePreviewMid = instance._state.classes.cellRangePreviewMid;
+  const rangePreviewStartCap = instance._state.classes.cellRangePreviewStartCap;
+  const rangePreviewEndCap = instance._state.classes.cellRangePreviewEndCap;
 
-  const { rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap } = previewClassNames(c);
-  const buttons = root.querySelectorAll('[data-lp-day]');
+  const buttons = instance.$datepicker.querySelectorAll('[' + instance._state.attributes.day + ']');
   for (let i = 0; i < buttons.length; i++) {
     const el = buttons[i];
     el.classList.remove(rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap);
   }
 
-  if (!s.range || s.pendingRangeStart == null) {
+  if (!instance._state.range || instance._state.pendingRangeStart == null) {
     return;
   }
 
@@ -27,7 +26,7 @@ export function syncPendingRangeHoverClasses(instance) {
     return;
   }
 
-  const anchor = startOfDayTs(s.pendingRangeStart);
+  const anchor = startOfDayTs(instance._state.pendingRangeStart);
   const hover = startOfDayTs(hoverRaw);
   if (anchor === hover) {
     return;
@@ -38,7 +37,7 @@ export function syncPendingRangeHoverClasses(instance) {
 
   for (let i = 0; i < buttons.length; i++) {
     const el = /** @type {HTMLButtonElement} */ (buttons[i]);
-    const ts = parseElementNumber(el, 'data-lp-day');
+    const ts = parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       continue;
     }
@@ -78,20 +77,59 @@ export function syncPendingRangeHoverClasses(instance) {
 export function attachDelegatedHandlers(instance, root) {
   const offs = instance._delegateOffs || [];
   offs.forEach((fn) => fn());
+  _clearPressedCellActive(instance);
 
-  const off1 = delegate(root, '[data-lp-day]', 'click', function (_ev, el) {
-    const ts = parseElementNumber(el, 'data-lp-day');
+  const s = instance._state;
+  const cellBtnSel = 'button.' + s.classes.cell;
+
+  const offCellPointerDown = delegate(root, cellBtnSel, 'pointerdown', function (ev, el) {
+    if (!(el instanceof HTMLButtonElement) || el.disabled) {
+      return;
+    }
+    if (ev.pointerType === 'mouse' && ev.button !== 0) {
+      return;
+    }
+    _clearPressedCellActive(instance);
+    el.classList.add(s.classes.cellActive);
+    instance._pressedCellEl = el;
+  });
+
+  const onDocPointerEnd = function () {
+    _clearPressedCellActive(instance);
+  };
+  document.addEventListener('pointerup', onDocPointerEnd);
+  document.addEventListener('pointercancel', onDocPointerEnd);
+
+  const onCellPointerOut = function (ev) {
+    const pressed = instance._pressedCellEl;
+    const rel = ev.relatedTarget;
+    if (pressed == null || ev.target !== pressed || (rel instanceof Node && pressed.contains(rel))) {
+      return;
+    }
+    _clearPressedCellActive(instance);
+  };
+  root.addEventListener('pointerout', onCellPointerOut, true);
+
+  const offCellActive = function () {
+    document.removeEventListener('pointerup', onDocPointerEnd);
+    document.removeEventListener('pointercancel', onDocPointerEnd);
+    root.removeEventListener('pointerout', onCellPointerOut, true);
+    _clearPressedCellActive(instance);
+  };
+
+  const off1 = delegate(root, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
+    const ts = parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
     instance._handleDayClick(ts);
   });
 
-  const off2 = delegate(root, '[data-lp-nav]', 'click', function (_ev, el) {
+  const off2 = delegate(root, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
     if (el instanceof HTMLButtonElement && el.disabled) {
       return;
     }
-    const act = el.getAttribute('data-lp-nav');
+    const act = el.getAttribute(instance._state.attributes.nav);
     if (act === 'prev') {
       instance.prev();
     } else if (act === 'next') {
@@ -101,24 +139,24 @@ export function attachDelegatedHandlers(instance, root) {
     }
   });
 
-  const off3 = delegate(root, '[data-lp-month]', 'click', function (_ev, el) {
-    const monthIndex = parseElementNumber(el, 'data-lp-month');
+  const off3 = delegate(root, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
+    const monthIndex = parseElementNumber(el, instance._state.attributes.month);
     if (monthIndex == null) {
       return;
     }
     instance._handleMonthPick(monthIndex);
   });
 
-  const off4 = delegate(root, '[data-lp-year]', 'click', function (_ev, el) {
-    const y = parseElementNumber(el, 'data-lp-year');
+  const off4 = delegate(root, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
+    const y = parseElementNumber(el, instance._state.attributes.year);
     if (y == null) {
       return;
     }
     instance._handleYearPick(y);
   });
 
-  const offDayName = delegate(root, '[data-lp-day-name]', 'click', function (_ev, el) {
-    const dayIndex = parseElementNumber(el, 'data-lp-day-name');
+  const offDayName = delegate(root, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
+    const dayIndex = parseElementNumber(el, instance._state.attributes.dayName);
     if (dayIndex == null) {
       return;
     }
@@ -146,8 +184,8 @@ export function attachDelegatedHandlers(instance, root) {
     if (el == null) {
       return;
     }
-    const dayBtn = el.closest('[data-lp-day]');
-    const ts = parseElementNumber(dayBtn, 'data-lp-day');
+    const dayBtn = el.closest('[' + instance._state.attributes.day + ']');
+    const ts = parseElementNumber(dayBtn, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
@@ -166,16 +204,25 @@ export function attachDelegatedHandlers(instance, root) {
     }
   };
 
-  root.addEventListener('mouseover', onRangeHoverOver);
   root.addEventListener('pointerover', onRangeHoverOver);
-  root.addEventListener('mouseleave', onRangeHoverLeave);
   root.addEventListener('pointerleave', onRangeHoverLeave);
   const off6 = function () {
-    root.removeEventListener('mouseover', onRangeHoverOver);
     root.removeEventListener('pointerover', onRangeHoverOver);
-    root.removeEventListener('mouseleave', onRangeHoverLeave);
     root.removeEventListener('pointerleave', onRangeHoverLeave);
   };
 
-  instance._delegateOffs = [off1, off2, off3, off4, offDayName, off5, off6];
+  instance._delegateOffs = [offCellPointerDown, offCellActive, off1, off2, off3, off4, offDayName, off5, off6];
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {void}
+ */
+function _clearPressedCellActive(instance) {
+  const el = instance._pressedCellEl;
+  if (el) {
+    el.classList.remove(instance._state.classes.cellActive);
+    instance._pressedCellEl = null;
+  }
 }

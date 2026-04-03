@@ -1,4 +1,5 @@
-import { cloneSelectedDates, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp, trimFifo } from './utils.js';
+import { cloneSelectedDates, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { trimFifo } from '../utils/common.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -52,10 +53,7 @@ export function applyDaySelection(state, dayTs) {
       next.focusDate = d;
       return { state: next, changed: true };
     }
-    const a = state.pendingRangeStart;
-    const start = Math.min(a, d);
-    const end = Math.max(a, d);
-    const pair = [start, end];
+    const pair = [Math.min(state.pendingRangeStart, d), Math.max(state.pendingRangeStart, d)];
     const list = Array.isArray(next.selectedDates[0]) ? /** @type {number[][]} */ (next.selectedDates) : [];
     const merged = trimFifo(list.concat([pair]), maxR);
     next.selectedDates = merged;

@@ -1,8 +1,4 @@
-/**
- * @typedef {import('./context.js').RenderCtx} RenderCtx
- */
-
-import { publicStateSnapshot, buildDayCtx } from './context.js';
+import { buildDayCtx } from './context.js';
 import { renderTimePanel } from './time-panel.js';
 import { renderDayView } from './views/day.js';
 import { renderMonthView, renderYearView } from './views/month-year.js';
@@ -18,15 +14,14 @@ export function renderContainer(instance) {
   const root = instance.$datepicker;
   root.innerHTML = '';
   root.className = s.classes.container;
-  root.classList.add(s.inline ? 'lp--inline' : 'lp--popover');
+  root.classList.add(s.inline ? s.classes.inline : s.classes.popover);
   if (s.onlyTime) {
-    root.classList.add('lp--only-time');
+    root.classList.add(s.classes.container + '--only-time');
   }
 
   let container = root;
   if (hooks.container) {
     const ctx = buildDayCtx(instance, s.viewDate, false);
-    ctx.state = publicStateSnapshot(instance);
     const custom = hooks.container(ctx);
     if (custom) {
       root.appendChild(custom);

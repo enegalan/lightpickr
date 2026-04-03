@@ -1,4 +1,4 @@
-import { getTranslations } from '../core/utils.js';
+import { getTranslations } from '../utils/locale.js';
 import { createEl } from './dom.js';
 import { buildDayCtx } from './context.js';
 
@@ -25,7 +25,7 @@ export function renderFooter(instance, container) {
   }
 
   const arr = Array.isArray(buttons) ? buttons : [buttons];
-  const wrap = createEl('div', s.classes.footer + ' lp-footer--actions');
+  const wrap = createEl('div', s.classes.footer + ' ' + s.classes.footer + '--actions');
 
   for (let i = 0; i < arr.length; i++) {
     let def = arr[i];
@@ -42,14 +42,14 @@ export function renderFooter(instance, container) {
     if (def.preset === 'today' || def.preset === 'clear') {
       const action = def.preset;
       const ui = getTranslations(s);
-      el = createEl('button', 'lp-footer-btn', {
+      el = createEl('button', s.classes.footerBtn, {
         type: 'button',
-        'data-lp-footer-action': action
+        [s.attributes.footerAction]: action
       });
       el.textContent = action === 'today' ? ui.btnToday : ui.btnClear;
     } else {
       const tag = def.tagName || 'button';
-      const cls = 'lp-footer-btn' + (def.className ? ' ' + def.className : '');
+      const cls = s.classes.footerBtn + (def.className ? ' ' + def.className : '');
 
       el = createEl(tag, cls, tag === 'button' ? { type: 'button' } : {});
 
