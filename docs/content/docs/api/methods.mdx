@@ -1,0 +1,136 @@
+---
+title: Methods
+description: Public instance methods
+---
+
+All methods live on the **`Lightpickr`** instance from `new Lightpickr(...)`.
+
+---
+
+## show()
+
+Opens the popover. **No-op** if destroyed or **`inline`**.
+
+---
+
+## hide()
+
+Closes the popover. **No-op** if destroyed or **inline**.
+
+---
+
+## next()
+
+Step forward: next month (day/time view), next year (month), or next decade block (year). Blocked when **`disableNavWhenOutOfRange`** and already at **`maxDate`**.
+
+---
+
+## prev()
+
+Step backward (mirror of **`next()`**). Blocked at **`minDate`** with **`disableNavWhenOutOfRange`**.
+
+---
+
+## up()
+
+Wider view (day → month → year per **`allowedViews`**). From **time** (unless **`onlyTime`**) returns to the day grid.
+
+---
+
+## down()
+
+Narrower view (year → month → day), respecting **`allowedViews`**.
+
+---
+
+## selectDate `(date, opts?) => void`
+
+**Single / multiple:** one value or array; each day runs **`onBeforeSelect`**.
+
+**Range:** **`[[start, end], ...]`** replaces all ranges.
+
+**`opts`:** `{ close?: boolean }` — after a programmatic range set, `close: true` may trigger **`hide()`** with **`closeOnSelect`**.
+
+---
+
+## unselectDate `(date) => void`
+
+Drops the matching day or range endpoint.
+
+---
+
+## clear()
+
+Empty selection.
+
+---
+
+## formatDate `(date, formatOverride?) => string`
+
+Uses **`formatOverride`** when it is a **string** (full token set in [Options — format](/docs/documentation/options#format)); otherwise the instance **`format`**. If that option is a **function**, it is invoked with a single **`Date`** derived from **`date`** and current time state. **`''`** if **`date`** is invalid.
+
+---
+
+## update `(newOpts) => void`
+
+Update options, rebind listeners and re-render.
+
+---
+
+## setCurrentView `(view, params?) => void`
+
+Set the current view.
+
+**`view`:** `"day" | "month" | "year"`
+
+**`params`:** `{ date?: number|Date|string }` sets **`viewDate`** (start of day).
+
+---
+
+## setViewDate `(date) => void`
+
+Sets the visible month/year. Does not select.
+
+---
+
+## setFocusDate `(date) => void`
+
+Keyboard focus; **`null`** clears.
+
+---
+
+## getViewDates `(view?) => number[]`
+
+Start-of-day timestamps for cells.
+
+**`view`:** `"day" | "month" | "year"`
+
+---
+
+## disableDate `(date) => void`
+
+Disables that calendar day. **No-op** if **`date`** is invalid.
+
+---
+
+## enableDate `(date) => void`
+
+Re-enables that day if it was disabled. Still subject to **`minDate`** / **`maxDate`**. **No-op** if invalid.
+
+---
+
+## getSelectedPayload `() => number[] | number[][]`
+
+Copy of the selection: flat **`number[]`** or, in range mode, **`[start, end]`** pairs (timestamps).
+
+---
+
+## use `(pluginFn) => void`
+
+Register a plugin. [Plugins](/docs/documentation/plugins).
+
+---
+
+## destroy()
+
+Tear down DOM and listeners; **`onDestroy`** and plugin teardown. Idempotent (**`isDestroyed`**).

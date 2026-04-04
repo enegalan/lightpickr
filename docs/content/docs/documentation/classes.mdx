@@ -1,0 +1,222 @@
+---
+title: CSS classes & variables
+description: options.classes, data attributes, and theming variables on .lp
+---
+
+The shipped stylesheet uses the **`lp`** prefix.
+
+## options.classes <definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
+
+Each value is a **class name string**.
+
+| Key                        | value                              | Role                                  |
+|----------------------------|------------------------------------|---------------------------------------|
+| `container`                | `lp`                               | Root panel                            |
+| `header`                   | `lp-header`                        | Navigation strip                      |
+| `nav`                      | `lp-nav`                           | Prev / title / next cluster           |
+| `grid`                     | `lp-grid`                          | Calendar grid wrapper                 |
+| `gridRow`                  | `lp-grid-row`                      | Row in month/year grids               |
+| `gridRowContents`          | `lp-grid-row--contents`            | Contents of row in month/year grids   |
+| `months`                   | `lp-months`                        | Wraps month block(s)                  |
+| `monthBlock`               | `lp-month-block`                   | Single month column                   |
+| `monthGrid`                | `lp-month-grid`                    | Month/year picker grid                |
+| `cell`                     | `lp-cell`                          | Day / month / year cell button        |
+| `inline`                   | `lp--inline`                       | Root modifier when inline             |
+| `popover`                  | `lp--popover`                      | Root modifier when floating           |
+| `mobile`                   | `lp--mobile`                       | Root modifier in mobile backdrop mode |
+| `mobileBackdrop`           | `lp-mobile-backdrop`               | Full-screen wrapper for mobile        |
+| `headCell`                 | `lp-head-cell`                     | Weekday header cells                  |
+| `row`                      | `lp-row`                           | Day row                               |
+| `yearGrid`                 | `lp-year-grid`                     | Year grid container                   |
+| `cellSelected`             | `lp-cell--selected`                | Selected cell                         |
+| `cellDisabled`             | `lp-cell--disabled`                | Disabled cell                         |
+| `cellToday`                | `lp-cell--today`                   | Today cell                            |
+| `cellRange`                | `lp-cell--range`                   | Inside range                          |
+| `cellRangeStart`           | `lp-cell--range-start`             | Range start                           |
+| `cellRangeEnd`             | `lp-cell--range-end`               | Range end                             |
+| `cellRangePreview`         | `lp-cell--range-preview`           | Range hover preview                   |
+| `cellRangePreviewMid`      | `lp-cell--range-preview-mid`       | Preview middle segment                |
+| `cellRangePreviewStartCap` | `lp-cell--range-preview-start-cap` | Preview start cap                     |
+| `cellRangePreviewEndCap`   | `lp-cell--range-preview-end-cap`   | Preview end cap                       |
+| `cellOutside`              | `lp-cell--outside`                 | Day outside current month             |
+| `cellWeekend`              | `lp-cell--weekend`                 | Weekend day                           |
+| `cellFocused`              | `lp-cell--focused`                 | Keyboard focus                        |
+| `cellActive`               | `lp-cell--active`                  | Active / pressed state                |
+| `navButton`                | `lp-nav-btn`                       | Prev/next control                     |
+| `titleButton`              | `lp-title-btn`                     | Title control (or static title)       |
+| `timePanel`                | `lp-time`                          | Time section                          |
+| `timeLayout`               | `lp-time-layout`                   | Time layout row                       |
+| `timeDisplayBlock`         | `lp-time-display-block`            | Digital time block                    |
+| `timeDisplayHours`         | `lp-time-display-hours`            | Hours segment                         |
+| `timeDisplayMinutes`       | `lp-time-display-minutes`          | Minutes segment                       |
+| `timeDisplayAmpm`          | `lp-time-display-ampm`             | AM/PM                                 |
+| `timeDisplaySep`           | `lp-time-display-sep`              | Separator                             |
+| `timeSlidersCol`           | `lp-time-sliders-col`              | Sliders column                        |
+| `timeSliderRow`            | `lp-time-slider-row`               | One slider row                        |
+| `timeSlider`               | `lp-time-slider`                   | Range input                           |
+| `footer`                   | `lp-footer`                        | Footer wrapper                        |
+| `footerActions`            | `lp-footer--actions`               | Footer actions                        |
+| `footerBtn`                | `lp-footer-btn`                    | Footer control                        |
+| `popoverPointer`           | `lp-popover-pointer lp--pointer`   | Popover arrow                         |
+| `viewBody`                 | `lp-view-body`                     | Main view body under header           |
+
+## options.attributes <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+
+Attribute **names**. Merge with `options.attributes` if you need to avoid collisions.
+
+| Key            | attribute name          | Used on                                   |
+|----------------|-------------------------|-------------------------------------------|
+| `root`         | `data-lp-root`          | Root `.lp`                                |
+| `nav`          | `data-lp-nav`           | `prev` / `next` / `title` on nav controls |
+| `pointerMain`  | `data-lp-pointer-main`  | Pointer placement (top/bottom/left/right) |
+| `pointerSec`   | `data-lp-pointer-sec`   | Pointer secondary axis                    |
+| `day`          | `data-lp-day`           | Day cells                                 |
+| `dayName`      | `data-lp-day-name`      | Weekday header buttons when clickable     |
+| `time`         | `data-lp-time`          | Time inputs / clock                       |
+| `month`        | `data-lp-month`         | Month cells                               |
+| `year`         | `data-lp-year`          | Year cells                                |
+| `footerAction` | `data-lp-footer-action` | Preset footer buttons                     |
+| `footerBound`  | `data-lp-footer-bound`  | Footer binding marker                     |
+
+## options.properties <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+
+Maps **logical keys** to **CSS custom property names** (including the `--` prefix).
+
+| Key                     | CSS variable                   | Notes                                      |
+|-------------------------|--------------------------------|--------------------------------------------|
+| `pointerVisible`        | `--lp-pointer-visible`         | `0` / `1` toggles arrow                    |
+| `pointerSize`           | `--lp-pointer-size`            | Arrow box size                             |
+| `popoverGapX`           | `--lp-popover-gap-x`           | Horizontal gap for default placement       |
+| `popoverGapY`           | `--lp-popover-gap-y`           | Vertical gap                               |
+| `popoverViewportMargin` | `--lp-popover-viewport-margin` | Min inset from viewport edge when clamping |
+
+## CSS variables on `.lp`
+
+Defined in the shipped stylesheet. Override on a container that wraps the picker or on `.lp` itself.
+
+### Core layout & chrome
+
+| Variable                 | Default                          | Notes                   |
+|--------------------------|----------------------------------|-------------------------|
+| `--lp-bg`                | `#ffffff`                        | Panel background        |
+| `--lp-color`             | `#1f2937`                        | Primary text            |
+| `--lp-accent`            | `#2563eb`                        | Accent                  |
+| `--lp-accent-contrast`   | `#ffffff`                        | Text on accent          |
+| `--lp-accent-hover`      | `#1d4ed8`                        | Hover accent            |
+| `--lp-muted`             | `#6b7280`                        | Muted text              |
+| `--lp-border`            | `#e5e7eb`                        | Borders                 |
+| `--lp-border-radius`     | `8px`                            | Global radius           |
+| `--lp-cell-size`         | `2.25rem`                        | Cell height/width basis |
+| `--lp-font`              | system UI stack                  | Panel font shorthand    |
+| `--lp-shadow`            | `0 10px 25px rgba(0,0,0,0.12)` | Popover shadow          |
+| `--lp-space-2xs`         | 0.125rem                         | Padding gaps            |
+| `--lp-space-xs`          | 0.25rem                          | Padding gaps            |
+| `--lp-space-sm`          | 0.5rem                           | Padding gaps            |
+| `--lp-space-md`          | 0.75rem                          | Padding gaps            |
+| `--lp-space-lg`          | 1rem                             | Padding gaps            |
+| `--lp-space-xl`          | 1.25rem                          | Padding gaps            |
+| `--lp-head-font-weight`  | `600`                            | Header font weight      |
+| `--lp-title-font-weight` | `600`                            | Title font weight       |
+| `--lp-title-font-size`   | `0.875rem`                       | Title font size         |
+| `--lp-inline-max-width`  | `none`                           | Inline panel max width  |
+
+### Navigation
+
+| Variable                      | Default                   | Notes                               |
+|-------------------------------|---------------------------|-------------------------------------|
+| `--lp-nav-button-size`        | `var(--lp-cell-size)`     | Navigation button size              |
+| `--lp-nav-button-radius`      | `var(--lp-border-radius)` | Navigation button radius            |
+| `--lp-nav-button-bg`          | `transparent`             | Navigation button background        |
+| `--lp-nav-button-bg-hover`    | `rgba(0,0,0,0.04)`      | Navigation button hover background  |
+| `--lp-nav-button-bg-active`   | `rgba(0,0,0,0.08)`      | Navigation button active background |
+| `--lp-nav-button-color`       | `var(--lp-color)`         | Navigation button color             |
+| `--lp-nav-button-border`      | `1px solid transparent`   | Navigation button border            |
+| `--lp-title-button-bg`        | `transparent`             | Title button background             |
+| `--lp-title-button-bg-hover`  | `rgba(0, 0, 0, 0.04)`   | Title button background hover       |
+| `--lp-title-button-bg-active` | `rgba(0, 0, 0, 0.08)`   | Title button background active      |
+| `--lp-title-button-color`     | `var(--lp-color)`         | Title button text color             |
+| `--lp-title-button-border`    | `1px solid transparent`   | Title button border                 |
+| `--lp-title-button-radius`    | `var(--lp-border-radius)` | Title button radius                 |
+| `--lp-title-button-padding-x` | `var(--lp-space-sm)`      | Title button horizontal padding     |
+| `--lp-title-button-padding-y` | `var(--lp-space-xs)`      | Title button vertical padding       |
+
+### Weekday row & month columns
+
+| Variable                     | Default               | Notes                 |
+|------------------------------|-----------------------|-----------------------|
+| `--lp-grid-gap`              | `var(--lp-space-2xs)` | Day grid gap          |
+| `--lp-months-gap`            | `var(--lp-space-lg)`  | Between month columns |
+| `--lp-head-cell-color`       | `var(--lp-muted)`     | Weekday text color    |
+| `--lp-head-cell-font-weight` | `600`                 | Weekday font weight   |
+| `--lp-head-cell-font-size`   | `0.75rem`             | Weekday font size     |
+
+### Day cells
+
+| Variable                           | Default                               | Notes                               |
+|------------------------------------|---------------------------------------|-------------------------------------|
+| `--lp-cell-radius`                 | `var(--lp-border-radius)`             | Cell radius                         |
+| `--lp-cell-bg`                     | `transparent`                         | Cell background                     |
+| `--lp-cell-bg-hover`               | `rgba(0, 0, 0, 0.04)`               | Cell hover background               |
+| `--lp-cell-bg-active`              | `rgba(0, 0, 0, 0.08)`               | Cell active background              |
+| `--lp-cell-bg-active-selected`     | `rgb(25, 67, 185)`                  | Cell active+selected background     |
+| `--lp-cell-color`                  | `var(--lp-color)`                     | Cell text color                     |
+| `--lp-cell-border`                 | `1px solid transparent`               | Cell border                         |
+| `--lp-cell-today-bg`               | `rgba(37, 99, 235, 0.1)`            | Today cell background               |
+| `--lp-cell-today-color`            | `var(--lp-accent)`                    | Today cell text color               |
+| `--lp-cell-today-border`           | `1px solid rgba(37, 99, 235, 0.25)` | Today cell border                   |
+| `--lp-cell-selected-bg`            | `var(--lp-accent)`                    | Selected cell background            |
+| `--lp-cell-selected-color`         | `var(--lp-accent-contrast)`           | Selected cell text color            |
+| `--lp-cell-selected-border`        | `1px solid var(--lp-accent)`          | Selected cell border                |
+| `--lp-cell-range-bg`               | `rgba(37, 99, 235, 0.12)`           | Range cell background               |
+| `--lp-cell-range-color`            | `var(--lp-color)`                     | Range cell text color               |
+| `--lp-cell-range-border`           | `1px solid transparent`               | Range cell border                   |
+| `--lp-cell-range-start-bg`         | `var(--lp-cell-selected-bg)`          | Range start cell background         |
+| `--lp-cell-range-start-color`      | `var(--lp-cell-selected-color)`       | Range start cell text color         |
+| `--lp-cell-range-end-bg`           | `var(--lp-cell-selected-bg)`          | Range end cell background           |
+| `--lp-cell-range-end-color`        | `var(--lp-cell-selected-color)`       | Range end cell text color           |
+| `--lp-cell-range-preview-bg`       | `rgba(37, 99, 235, 0.14)`           | Drag/hover preview background       |
+| `--lp-cell-range-preview-bg-hover` | `rgba(37, 99, 235, 0.22)`           | Drag/hover preview hover background |
+| `--lp-cell-range-preview-color`    | `var(--lp-color)`                     | Drag/hover preview text color       |
+| `--lp-cell-range-preview-border`   | `1px solid transparent`               | Drag/hover preview border           |
+| `--lp-cell-outside-color`          | `var(--lp-muted)`                     | Other month cell text color         |
+| `--lp-cell-outside-color-opacity`  | `0.55`                                | Other month text opacity            |
+| `--lp-cell-weekend-color`          | `#b45309`                             | Weekend cell text color             |
+| `--lp-cell-disabled-opacity`       | `0.35`                                | Disabled cell opacity               |
+| `--lp-cell-disabled-cursor`        | `not-allowed`                         | Disabled cell cursor                |
+| `--lp-cell-focused-outline`        | `2px solid rgba(37,99,235,0.45)`    | Focused cell outline                |
+| `--lp-cell-focused-outline-offset` | `1px`                                 | Focused cell outline offset         |
+
+### Time panel
+
+| Variable                              | Default                                                                | Notes                               |
+|---------------------------------------|------------------------------------------------------------------------|-------------------------------------|
+| `--lp-time-panel-padding-x`           | `var(--lp-space-md)`                                                   | Time panel horizontal padding       |
+| `--lp-time-panel-padding-y`           | `var(--lp-space-sm)`                                                   | Time panel vertical padding         |
+| `--lp-time-panel-border-top`          | `1px solid var(--lp-border)`                                           | Time panel border top               |
+| `--lp-time-panel-gap`                 | `var(--lp-space-sm)`                                                   | Time panel gap                      |
+| `--lp-time-display-font-size`         | `1.25rem`                                                              | Time display font size              |
+| `--lp-time-display-ampm-font-size`    | `0.75rem`                                                              | Time display AM/PM font size        |
+| `--lp-time-slider-rows-gap`           | `var(--lp-space-sm)`                                                   | Time slider rows gap                |
+| `--lp-time-slider-track-h`            | `6px`                                                                  | Time slider track height            |
+| `--lp-time-slider-track-bg`           | `var(--lp-border)`                                                     | Time slider track background        |
+| `--lp-time-slider-track-bg-active`    | `rgba(37, 99, 23, 0.22)`                                             | Time slider track active background |
+| `--lp-time-slider-thumb-size`         | `16px`                                                                 | Time slider thumb size              |
+| `--lp-time-slider-thumb-border`       | `2px solid var(--lp-bg)`                                               | Time slider thumb border            |
+| `--lp-time-slider-thumb-shadow`       | `0 1px 4px rgba(0, 0, 0, 0.18)`                                      | Time slider thumb shadow            |
+| `--lp-time-slider-thumb-shadow-hover` | `0 0 0 3px rgba(37, 99, 235, 0.28), 0 2px 6px rgba(0, 0, 0, 0.15)` | Time slider thumb hover shadow      |
+| `--lp-time-slider-focus-ring`         | `0 0 0 2px var(--lp-bg), 0 0 0 4px rgba(37, 99, 235, 0.45)`          | Time slider focus ring              |
+
+### Popover placement
+
+| Variable                       | Default                            | Notes                   |
+|--------------------------------|------------------------------------|-------------------------|
+| `--lp-popover-gap-x`           | `0px`                              | Popover horizontal gap  |
+| `--lp-popover-gap-y`           | `4px`                              | Popover vertical gap    |
+| `--lp-popover-viewport-margin` | `8px`                              | Popover viewport margin |
+| `--lp-z-popover`               | `10000`                            | Popover z-index         |
+| `--lp-popover-position`        | `fixed`                            | Popover position        |
+| `--lp-pointer-visible`         | `0`                                | Arrow visibility        |
+| `--lp-pointer-size`            | `10px`                             | Arrow size              |
+| `--lp-pointer-border-radius`   | `2px`                              | Arrow border radius     |
+| `--lp-pointer-offset`          | `14px`                             | Arrow offset            |
+| `--lp-pointer-half-size`       | `calc(var(--lp-pointer-size) / 2)` | Arrow half size         |

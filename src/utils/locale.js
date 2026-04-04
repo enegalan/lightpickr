@@ -15,22 +15,21 @@ export function defaultMonthNames(opts, monthsField) {
         if (Array.isArray(locale[field]) && locale[field].length === 12) {
             return locale[field];
         }
-        if (field === 'monthsShort' && Array.isArray(locale.months) && locale.months.length === 12) {
-            return locale.months;
-        }
     }
     return defaultMonthNames({ locale: lightpickrDefaults.locale }, monthsField);
 }
 
 /**
  * @param {import('./state.js').LightpickrOptions} opts
+ * @param {boolean} longNames
  * @returns {string[]}
  */
-export function defaultWeekdayNames(opts) {
-    if (opts.locale && typeof opts.locale === 'object' && Array.isArray(opts.locale.weekdays)) {
-        return opts.locale.weekdays;
+export function defaultWeekdayNames(opts, longNames = false) {
+    const field = longNames ? 'weekdaysLong' : 'weekdaysShort';
+    if (opts.locale && typeof opts.locale === 'object' && Array.isArray(opts.locale[field]) && opts.locale[field].length === 7) {
+        return opts.locale[field];
     }
-    return defaultWeekdayNames({ locale: lightpickrDefaults.locale });
+    return defaultWeekdayNames({ locale: lightpickrDefaults.locale }, longNames);
 }
 
 /**

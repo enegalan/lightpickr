@@ -78,13 +78,10 @@ export function normalizeAllowedViews(views) {
   const out = [];
   const seen = new Set();
   const add = function (raw) {
-    if (typeof raw !== 'string' || !VIEW_INPUT_ALIASES.has(raw)) {
-      return;
-    }
-    const v = /** @type {'day'|'month'|'year'} */ (VIEW_INPUT_ALIASES.get(raw));
-    if (!seen.has(v)) {
-      seen.add(v);
-      out.push(v);
+    const trimmed = typeof raw === 'string' ? raw.trim() : '';
+    if (trimmed && !seen.has(trimmed) && VIEW_INPUT_ALIASES.get(trimmed) !== undefined) {
+      seen.add(trimmed);
+      out.push(trimmed);
     }
   };
   if (Array.isArray(views)) {

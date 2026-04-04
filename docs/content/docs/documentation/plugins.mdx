@@ -1,0 +1,85 @@
+---
+title: Plugins
+description: Registering plugins and authoring hooks
+---
+
+## Registering a plugin
+
+Call **<code>picker.<purple>use</purple><gray>(</gray><orange>pluginFn</orange><gray>)</gray></code>** on an instance. **<code><orange>pluginFn</orange></code>** must be a **function**; non-functions are ignored.
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+function myPlugin(picker) {
+  return {
+    onInit() {
+      /* runs once when use() is called */
+    },
+    onDestroy() {
+      /* runs when picker.destroy() runs */
+    },
+    onRender() {
+      /* runs after each full render */
+    },
+    onSelect() {
+      /* runs after selection is emitted (no payload) */
+    },
+  };
+}
+
+const lp = new Lightpickr('#x');
+lp.use(myPlugin);
+```
+
+## Authoring pattern
+
+1. **Factory:** <code><red>function</red> <purple>myPlugin</purple><gray>(</gray><orange>picker</orange><gray>) </gray><gray>{'{'}</gray> <blue>return</blue> api; <gray>{'\}'}</gray></code>
+
+Capture <code><orange>picker</orange></code> in a closure if handlers need <code><purple>selectDate</purple></code>, <code><purple>update</purple></code>, etc.
+
+2. **Return object** (all keys optional):
+
+### onInit <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Runs **immediately** when <code><purple>use</purple><gray>()</gray></code> returns. Good for one-time DOM, logging, or extra listeners.
+
+### onDestroy <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Runs during <code><purple>destroy</purple><gray>()</gray></code>, **after** <code><purple>options.onDestroy</purple></code>. Release listeners, timers.
+
+### onRender <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Runs after <code><purple>renderContainer</purple></code> finishes. **No arguments**—query <code><purple>picker.$datepicker</purple></code> if needed.
+
+### onSelect <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Runs after the option <code><purple>onSelect</purple></code> path fires. **No payload**; read <code><purple>picker.selectedDates</purple></code> / <code><purple>getSelectedPayload</purple><gray>()</gray></code> if you need data.
+
+### Several plugins: order of execution
+
+Each **<code><purple>use</purple><gray>(</gray><orange>plugin</orange><gray>)</gray></code>** appends that plugin to an internal list. That list is the order of registration (first <code><purple>use</purple></code> → first slot).
+
+When a hook runs, the library walks that list **from first to last** and calls each plugin's handler if it exists.
+
+## Capabilities
+
+Plugins may:
+
+- Call **public API**: <code><purple>update</purple></code>, <code><purple>selectDate</purple></code>, <code><purple>setViewDate</purple></code>, <code><purple>show</purple></code>, <code><purple>hide</purple></code>, <code><purple>destroy</purple></code>, etc.
+- Read **getters**: <code><purple>viewDate</purple></code>, <code><purple>currentView</purple></code>, <code><purple>selectedDates</purple></code>, <code><purple>focusDate</purple></code>, <code><purple>disabledDates</purple></code>, <code><purple>visible</purple></code>.
+- Attach listeners to **<code><purple>picker.$el</purple></code>**, **<code><purple>picker.$datepicker</purple></code>**, or <code><purple>document</purple></code>—**must** remove them in <code><purple>onDestroy</purple></code>.
+
+## Minimal example: log on select
+
+```js
+function logPlugin(picker) {
+  return {
+    onSelect() {
+      console.log('timestamps', picker.getSelectedPayload());
+    },
+  };
+}
+
+new Lightpickr('#d').use(logPlugin);
+```

@@ -1,7 +1,7 @@
 import { createStateFromOptions, mergeOptionsIntoState } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
 import { applyDaySelection, applyRangeEndpointDrag, clearSelectionState, selectDateExplicit, unselectDate } from './core/selection.js';
-import { setTimePart, cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay, parseSelectedDates } from './utils/time.js';
+import { setTimePart, cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
 import { syncTimePanelDom } from './render/time-panel.js';
 import { attachDelegatedHandlers, syncPendingRangeHoverClasses } from './render/handlers.js';
 import { renderContainer } from './render/container.js';
@@ -179,7 +179,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
       return false;
     }
     return this._state.onBeforeSelect({
-      date: _dateWithStateTime(ts, this._state),
+      date: timestampToPickerDate(ts, this._state),
       datepicker: this
     }) !== false;
   };
@@ -190,7 +190,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
     const next = Object.assign({}, this._state);
     next.selectedDates = /** @type {number[][]} */ (parseSelectedDates({ range: true, multipleEnabled: false, multipleLimit: this._state.multipleLimit }, date));
     this._commit(next, { emitSelect: true, selectTrigger: 'select' });
-    if (opts && opts.close && this._state.closeOnSelect) {
+    if (opts && opts.close && this._state.autoClose) {
       this.hide();
     }
     return;
@@ -236,15 +236,19 @@ Lightpickr.prototype.clear = function () {
 
 /**
  * @param {number|Date|string} date
- * @param {string} fmt
+ * @param {string} formatOverride
  * @returns {string}
  */
-Lightpickr.prototype.formatDate = function (date, fmt) {
+Lightpickr.prototype.formatDate = function (date, formatOverride) {
   const ts = toTimestamp(date);
   if (ts == null) {
     return '';
   }
-  return formatDate(fmt || this._state.format, ts, this._state.enableTime ? this._state.timePart : null);
+  const pickFmt = formatOverride != null ? formatOverride : this._state.format;
+  if (typeof pickFmt === 'function') {
+    return String(pickFmt(timestampToPickerDate(ts, this._state)));
+  }
+  return formatDate(pickFmt, ts, this._state.enableTime ? this._state.timePart : null, this._state);
 };
 
 /**
@@ -950,7 +954,7 @@ Lightpickr.prototype._emitFocus = function (prev, next) {
     return;
   }
   next.onFocus({
-    date: _dateWithStateTime(next.focusDate, next),
+    date: timestampToPickerDate(next.focusDate, next),
     datepicker: this
   });
 };
@@ -970,23 +974,60 @@ Lightpickr.prototype._buildSelectedParts = function () {
    * @param {number} ts
    * @returns {void}
    */
-  const appendSelectedPart = (ts) => {
-    dates.push(_dateWithStateTime(ts, this._state));
-    formattedDates.push(formatDate(this._state.format, ts, timePart));
+  const appendDate = (ts) => {
+    dates.push(timestampToPickerDate(ts, this._state));
   };
 
   if (this._state.range) {
     const ranges = /** @type {number[][]} */ (this._state.selectedDates);
     for (let i = 0; i < ranges.length; i++) {
-      appendSelectedPart(ranges[i][0]);
-      appendSelectedPart(ranges[i][1]);
+      appendDate(ranges[i][0]);
+      appendDate(ranges[i][1]);
     }
   } else {
     const selectedDates = /** @type {number[]} */ (this._state.selectedDates);
     for (let i = 0; i < selectedDates.length; i++) {
-      appendSelectedPart(selectedDates[i]);
+      appendDate(selectedDates[i]);
     }
   }
+
+  if (typeof this._state.format === 'string') {
+    if (this._state.range) {
+      const ranges = /** @type {number[][]} */ (this._state.selectedDates);
+      for (let i = 0; i < ranges.length; i++) {
+        formattedDates.push(formatDate(this._state.format, ranges[i][0], timePart, this._state));
+        formattedDates.push(formatDate(this._state.format, ranges[i][1], timePart, this._state));
+      }
+    } else {
+      const selectedDates = /** @type {number[]} */ (this._state.selectedDates);
+      for (let i = 0; i < selectedDates.length; i++) {
+        formattedDates.push(formatDate(this._state.format, selectedDates[i], timePart, this._state));
+      }
+    }
+  } else {
+    const fn = /** @type {(d: Date | Date[]) => string} */ (this._state.format);
+    if (this._state.range) {
+      const ranges = /** @type {number[][]} */ (this._state.selectedDates);
+      for (let i = 0; i < ranges.length; i++) {
+        const pair = [timestampToPickerDate(ranges[i][0], this._state), timestampToPickerDate(ranges[i][1], this._state)];
+        const segment = String(fn(pair));
+        formattedDates.push(segment, segment);
+      }
+    } else if (this._state.multipleEnabled) {
+      if (dates.length === 0) {
+        return { dates: dates, formattedDates: formattedDates };
+      }
+      const segment = String(fn(dates));
+      for (let i = 0; i < dates.length; i++) {
+        formattedDates.push(segment);
+      }
+    } else {
+      for (let i = 0; i < dates.length; i++) {
+        formattedDates.push(String(fn(dates[i])));
+      }
+    }
+  }
+
   return { dates: dates, formattedDates: formattedDates };
 };
 
@@ -1030,8 +1071,13 @@ Lightpickr.prototype._emitTimeChange = function () {
     return this._state.viewDate;
   })();
   this._state.onTimeChange({
-    date: primaryTs == null ? null : _dateWithStateTime(primaryTs, this._state),
-    formattedDate: primaryTs == null ? '' : formatDate(this._state.format, primaryTs, this._state.enableTime ? this._state.timePart : null),
+    date: primaryTs != null ? timestampToPickerDate(primaryTs, this._state) : null,
+    formattedDate:
+      primaryTs == null
+        ? ''
+        : typeof this._state.format === 'function'
+          ? String(/** @type {(d: Date | Date[]) => string} */ (this._state.format)(timestampToPickerDate(primaryTs, this._state)))
+          : formatDate(this._state.format, primaryTs, this._state.enableTime ? this._state.timePart : null, this._state),
     datepicker: this
   });
 };
@@ -1045,23 +1091,48 @@ Lightpickr.prototype._syncInput = function () {
     return;
   }
   const tp = this._state.enableTime ? this._state.timePart : null;
-  if (this._state.range) {
-    const ranges = /** @type {number[][]} */ (this._state.selectedDates);
-    const parts = ranges.map((pair) => formatDate(this._state.format, pair[0], tp) + ' – ' + formatDate(this._state.format, pair[1], tp));
-    this.$el.value = parts.join(this._state.multipleSeparator);
-  } else {
-    const dates = /** @type {number[]} */ (this._state.selectedDates);
-    if (!dates.length && !this._state.onlyTime) {
-      this.$el.value = '';
+  if (typeof this._state.format === 'string') {
+    if (this._state.range) {
+      const parts = /** @type {number[][]} */ (this._state.selectedDates).map(
+        (pair) => formatDate(this._state.format, pair[0], tp, this._state) + ' – ' + formatDate(this._state.format, pair[1], tp, this._state)
+      );
+      this.$el.value = parts.join(this._state.multipleSeparator);
     } else {
-      const rows =
-        dates.length > 0
-          ? dates
-          : this._state.onlyTime
-            ? [this._state.viewDate]
-            : [];
-      this.$el.value = rows.map((d) => formatDate(this._state.format, d, tp)).join(this._state.multipleSeparator);
+      const dates = /** @type {number[]} */ (this._state.selectedDates);
+      if (!dates.length && !this._state.onlyTime) {
+        this.$el.value = '';
+      } else {
+        const rows =
+          dates.length > 0 ? dates : this._state.onlyTime ? [this._state.viewDate] : [];
+        this.$el.value = rows.map((d) => formatDate(this._state.format, d, tp, this._state)).join(this._state.multipleSeparator);
+      }
     }
+    return;
+  }
+
+  const fn = /** @type {(d: Date | Date[]) => string} */ (this._state.format);
+  if (this._state.range) {
+    const parts = /** @type {number[][]} */ (this._state.selectedDates).map((pair) =>
+      String(fn([timestampToPickerDate(pair[0], this._state), timestampToPickerDate(pair[1], this._state)]))
+    );
+    this.$el.value = parts.join(this._state.multipleSeparator);
+    return;
+  }
+
+  const tss = /** @type {number[]} */ (this._state.selectedDates);
+  if (!tss.length && !this._state.onlyTime) {
+    this.$el.value = '';
+    return;
+  }
+  const rows = tss.length > 0 ? tss : this._state.onlyTime ? [this._state.viewDate] : [];
+  if (!rows.length) {
+    this.$el.value = '';
+    return;
+  }
+  if (this._state.multipleEnabled) {
+    this.$el.value = String(fn(rows.map((ts) => timestampToPickerDate(ts, this._state))));
+  } else {
+    this.$el.value = String(fn(timestampToPickerDate(rows[0], this._state)));
   }
 };
 
@@ -1072,7 +1143,7 @@ Lightpickr.prototype._syncInput = function () {
  */
 Lightpickr.prototype._handleDayClick = function (ts) {
   const allowSelect = this._state.onBeforeSelect({
-    date: _dateWithStateTime(ts, this._state),
+    date: timestampToPickerDate(ts, this._state),
     datepicker: this
   });
   if (allowSelect === false) {
@@ -1272,27 +1343,11 @@ function _selectionChanged(prev, next) {
 
 /**
  * @private
- * @param {number} ts
- * @param {import('./core/state.js').LightpickrInternalState} state
- * @returns {Date}
- */
-function _dateWithStateTime(ts, state) {
-  const d = new Date(ts);
-  if (state.enableTime) {
-    d.setHours(state.timePart.hours, state.timePart.minutes, 0, 0);
-  } else {
-    d.setHours(0, 0, 0, 0);
-  }
-  return d;
-}
-
-/**
- * @private
  * @param {import('./core/state.js').LightpickrInternalState} state
  * @returns {boolean}
  */
 function _shouldCloseAfterSelect(state) {
-  if (!state.closeOnSelect) {
+  if (!state.autoClose) {
     return false;
   }
   if (!state.range && !state.multipleEnabled) {

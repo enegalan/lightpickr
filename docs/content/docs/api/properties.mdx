@@ -1,0 +1,62 @@
+---
+title: Properties
+description: Instance fields and getters
+---
+
+## Element References
+
+### $el <definition><param-type>HTMLElement</param-type></definition>
+
+Field or inline container passed to `new Lightpickr(target)`.
+
+### $datepicker <definition><param-type>HTMLElement</param-type></definition>
+
+DOM element of the calendar.
+
+### $pointer <definition><param-type>HTMLElement</param-type></definition>
+
+Popover arrow.
+
+### $backdrop <definition><param-type>HTMLElement <brown>|</brown> null</param-type></definition>
+
+Full-screen wrapper when **`isMobile`**.
+
+---
+
+## Boolean properties
+
+### visible <definition><param-type>boolean</param-type></definition>
+
+Is calendar visible.
+
+### isDestroyed <definition><param-type>boolean</param-type></definition>
+
+If <red>true</red> then calendar has been destroyed with destroy() method.
+
+---
+
+## Read-only getters
+
+These read from internal state and return **copies** or primitives suitable for inspection (mutate via **`update`** or methods, not by writing into returned arrays).
+
+### viewDate <definition><param-type>number</param-type></definition>
+
+Current view date.
+
+### currentView <definition><param-type>string</param-type> <brown>=</brown> <green>"day"</green> <brown>|</brown> <green>"month"</green> <brown>|</brown> <green>"year"</green></definition>
+
+Current view of the calendar.
+
+After each change, **`onChangeView`** runs with a **different** label shape (`'days'`, `'months'`, `'years'`, `'time'`). See [onChangeView](/docs/documentation/events#onchangeview-view--void--no-op).
+
+### selectedDates <definition><param-type>number<gray>[</gray><gray>]</gray> <brown>|</brown> number<gray>[</gray><gray>]</gray><gray>[</gray><gray>]</gray></param-type></definition>
+
+An array of selected dates.
+
+### focusDate <definition><param-type>number <brown>|</brown> null</param-type></definition>
+
+A focused day timestamp.
+
+### disabledDates <definition><param-type>number<gray>[</gray><gray>]</gray></param-type></definition>
+
+An arrat of disabled dates.

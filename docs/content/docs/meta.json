@@ -1,0 +1,5 @@
+{
+  "title": "Lightpickr",
+  "root": true,
+  "pages": ["index", "examples", "documentation", "api"]
+}

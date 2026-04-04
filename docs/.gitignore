@@ -1,0 +1,15 @@
+# deps
+/node_modules
+
+# generated content
+.source
+
+# test & build
+/.next/
+/out/
+*.tsbuildinfo
+package-lock.json
+
+# misc
+.DS_Store
+next-env.d.ts

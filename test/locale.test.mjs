@@ -22,12 +22,12 @@ const localeBundles = await Promise.all(
   })
 );
 
-/** Same order as `_buildWeekdayRow` with default `firstDayOfWeek` 1 (Monday). */
-function weekdayHeadLabels(weekdays, firstDayOfWeek) {
-  const fd = firstDayOfWeek % 7;
+/** Same order as `_buildWeekdayRow` with default `firstDay` 1 (Monday). */
+function weekdayHeadLabels(weekdaysShort, firstDay) {
+  const fd = firstDay % 7;
   const labels = [];
   for (let i = 0; i < 7; i++) {
-    labels.push(weekdays[(fd + i) % 7]);
+    labels.push(weekdaysShort[(fd + i) % 7]);
   }
   return labels;
 }
@@ -38,12 +38,13 @@ for (const { code, locale } of localeBundles) {
   test(`locale/${code}.js: arrays and utils`, () => {
     assert.equal(locale.monthsShort.length, 12);
     assert.equal(locale.monthsLong.length, 12);
-    assert.equal(locale.weekdays.length, 7);
+    assert.equal(locale.weekdaysShort.length, 7);
+    assert.equal(locale.weekdaysLong.length, 7);
 
     assert.equal(defaultMonthNames({ locale }, 'monthsLong')[0], locale.monthsLong[0]);
     assert.equal(defaultMonthNames({ locale }, 'monthsShort')[0], locale.monthsShort[0]);
-    assert.equal(defaultWeekdayNames({ locale })[0], locale.weekdays[0]);
-    assert.equal(defaultWeekdayNames({ locale })[6], locale.weekdays[6]);
+    assert.equal(defaultWeekdayNames({ locale })[0], locale.weekdaysShort[0]);
+    assert.equal(defaultWeekdayNames({ locale })[6], locale.weekdaysShort[6]);
 
     const ui = getTranslations({ locale });
     assert.equal(ui.btnToday, locale.btnToday);
@@ -78,7 +79,7 @@ for (const { code, locale } of localeBundles) {
     const picker = new Lightpickr(input, { inline: true, locale });
     const headCells = picker.$datepicker.querySelectorAll('.' + lightpickrDefaults.classes.row + '--head .' + lightpickrDefaults.classes.headCell);
     assert.equal(headCells.length, 7);
-    const expected = weekdayHeadLabels(locale.weekdays, DEFAULT_FIRST_DAY);
+    const expected = weekdayHeadLabels(locale.weekdaysShort, DEFAULT_FIRST_DAY);
     for (let i = 0; i < 7; i++) {
       assert.equal(headCells[i].textContent, expected[i]);
     }

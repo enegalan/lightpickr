@@ -5,18 +5,17 @@ import lightpickrDefaults from './defaults.js';
 
 /**
  * @typedef {Object} LightpickrNavTitles
- * @property {string | ((picker: any) => string)} [days]
- * @property {string | ((picker: any) => string)} [months]
- * @property {string | ((picker: any) => string)} [years]
+ * @property {string | ((picker: any) => string)} [day]
+ * @property {string | ((picker: any) => string)} [month]
+ * @property {string | ((picker: any) => string)} [year]
  */
 
 /**
  * @typedef {Object} LightpickrLocale
- * @property {string[]} [months]
  * @property {string[]} [monthsShort]
  * @property {string[]} [monthsLong]
- * @property {string[]} [weekdays]
- * @property {number} [firstDay]
+ * @property {string[]} [weekdaysShort]
+ * @property {string[]} [weekdaysLong]
  * @property {string} [ariaDayGrid]
  * @property {string} [ariaMonthGrid]
  * @property {string} [ariaYearGrid]
@@ -105,13 +104,12 @@ import lightpickrDefaults from './defaults.js';
  * @property {(number|Date|string)[]} [disabledDates]
  * @property {string|LightpickrLocale} [locale]
  * @property {number} [firstDay]
- * @property {number} [firstDayOfWeek]
  * @property {number[]} [weekends]
  * @property {boolean} [isMobile]
- * @property {string} [format]
+ * @property {string | ((date: Date | Date[]) => string)} [format]
  * @property {string} [monthsField]
  * @property {string|('day'|'days'|'month'|'months'|'year'|'years')} [view]
- * @property {string|string[]} [allowedViews]
+ * @property {('day'|'month'|'year')|('day'|'month'|'year')[]} [allowedViews]
  * @property {boolean} [showOtherMonths]
  * @property {boolean} [selectOtherMonths]
  * @property {boolean} [moveToOtherMonthsOnSelect]
@@ -121,7 +119,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {unknown} [buttons]
  * @property {string | string[]} [showEvent]
  * @property {boolean} [autoClose]
- * @property {boolean} [closeOnSelect]
  * @property {string} [prevHtml]
  * @property {string} [nextHtml]
  * @property {LightpickrNavTitles} [navTitles]
@@ -164,7 +161,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {number|null} maxDate
  * @property {number[]} disabledDatesSorted
  * @property {string|LightpickrLocale} locale
- * @property {number} firstDayOfWeek
+ * @property {number} firstDay
  * @property {number[]} weekends
  * @property {boolean} isMobile
  * @property {string} format
@@ -177,7 +174,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {string} multipleSeparator
  * @property {boolean} dynamicRange
  * @property {unknown} buttons
- * @property {boolean} closeOnSelect
+ * @property {boolean} autoClose
  * @property {string} prevHtml
  * @property {string} nextHtml
  * @property {LightpickrNavTitles} navTitles
@@ -278,19 +275,10 @@ export function createStateFromOptions(incomingRaw) {
       ? raw.monthsField.trim()
       : /** @type {string} */ (lightpickrDefaults.monthsField);
 
-  const firstDay =
-    normalizeFirstDay(raw.firstDay) ??
-    normalizeFirstDay(raw.firstDayOfWeek) ??
-    (raw.locale && typeof raw.locale === 'object' ? normalizeFirstDay(raw.locale.firstDay) : null) ??
-    1;
+  const resolvedFirstDay = normalizeFirstDay(raw.firstDay) ?? 1;
 
   const allowedViews = normalizeAllowedViews(raw.allowedViews);
   const initialView = clampView(allowedViews, raw.view);
-
-  const closeOnSelect =
-    typeof raw.autoClose === 'boolean'
-      ? raw.autoClose
-      : raw.closeOnSelect !== false;
 
   const navTitles = Object.assign({}, raw.navTitles);
 
@@ -315,7 +303,7 @@ export function createStateFromOptions(incomingRaw) {
     maxDate: maxTs != null ? startOfDayTs(maxTs) : null,
     disabledDatesSorted: disabled.map(startOfDayTs),
     locale: raw.locale != null ? raw.locale : 'default',
-    firstDayOfWeek: firstDay,
+    firstDay: resolvedFirstDay,
     weekends: normalizeWeekendIndexes(raw.weekends),
     isMobile: Boolean(raw.isMobile),
     monthsField,
@@ -324,11 +312,15 @@ export function createStateFromOptions(incomingRaw) {
     selectOtherMonths: raw.selectOtherMonths !== false,
     moveToOtherMonthsOnSelect: raw.moveToOtherMonthsOnSelect !== false,
     disableNavWhenOutOfRange: raw.disableNavWhenOutOfRange !== false,
-    format: typeof raw.format === 'string' ? raw.format : /** @type {string} */ (lightpickrDefaults.format),
+    format: typeof raw.format === 'function'
+        ? raw.format
+        : typeof raw.format === 'string'
+          ? raw.format
+          : lightpickrDefaults.format,
     multipleSeparator: typeof raw.multipleSeparator === 'string' ? raw.multipleSeparator : /** @type {string} */ (lightpickrDefaults.multipleSeparator),
     dynamicRange: raw.dynamicRange !== false,
     buttons: raw.buttons != null ? raw.buttons : false,
-    closeOnSelect,
+    autoClose: typeof raw.autoClose === 'boolean' ? raw.autoClose : lightpickrDefaults.autoClose,
     prevHtml: typeof raw.prevHtml === 'string' ? raw.prevHtml : /** @type {string} */ (lightpickrDefaults.prevHtml),
     nextHtml: typeof raw.nextHtml === 'string' ? raw.nextHtml : /** @type {string} */ (lightpickrDefaults.nextHtml),
     navTitles,
@@ -434,14 +426,13 @@ function _extractRawOptions(state) {
     maxDate: state.maxDate,
     disabledDates: state.disabledDatesSorted.slice(),
     locale: state.locale,
-    firstDay: state.firstDayOfWeek,
-    firstDayOfWeek: state.firstDayOfWeek,
+    firstDay: state.firstDay,
     weekends: state.weekends.slice(),
     isMobile: state.isMobile,
     format: state.format,
     monthsField: state.monthsField,
     view: state.currentView === 'time' ? 'days' : state.currentView + 's',
-    allowedViews: state.allowedViews.map((v) => v + 's'),
+    allowedViews: state.allowedViews.slice(),
     showOtherMonths: state.showOtherMonths,
     selectOtherMonths: state.selectOtherMonths,
     moveToOtherMonthsOnSelect: state.moveToOtherMonthsOnSelect,
@@ -449,8 +440,7 @@ function _extractRawOptions(state) {
     multipleSeparator: state.multipleSeparator,
     dynamicRange: state.dynamicRange,
     buttons: state.buttons,
-    closeOnSelect: state.closeOnSelect,
-    autoClose: state.closeOnSelect,
+    autoClose: state.autoClose,
     prevHtml: state.prevHtml,
     nextHtml: state.nextHtml,
     navTitles: state.navTitles,

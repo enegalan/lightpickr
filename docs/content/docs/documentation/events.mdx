@@ -1,0 +1,146 @@
+---
+title: Events & callbacks
+description: Option callbacks, when they run, and payloads
+---
+
+Lightpickr does **not** emit DOM `CustomEvent`s on the field. Integrate via **constructor options** or [plugins](/docs/documentation/plugins).
+
+---
+
+## onSelect <definition><param-type><gray>(</gray>&#123; date, dates, formattedDate, formattedDates, trigger, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+After the internal state commit that changes the selection and updates the bound field (if any).
+
+| Field            | Type                                                                                                                                                                                                                            | Notes                                                                          |
+|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| `date`           | <code><blue>Date</blue> <brown>&#124;</brown> <blue>Date</blue><gray>[]</gray> <brown>&#124;</brown> null</code>                                                                                                                | Selected date, if multiple date mode is on, then array of dates will be passed |
+| `dates`          | <code><blue>Date</blue><gray>[]</gray></code>                                                                                                                                                                                                | Flat list of all endpoint dates (range: start/end pairs flattened in order)    |
+| `formattedDate`  | <code><green>string</green> <brown>&#124;</brown> <green>string</green><gray>[]</gray> <brown>&#124;</brown> <green>""</green></code>                                                                                           | Mirrors shape of `date` for formatted strings                                  |
+| `formattedDates` | <code><green>string</green><gray>[]</gray></code>                                                                                                                                                                               | All formatted values                                                           |
+| `trigger`        | <code><green>"select"</green> <brown>&#124;</brown> <green>"unselect"</green> <brown>&#124;</brown> <green>"clear"</green> <brown>&#124;</brown> <green>"range-drag"</green> <brown>&#124;</brown> <green>"time"</green></code> | The event trigger reason string                                                |
+| `datepicker`     | `Lightpickr`                                                                                                                                                                                                                    | Calendar instance                                                              |
+
+---
+
+## onBeforeSelect <definition><param-type><gray>(</gray>&#123; date, datepicker &#125;<gray>)</gray> <brown>=></brown> boolean</param-type></definition>
+
+Triggered before cell should be selected. If returns <code><red>true</red></code> then cell will be selected, if <code><red>false</red></code> then not.
+
+| Field        | Type                                                                                                             | Notes               |
+|--------------|------------------------------------------------------------------------------------------------------------------|---------------------|
+| `date`       | <code><blue>Date</blue></code> — calendar day with time from state when <code><purple>enableTime</purple></code> | Date to be selected |
+| `datepicker` | `Lightpickr`                                                                                                     | Calendar instance   |
+
+---
+
+## onChangeViewDate <definition><param-type><gray>(</gray>&#123; month, year, decade, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Triggered when navigating back and forth. It takes object as and argument with actual values of month, year and decade.
+
+| Field        | Type                                                                                       | Notes                                                                                                    |
+|--------------|--------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| `month`      | <code><red>number</red></code>                                                             | Month of viewed date from 0–11                                                                           |
+| `year`       | <code><red>number</red></code>                                                             | Year of viewed date                                                                                      |
+| `decade`     | <code><gray>[</gray><red>number</red><gray>,</gray> <red>number</red><gray>]</gray></code> | Decade of viewed date. The first element is the start year of decade, the second one - the end of decade |
+| `datepicker` | `Lightpickr`                                                                               | Calendar instance                                                                                        |
+
+---
+
+## onChangeView <definition><param-type><gray>(</gray>view: <green>string</green><gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+When changing the view, for example, from days to months, this function will be called. The name of the current view will be passed as an argument.
+
+---
+
+### onRenderCell <definition><param-type><gray>(</gray>&#123; date, cellType, datepicker &#125;<gray>)</gray> <brown>=></brown> &#123; html, classes, attrs, disabled &#125; <brown>|</brown> <blue>void</blue></param-type></definition>
+
+A function that will be called every time a calendar cell is drawn. It is used if you need to customize the cell in some way, change the contents or make it unavailable for selection.
+
+It takes object as an argument which is describing current cell:
+
+| Field        | Type                                                                                                                       | Notes                |
+|--------------|----------------------------------------------------------------------------------------------------------------------------|----------------------|
+| `date`       | <code><blue>Date</blue></code>                                                                                             | Date of current cell |
+| `cellType`   | <code><green>"day"</green> <brown>&#124;</brown> <green>"month"</green> <brown>&#124;</brown> <green>"year"</green></code> | Cell type            |
+| `datepicker` | `Lightpickr`                                                                                                               | Calendar instance    |
+
+This function can return an object, consist of next fields:
+
+| Field      | Type                                 | Notes                                                            |
+|------------|--------------------------------------|------------------------------------------------------------------|
+| `html`     | <code><green>string</green></code>   | Custom cell content                                              |
+| `classes`  | <code><green>string</green></code>    | Extra classes                                                    |
+| `attrs`    | <code><purple>Record</purple></code> | Object with extra cell attributes for a cell                     |
+| `disabled` | <code><red>boolean</red></code>      | <code><red>true</red></code> sets `disabled` on the cell control |
+
+---
+
+### onShow <definition><param-type><gray>(</gray>isFinished, &#123; datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Callback function when the calendar appears. Called at the beginning of the animation, and when the animation has finished.
+
+| Field        | Type                            | Notes                          |
+|--------------|---------------------------------|--------------------------------|
+| `isFinished` | <code><red>boolean</red></code> | Animation completion indicator |
+| `datepicker` | `Lightpickr`                    | Calendar instance              |
+
+<Callout type="info" title="Note">
+  Not called for **<purple>inline</purple>** pickers (<code><purple>show</purple><gray>()</gray></code> is a no-op when <code><purple>inline</purple></code>).
+</Callout>
+
+---
+
+### onHide <definition><param-type><gray>(</gray>isFinished, &#123; datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Callback function when closing the calendar. Called at the beginning of the hide animation, and when the animation has finished.
+
+| Field        | Typ                             | Notes                          |
+|--------------|---------------------------------|--------------------------------|
+| `isFinished` | <code><red>boolean</red></code> | Animation completion indicator |
+| `datepicker` | `Lightpickr`                    | Calendar instance              |
+
+---
+
+### onClickDayName <definition><param-type><gray>(</gray>&#123; dayIndex, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Triggered when day names are clicked.
+
+| Field        | Type                           | Notes                                                                               |
+|--------------|--------------------------------|-------------------------------------------------------------------------------------|
+| `dayIndex`   | <code><red>number</red></code> | 0–6 per **<code><purple>locale.weekdaysShort</purple></code>** order (Sunday-first) |
+| `datepicker` | `Lightpickr`                   | Calendar instance                                                                   |
+
+---
+
+### onFocus <definition><param-type><gray>(</gray>&#123; date, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Callback which is triggered when cell receives focus
+
+| Field        | Type                             | Notes                            |
+|--------------|----------------------------------|----------------------------------|
+| `date`       | <code><blue>Date</blue></code>   | Date on which focus is triggered |
+| `datepicker` | `Lightpickr`                     | Calendar instance                |
+
+---
+
+### onTimeChange <definition><param-type><gray>(</gray>&#123; date, formattedDate, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Fires when time inputs or sliders commit a new time.
+
+| Field           | Type                                                                   | Notes                                                               |
+|-----------------|------------------------------------------------------------------------|---------------------------------------------------------------------|
+| `date`          | <code><blue>Date</blue> <brown>&#124;</brown> <gray>null</gray></code> | Calendar day the time row uses                                      |
+| `formattedDate` | <code><green>string</green></code>                                     | That instant with instance **<code><purple>format</purple></code>** |
+| `datepicker`    | `Lightpickr`                                                           | Instance                                                            |
+
+---
+
+### onDestroy <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+
+Runs at the end of **<code><purple>destroy</purple><gray>()</gray></code>** after DOM is torn down, and **before** plugin **<code><purple>onDestroy</purple></code>** hooks.
+
+---
+
+### Plugin hooks
+
+Plugins can expose <code><purple>onRender</purple></code> and <code><purple>onSelect</purple></code> with **no arguments**; they run after the main render / after selection emission. See [Plugins](/docs/documentation/plugins).

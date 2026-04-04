@@ -1,4 +1,7 @@
 import { trimFifo, pad2 } from './common.js';
+import lightpickrDefaults from '../core/defaults.js';
+import { defaultMonthNames, defaultWeekdayNames } from './locale.js';
+import { YEAR_GRID_COUNT } from '../core/calendar-grid.js';
 
 /**
  * @param {number} ts
@@ -35,6 +38,21 @@ export function startOfDayTs(ts) {
  */
 export function isSameDay(a, b) {
     return startOfDayTs(a) === startOfDayTs(b);
+}
+
+/**
+ * @param {number} ts
+ * @param {{ enableTime: boolean, timePart: { hours: number, minutes: number } }} state
+ * @returns {Date}
+ */
+export function timestampToPickerDate(ts, state) {
+    const d = new Date(ts);
+    if (state.enableTime) {
+        d.setHours(state.timePart.hours, state.timePart.minutes, 0, 0);
+    } else {
+        d.setHours(0, 0, 0, 0);
+    }
+    return d;
 }
 
 /**
@@ -120,19 +138,82 @@ export function addYears(ts, delta) {
 /**
  * @param {string} format
  * @param {number} ts
- * @param {{ hours?: number, minutes?: number }} [timePart]
+ * @param {{ hours?: number, minutes?: number }|null|undefined} timePart
+ * @param {import('./state.js').LightpickrInternalState|import('./state.js').LightpickrOptions|null|undefined} [state]
  * @returns {string}
  */
-export function formatDate(format, ts, timePart) {
+export function formatDate(format, ts, timePart, state) {
     const { y, m, d } = tsToYmd(ts);
-    const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : new Date(ts).getHours();
-    const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : new Date(ts).getMinutes();
-    return format
-        .replace(/YYYY/g, String(y))
-        .replace(/MM/g, pad2(m + 1))
-        .replace(/DD/g, pad2(d))
-        .replace(/HH/g, pad2(hours))
-        .replace(/mm/g, pad2(minutes));
+    const dateObj = new Date(ts);
+    const dow = dateObj.getDay();
+    const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : dateObj.getHours();
+    const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
+    const opts = state && typeof state === 'object' ? state : lightpickrDefaults;
+    opts.locale = opts.locale != null ? opts.locale : lightpickrDefaults.locale;
+    opts.monthsField = opts.monthsField && typeof opts.monthsField === 'string' ? opts.monthsField : lightpickrDefaults.monthsField;
+    const monthShort = defaultMonthNames(opts, 'monthsShort');
+    const monthLong = defaultMonthNames(opts, 'monthsLong');
+    const dayShort = defaultWeekdayNames(opts);
+    const dayLong = defaultWeekdayNames(opts, true);
+    const yy = String(y).slice(-2);
+    const blockStart = y - 5;
+    const blockEnd = blockStart + YEAR_GRID_COUNT - 1;
+
+    let out = '';
+    let i = 0;
+    while (i < format.length) {
+        const rest = format.slice(i);
+        if (rest.startsWith('yyyy1')) {
+            out += String(blockStart);
+            i += 5;
+        } else if (rest.startsWith('yyyy2')) {
+            out += String(blockEnd);
+            i += 5;
+        } else if (rest.startsWith('MMMM')) {
+            out += monthLong[m] || '';
+            i += 4;
+        } else if (rest.startsWith('MMM')) {
+            out += monthShort[m] || '';
+            i += 3;
+        } else if (rest.startsWith('yyyy') || rest.startsWith('YYYY')) {
+            out += String(y);
+            i += 4;
+        } else if (rest.startsWith('yy')) {
+            out += yy;
+            i += 2;
+        } else if (rest.startsWith('MM')) {
+            out += pad2(m + 1);
+            i += 2;
+        } else if (rest.startsWith('dd') || rest.startsWith('DD')) {
+            out += pad2(d);
+            i += 2;
+        } else if (rest.startsWith('EEEE')) {
+            out += dayLong[dow] || '';
+            i += 4;
+        } else if (rest.startsWith('HH')) {
+            out += pad2(hours);
+            i += 2;
+        } else if (rest.startsWith('mm')) {
+            out += pad2(minutes);
+            i += 2;
+        } else if (rest.startsWith('M')) {
+            out += String(m + 1);
+            i += 1;
+        } else if (rest.startsWith('d')) {
+            out += String(d);
+            i += 1;
+        } else if (rest.startsWith('E')) {
+            out += dayShort[dow] || '';
+            i += 1;
+        } else if (rest.startsWith('T')) {
+            out += String(ts);
+            i += 1;
+        } else {
+            out += format[i];
+            i += 1;
+        }
+    }
+    return out;
 }
 
 /**

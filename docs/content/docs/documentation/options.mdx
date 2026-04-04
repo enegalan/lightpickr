@@ -1,0 +1,366 @@
+---
+title: Options
+description: Constructor options for new Lightpickr(target, options)
+---
+
+`new Lightpickr(target, options)` — `target` is a CSS selector or `HTMLElement`.
+
+**Related:** [Events](/docs/documentation/events) (callback payloads), [CSS classes](/docs/documentation/classes), [Localization](/docs/documentation/localization).
+
+---
+
+## Mounting & layout
+
+### inline <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+
+Makes the calendar to be permanently visible
+
+<InlineDemo />
+
+### isMobile <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+
+If <red>true</red>, then the calendar will appear as a modal window with slightly enlarged dimensions.
+
+### position <definition><param-type>string <brown>|</brown> <blue>function</blue></param-type> <brown>=</brown> <green>"bottom left"</green></definition>
+
+If it is a string then the first value is position along the main axis, the second is position along the secondary one. For example, <gray>{'{'}</gray><red>position</red><brown>:</brown> <green>'top right'</green><gray>{'\}'}</gray> — set the calendar position to the top right of the text field.
+
+If **<code><purple>position</purple></code>** is a **function**, it runs when the popover is positioned. The default string placement is skipped—you move and size the panel yourself. Any enter/exit animation is also yours to implement if you want it.
+
+<Callout type="warn" title="Inline and mobile">
+  A custom **<code><purple>position</purple></code>** function is **not** used when **<code><purple>inline</purple></code>** or **<code><purple>isMobile</purple></code>** is enabled.
+</Callout>
+
+- **`ctx`** — object passed on each layout pass:
+
+| Field          | Type          | Role                                                                                                                               |
+|----------------|---------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `$datepicker`  | `HTMLElement` | Root `.lp` panel                                                                                                                   |
+| `$target`      | `HTMLElement` | Field element from the constructor                                                                                                 |
+| `$anchor`      | `HTMLElement` | Placement reference (same as **<code><purple>anchor</purple></code>** option when set, otherwise the field)                        |
+| `$pointer`     | `HTMLElement` | Arrow element                                                                                                                      |
+| `isViewChange` | `boolean`     | <red>true</red> when this pass is due to a view/month change, not only the first open after **<green>show</green><gray>()</gray>** |
+
+- **Return value:** omit or return <gray>`undefined`</gray> for no custom teardown. Return a **function** to run when the popover closes; that function receives **<green>hideDone</green><gray>()</gray>**. After your teardown, you **must** call **<green>hideDone</green><gray>()</gray>** so the library can finish hiding and detach listeners.
+
+Example of manual positioning:
+
+<ManualPositionDemo />
+
+```js
+new Lightpickr('#my-input', {
+  autoClose: true,
+  position({ $datepicker, $target, $pointer }) {
+    const coords = $target.getBoundingClientRect();
+    const dpHeight = $datepicker.clientHeight;
+    const dpWidth = $datepicker.clientWidth;
+
+    const top = coords.top + coords.height / 2 - dpHeight / 2;
+    const left = coords.left + coords.width / 2 - dpWidth / 2;
+
+    $datepicker.style.position = 'fixed';
+    $datepicker.style.left = `${left}px`;
+    $datepicker.style.top = `${top}px`;
+
+    $pointer.style.display = 'none';
+  },
+});
+```
+
+### anchor <definition><param-type>HTMLElement <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+
+Optional node the popover is **aligned to**. Pass an **`HTMLElement`** or **selector** to use a wrapper, icon, etc. If that node is not the constructor **<purple>$target</purple>**, **<purple>showEvent</purple>** is wired to it as well. Unmatched selectors fall back to the default reference.
+
+---
+
+## Selection modes
+
+<RangeDemo />
+
+### multiple <definition><param-type>boolean <brown>|</brown> number</param-type> <brown>=</brown> <red>false</red></definition>
+
+If <red>true</red>, then you can select an unlimited number of dates. If you pass a number, the number of selected dates will be limited by it's value.
+
+### dynamicRange <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+
+If <red>true</red>, then after selecting dates in range mode, they can be changed by dragging them.
+
+### autoClose <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+
+When <red>true</red>, the popover hides after a complete selection: single date, or the second endpoint of a **range**. In **multiple** mode it does not close after each day. Set to <red>false</red> to keep the calendar open after selection.
+
+### multipleSeparator <definition><param-type>string</param-type> <brown>=</brown> <green>", "</green></definition>
+
+Separator between dates in text field. It is used in the multiple date selection mode and in the range mode.
+
+---
+
+## Dates & bounds
+
+### startDate <definition><param-type>number <brown>|</brown> Date <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <blue>Date</blue></definition>
+
+Sets the start view date of calendar.
+
+### minDate <definition><param-type>number <brown>|</brown> Date <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+
+The minimum possible date to select.
+
+### maxDate <definition><param-type>number <brown>|</brown> Date <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+
+The maximum possible date to select.
+
+### disabledDates <definition><param-type><gray>(</gray>number <brown>|</brown> Date <brown>|</brown> string<gray>)</gray><gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <gray>[</gray><gray>]</gray></definition>
+
+List of disabled days.
+
+### selectedDates <definition><param-type><gray>(</gray>Date <brown>|</brown> string <brown>|</brown> number<gray>)</gray><gray>[</gray><gray>]</gray> <brown>|</brown> false</param-type> <brown>=</brown> <red>false</red></definition>
+
+- Single / multiple: flat list of days.
+- Range: array of `[a,b]` pairs.
+
+<SelectedDatesMultiDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+let startDate = new Date('2021-07-20');
+
+new Lightpickr('#my-input', {
+  startDate,
+  multiple: true,
+  selectedDates: [startDate, '2021-07-25', 1626307200000]
+});
+```
+
+### showOtherMonths <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+
+If <red>true</red>, dates from other months will be displayed in days view.
+
+### selectOtherMonths <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+
+If <red>true</red>, it will be possible to select dates from other months.
+
+### moveToOtherMonthsOnSelect <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+
+If <red>true</red>, then selecting dates from another month will be causing transition to this month.
+
+### disableNavWhenOutOfRange <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+
+Whether it is necessary to prohibit switching to the next or previous month/year/decade if they go beyond the minimum or maximum dates.
+
+If <red>true</red>, then calendar navigation buttons will be deactivated if such case occurs.
+
+---
+
+## Locale & formatting
+
+### locale <definition><param-type>object <brown>|</brown> string</param-type> <brown>=</brown> <green>"default"</green></definition>
+
+Language of the calendar. Available locales are in `lightpickr/locale/`.
+
+Supports **full object** from `lightpickr/locale/*` or a **partial** object. See [Localization](/docs/documentation/localization).
+
+### firstDay <definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+
+The index of the day from which the week begins. Possible values are from 0 (Sunday) to 6 (Saturday).
+
+### weekends <definition><param-type>number<gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <gray>[</gray><red>6</red><gray>, </gray><red>0</red><gray>]</gray></definition>
+
+Indexes of the days that will be considered a weekend. The .-weekend- class will be added to them. By default, this is Saturday and Sunday.
+
+### format <definition><param-type>string <brown>|</brown> <blue>function</blue></param-type> <brown>=</brown> <green>"YYYY-MM-DD"</green></definition>
+
+Date format. By default, the **string** pattern is taken from the current locale; a value passed here overrides that. You can also pass a **function** to build the field value yourself (see below).
+
+**Available tokens** when **`format`** is a string (longer sequences match first; parsing is left-to-right):
+
+| Token           | Meaning |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------|
+| `T`             | Selected instant as milliseconds (Unix timestamp)                                                                        |
+| `E`             | Short weekday name from locale **<purple>weekdaysShort</purple>**                                                        |
+| `EEEE`          | Full weekday name from locale **<purple>weekdaysLong</purple>**                                                          |
+| `d`             | Day of month, 1–31                                                                                                       |
+| `dd` / `DD`     | Day of month with leading zero                                                                                           |
+| `M`             | Month number 1–12                                                                                                        |
+| `MM`            | Month number with leading zero (01–12)                                                                                   |
+| `MMM`           | Short month name from locale (same source as **<purple>monthsField</purple>**, usually **<purple>monthsShort</purple>**) |
+| `MMMM`          | Full month name from locale **<purple>monthsLong</purple>**                                                              |
+| `yy`            | Two-digit year                                                                                                           |
+| `yyyy` / `YYYY` | Four-digit year                                                                                                          |
+| `yyyy1`         | First year of the current year block                                                                                     |
+| `yyyy2`         | Last year of that block                                                                                                  |
+| `HH`            | Hours 00–23                                                                                                              |
+| `mm`            | Minutes 00–59                                                                                                            |
+
+There is no escape for literals inside a string pattern; avoid embedding these letters in fixed text, or use a function **<purple>format</purple>** instead.
+
+**Function <purple>format</purple>:** should return a string. For a single selection, the argument is one <blue>Date</blue>. If **multi-date** selection is enabled, a <blue>Date</blue><gray>[</gray><gray>]</gray> of all selected dates is passed so you can build one string for the whole field. With <green>range</green>, each segment is formatted with <gray>[</gray>startDate, endDate<gray>]</gray>; multiple ranges are joined with <green>multipleSeparator</green>.
+
+<FormatFunctionDemo />
+
+```js
+new Lightpickr('#input', {
+  format(date) {
+    return date.toLocaleString('ja', {
+      year: 'numeric',
+      day: '2-digit',
+      month: 'long',
+    });
+  },
+});
+```
+
+<Callout type="tip" title="Multiple selection">
+  With <green>multiple</green><brown>:</brown> <red>true</red>, implement against an array, for example <code><purple>const</purple> <red>dates</red> <brown>=</brown> <blue>Array.isArray</blue><gray>(</gray>date<gray>)</gray> <brown>?</brown> date <brown>:</brown> <gray>[</gray>date<gray>]</gray></code> before formatting.
+</Callout>
+
+### monthsField <definition><param-type>string</param-type> <brown>=</brown> <green>"monthsShort"</green></definition>
+
+Locale key used for **short** month names in the month grid and for the **`MMM`** format token. Long names always come from **<purple>monthsLong</purple>**.
+
+---
+
+## Views & chrome
+
+### view <definition><param-type>string</param-type> <brown>=</brown> <green>"day"</green></definition>
+
+The initial view of the calendar. Possible values:
+
+| Value   | Meaning                            |
+|---------|------------------------------------|
+| `day`   | Displaying days of one month       |
+| `month` | Displaying months of one year      |
+| `year`  | Displaying the years of one decade |
+
+### allowedViews <definition><param-type>string <brown>|</brown> string<gray>[]</gray></param-type> <brown>=</brown> <gray>[</gray><green>"day"</green>, <green>"month"</green>, <green>"year"</green><gray>]</gray></definition>
+
+Order defines drill **down** (e.g. day → month → year).
+
+### navTitles <definition><param-type>&#123; day?, month?, year? &#125;</param-type> <brown>=</brown> <gray>defaults below</gray></definition>
+
+Title templates in the calendar navigation. You can use HTML tags and tokens from dateFormat. You can also pass the function as a value - it will receive an instance of the calendar as an argument, and should return a string.
+
+If a callback function is passed, it will be called every time the view changes, the date is selected, or when switching to another month.
+
+Default values are:
+```js
+let navTitlesDefaults = {
+    day: 'MMMM, <i>yyyy</i>',
+    month: 'yyyy',
+    year: 'yyyy1 - yyyy2'
+}
+```
+
+Usage:
+```js
+new Lightpickr('#el', {
+    navTitles: {
+        day: '<strong>Choose date</strong> MM, yyyy'
+    }
+})
+```
+
+### prevHtml <definition><param-type>string</param-type> <brown>=</brown> <gray>default below</gray></definition>
+
+`Previous` button inner HTML. Default value is:
+
+```html
+<svg><path d="M17,12 l -5,5 l 5,5"></path></svg>
+```
+
+### nextHtml <definition><param-type>string</param-type> <brown>=</brown> <gray>default below</gray></definition>
+
+`Next` button inner HTML. Default value is:
+
+```html
+<svg><path d="M14,12 l 5,5 l -5,5"></path></svg>
+```
+
+---
+
+## Opening & footer
+
+### showEvent <definition><param-type>string <brown>|</brown> string<gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <green>"focus"</green></definition>
+
+DOM events on which calendar will be shown.
+
+### buttons <definition><param-type>string <brown>|</brown> object <brown>|</brown> array <brown>|</brown> false</param-type> <brown>=</brown> <red>false</red></definition>
+
+This option allows you to add action buttons to body of the calendar. You could add two pre installed buttons or create your own.
+
+Initially two buttons are available:
+
+- `today` — "Today" button - clicking on it will perform transition to today date.
+- `clear` — "Clear" button - clicking on it will clear all selected dates.
+
+To create your own button you should pass and object of the following type:
+
+```js
+{
+    content: string | (instance) => string
+    tagName?: string
+    className?: string
+    attrs?: object
+    onClick?: (instance) => void
+}
+
+```
+
+**Example of custom button**
+
+<FooterButtonsDemo />
+
+---
+
+## Time
+
+### enableTime <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+
+Turns on timepicker.
+
+<TimeDemo />
+
+### onlyTime <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+
+If you need to choose only time, without date.
+
+### minHours <definition><param-type>number</param-type> <brown>=</brown> <red>0</red></definition>
+
+Minimum possible hours value.
+
+### maxHours <definition><param-type>number</param-type> <brown>=</brown> <red>24</red></definition>
+
+Maximum possible hours value.
+
+### minMinutes <definition><param-type>number</param-type> <brown>=</brown> <red>0</red></definition>
+
+Minimum possible minutes value.
+
+### maxMinutes <definition><param-type>number</param-type> <brown>=</brown> <red>59</red></definition>
+
+Maximum possible minutes value.
+
+### hoursStep <definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+
+Hours step.
+
+### minutesStep <definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+
+Minutes step.
+
+---
+
+## Custom DOM
+
+### classes <definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
+
+Map of **class strings**. See the **options.classes** [CSS classes](/docs/documentation/classes).
+
+### attributes <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+
+Map of **attribute names**. See the **options.attributes** subsection on the [CSS classes](/docs/documentation/classes) page.
+
+### properties <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+
+Maps logical keys to **CSS variable names** used by the default stylesheet and string positioning. See the **options.properties** subsection on the [CSS classes](/docs/documentation/classes) page.

@@ -1,0 +1,11 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "options",
+    "classes",
+    "events",
+    "localization",
+    "plugins",
+    "accessibility"
+  ]
+}

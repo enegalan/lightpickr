@@ -1,6 +1,5 @@
-import { yearBlockStartYear, yearGridYearValues, YEAR_GRID_COUNT, buildDayMonthCells } from '../core/calendar-grid.js';
-import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay } from '../utils/time.js';
-import { defaultMonthNames } from '../utils/locale.js';
+import { yearGridYearValues, buildDayMonthCells } from '../core/calendar-grid.js';
+import { isInClosedRangeDay, isSameDay, startOfDayTs, tsToYmd, cloneSelectedDates, ymdToTsStartOfDay, formatDate } from '../utils/time.js';
 import { isDateDisabled } from '../core/selection.js';
 import { isNavOutOfRange } from '../core/navigation.js';
 import { createEl } from './dom.js';
@@ -33,7 +32,7 @@ export function getViewDatesFromState(state, view) {
   const { y, m } = tsToYmd(state.viewDate);
 
   if (v === 'day') {
-    const cells = buildDayMonthCells(y, m, state.firstDayOfWeek);
+    const cells = buildDayMonthCells(y, m, state.firstDay);
     for (let i = 0; i < cells.length; i++) {
       out.push(cells[i].ts);
     }
@@ -131,7 +130,7 @@ function _publicStateSnapshot(instance) {
     maxDate: instance._state.maxDate,
     disabledDates: instance._state.disabledDatesSorted.slice(),
     locale: instance._state.locale,
-    firstDayOfWeek: instance._state.firstDayOfWeek,
+    firstDay: instance._state.firstDay,
     weekends: instance._state.weekends.slice(),
     format: instance._state.format,
     currentView: instance._state.currentView,
@@ -200,21 +199,11 @@ function _dayFlags(s, d) {
 function _formatNavTitle(instance, view) {
   const s = instance._state;
   const titles = s.navTitles || {};
-  const key = view === 'day' ? 'days' : view === 'month' ? 'months' : 'years';
-  const resolver = titles[key];
+  const resolver = titles[view];
   if (typeof resolver === 'function') {
     return String(resolver(instance));
   }
 
   const rawTemplate = typeof resolver === 'string' ? resolver : '';
-  const { y, m } = tsToYmd(s.viewDate);
-  const blockStart = yearBlockStartYear(y);
-  const monthLong = defaultMonthNames({ locale: s.locale }, 'monthsLong')[m];
-  const monthShort = defaultMonthNames({ locale: s.locale }, s.monthsField)[m];
-  return rawTemplate
-    .replace(/yyyy1/g, String(blockStart))
-    .replace(/yyyy2/g, String(blockStart + YEAR_GRID_COUNT - 1))
-    .replace(/MMMM/g, monthLong || monthShort)
-    .replace(/yyyy/g, String(y))
-    .replace(/YYYY/g, String(y));
+  return formatDate(rawTemplate, s.viewDate, null, s);
 }

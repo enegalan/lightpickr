@@ -1,5 +1,6 @@
 import { buildDayMonthCells } from '../../core/calendar-grid.js';
 import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
+import lightpickrDefaults from '../../core/defaults.js';
 import { formatDate, tsToYmd } from '../../utils/time.js';
 import { createEl } from '../dom.js';
 import { buildDayCtx, buildDefaultNav } from '../context.js';
@@ -63,7 +64,7 @@ export function renderDayView(instance, container) {
 function _buildWeekdayRow(instance, grid) {
   const s = instance._state;
   const names = defaultWeekdayNames({ locale: s.locale });
-  const fd = s.firstDayOfWeek % 7;
+  const fd = s.firstDay % 7;
   const clickable = s.dayNameClickable === true;
 
   const tag = clickable ? 'button' : 'div';
@@ -100,7 +101,7 @@ function _buildWeekdayRow(instance, grid) {
 function _buildDayGrid(instance, grid, y, m) {
   const s = instance._state;
   const c = s.classes;
-  const cells = buildDayMonthCells(y, m, s.firstDayOfWeek);
+  const cells = buildDayMonthCells(y, m, s.firstDay);
 
   /** @type {HTMLElement|null} */
   let row = null;
@@ -132,6 +133,7 @@ function _buildDayGrid(instance, grid, y, m) {
  */
 function _defaultDayCell(instance, ctx) {
   const s = instance._state;
+  const format = typeof s.format === 'string' ? s.format : lightpickrDefaults.format;
   const c = s.classes;
   const extra = [c.cell];
   const flagClassPairs = [
@@ -152,7 +154,7 @@ function _defaultDayCell(instance, ctx) {
   }
 
   const { d } = tsToYmd(ctx.date);
-  const label = formatDate(s.format, ctx.date, null);
+  const label = formatDate(format, ctx.date, null, s);
   const el = createEl('button', extra.join(' '), {
     type: 'button',
     [s.attributes.day]: String(ctx.date),

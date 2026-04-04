@@ -1,0 +1,32 @@
+---
+title: Introduction
+description: Install Lightpickr and attach it to a field in minutes
+---
+
+**Lightpickr** is a small, dependency-free date and range picker for the browser: calendar grid, month/year drill-down, optional time panel, CSS-variable theming, render hooks, and a **plugin** API.
+
+Use a text **input** or **textarea** for a popover, or any other element (e.g. a `div`) for an **inline** calendar when `inline` is omitted or set to `true`.
+
+## Install
+
+```npm
+npm install lightpickr
+```
+
+## Quick start
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#my-input');
+```
+
+The field value updates when the user changes the selection. Use **`range: true`**, **`enableTime: true`**, and other options from the [Options](/docs/documentation/options) reference.
+
+## What to read next
+
+- **[Examples](/docs/examples)** — all demos on one page: Popper.js, animation, range, time, <code><purple>onRenderCell</purple></code>, <code><purple>navTitles</purple></code>, footer buttons.
+- **[Options](/docs/documentation/options)** — every constructor option, defaults, and live examples where helpful.
+- **[Events](/docs/documentation/events)** — callback payloads and timing.
+- **[Methods](/docs/api/methods)** and **[properties](/docs/api/properties)** — <code><purple>show</purple></code>, <code><purple>hide</purple></code>, <code><purple>selectDate</purple></code>, <code><purple>update</purple></code>, <code><purple>destroy</purple></code>, <code><purple>$datepicker</purple></code>, getters.

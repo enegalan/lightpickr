@@ -1,0 +1,405 @@
+---
+title: Examples
+description: Live demos and code for common Lightpickr setups
+---
+
+## Basic Examples
+
+### Default options
+
+Attach to an `input` or `textarea` for a popover calendar. Import the CSS once.
+
+<BasicDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#my-input');
+```
+
+### Static calendar
+
+If you want the calendar to be always visible, initialize Lightpickr on a block or inline element, or pass the option <gray>{'{'}</gray><red>inline</red><brown>:</brown> <red>true</red><gray>{'\}'}</gray>:
+
+<InlineDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#my-input', {
+  inline: true
+});
+```
+
+### Select date on initialization
+
+For selecting the initial date, use the **<purple>selectedDates</purple>** option. It accepts an array of <code><blue>Date</blue></code> values, strings, or numbers (timestamps). See [Options — selectedDates](/docs/documentation/options#selecteddates). Below, today's date is pre-selected.
+
+<SelectedInitialDateDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#my-input', {
+  selectedDates: [new Date()]
+});
+```
+
+### Month selection
+
+For choosing only month without any certain date you could use combination of using an **inline** calendar and limit which views appear: **<purple>allowedViews</purple>** <code><gray>[</gray><green>"month"</green><gray>,</gray> <green>"year"</green><gray>]</gray></code> hides the day grid. Start on the month grid with **<purple>view</purple>** <code><green>"month"</green></code> or <code><green>"months"</green></code>; click the title to open the year grid, then return to months.
+
+Because there is no day step, Lightpickr does not fill the selection from the day grid. The example below listens to **<purple>onChangeViewDate</purple>** and calls **<code><purple>selectDate</purple></code>** with the **first day of the month** you are viewing, so the chosen month still becomes a real date value. Details: [Options — allowedViews](/docs/documentation/options#allowedviews).
+
+<MonthSelectionDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#inline-root', {
+  inline: true,
+  view: 'month',
+  allowedViews: ['month', 'year'],
+  autoClose: false,
+  format: 'YYYY-MM',
+  startDate: new Date(),
+  selectedDates: [new Date()],
+  onChangeViewDate({ month, year, datepicker }) {
+    datepicker.selectDate(new Date(year, month, 1));
+  }
+});
+```
+
+### Mobile devices mode
+
+Lightpickr has a mode that opens the calendar as a **modal**: it is centered on the screen with slightly larger sizing to make date selection easier on small viewports. Enable it with **<code><purple>isMobile</purple></code>** (see [Options — isMobile](/docs/documentation/options#ismobile)). Use **<purple>autoClose</purple>** to control whether the modal closes after a date is chosen (`true` closes it).
+
+<MobileDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#my-input', {
+  isMobile: true,
+  autoClose: true
+});
+```
+
+## Positioning
+
+### Basic positioning
+
+The basic positioning is set via the string - <code><green>"'main axis 'secondary axis'"</green></code>. For example, let us show calendar at the right of the text field:
+
+<BasicPositioningDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#my-input', {
+  position: 'right center'
+});
+```
+
+### Using of Popper.js
+
+If more complex positioning is required, for example, when you need the calendar to jump to the other side of the text field when scrolling, etc., you can use manual positioning - using the function and third-party libraries
+
+In the following example, we will process the position using the (Popper.js)[https://popper.js.org/] library. Try to scroll the page further.
+
+<PopperDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+import {createPopper} from '@popperjs/core';
+
+new Lightpickr('#input', {
+  position(ctx) {
+    const anchor = ctx.$anchor || ctx.$target;
+    const $pointer = ctx.$pointer;
+    const popper = createPopper(anchor, ctx.$datepicker, {
+      placement: 'bottom-start',
+      modifiers: [
+        {
+          name: 'flip',
+          options: {
+            padding: {
+              top: 64,
+            },
+          },
+        },
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 20],
+          },
+        },
+        {
+          name: 'arrow',
+          options: {
+            element: $pointer,
+          },
+        },
+      ],
+    });
+    popper.update();
+    return function (hideDone) {
+      popper.destroy();
+      hideDone();
+    };
+  },
+});
+```
+
+The position callback receives <code><purple>ctx.$datepicker</purple></code>, <code><purple>ctx.$target</purple></code>, <code><purple>ctx.$anchor</purple></code> (when <code><purple>anchor</purple></code> is set), <code><purple>ctx.$pointer</purple></code>, <code><purple>ctx.isViewChange</purple></code>, and <code><purple>ctx.done</purple></code> (unused by the default implementation).
+
+### Show / hide (anime + Popper.js)
+
+<code><purple>onShow</purple><gray>(<orange>isFinished</orange>, <orange>payload</orange>)</gray></code> runs twice per open: first with <code><orange>isFinished</orange> <brown>===</brown> <red>false</red></code> before layout settles, then <code><orange>isFinished</orange> <brown>===</brown> <red>true</red></code> after commit—call <code>popper.<purple>update</purple><gray>()</gray></code> on the finished pass so Popper.js measures the final layout.
+
+<code><purple>position</purple></code> receives <code><purple>$datepicker</purple></code>, <code><purple>$target</purple></code>, <code><purple>$anchor</purple></code> (when set), <code><purple>$pointer</purple></code>, <code><purple>isViewChange</purple></code>, and <code><purple>done</purple></code> (unused in the default build). Open animation runs in <code><purple>onFirstUpdate</purple></code> so it starts after the first layout; skip it when <code><purple>isViewChange</purple></code> is true (month/year switch). Return a function that receives **<code><purple>hideDone</purple></code>** (Lightpickr API; analogous to <code><purple>done</purple></code> in other datepickers): run the close animation, then <code>popper.<purple>destroy</purple><gray>()</gray></code> and **<code><purple>hideDone</purple><gray>()</gray></code>**.
+
+<AnimePopperDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+import {createPopper} from '@popperjs/core';
+import anime from 'animejs';
+
+let popper = null;
+
+new Lightpickr('#input', {
+  onShow(isFinished) {
+    if (isFinished && popper) {
+      popper.update();
+    }
+  },
+  position({$datepicker, $target, $anchor, $pointer, isViewChange}) {
+    const reference = $anchor || $target;
+
+    if (popper) {
+      popper.destroy();
+      popper = null;
+    }
+
+    popper = createPopper(reference, $datepicker, {
+      placement: 'bottom',
+      onFirstUpdate() {
+        if (!isViewChange) {
+          anime.remove($datepicker);
+        }
+        $datepicker.style.transformOrigin = 'center top';
+        if (!isViewChange) {
+          anime({
+            targets: $datepicker,
+            opacity: [0, 1],
+            rotateX: [-90, 0],
+            easing: 'spring(1.3, 80, 5, 0)',
+          });
+        }
+      },
+      modifiers: [
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 10],
+          },
+        },
+        {
+          name: 'arrow',
+          options: {
+            element: $pointer,
+          },
+        },
+        {
+          name: 'computeStyles',
+          options: {
+            gpuAcceleration: false,
+          },
+        },
+      ],
+    });
+    popper.update();
+
+    return function (hideDone) {
+      const current = popper;
+      const anim = anime({
+        targets: $datepicker,
+        opacity: 0,
+        rotateX: -90,
+        duration: 300,
+        easing: 'easeOutCubic',
+      });
+      (anim.finished || Promise.resolve()).then(() => {
+        current.destroy();
+        popper = null;
+        hideDone();
+      });
+    };
+  },
+});
+```
+
+### Range & constraints
+
+<code>range<brown>:</brown> <red>true</red></code> enables interval selection. <code><purple>minDate</purple></code> / <code><purple>maxDate</purple></code> bound navigation and selection. <code><purple>disabledDates</purple></code> is a list of days that cannot be selected. <code><purple>onBeforeSelect</purple></code> can veto a click by returning <code><red>false</red></code>.
+
+<RangeDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#range', {
+  range: true,
+  minDate: '2024-01-01',
+  maxDate: '2027-12-31',
+  disabledDates: ['2025-06-10', '2025-06-11', '2025-06-12'],
+  onBeforeSelect({date}) {
+    return date.getDay() !== 2;
+  },
+});
+```
+
+### Time picker
+
+<code><purple>enableTime</purple></code> shows the time panel under the day grid. <code><purple>format</purple></code> uses the token set documented under [Options — format](/docs/documentation/options#format) (including `HH` and `mm` when time is enabled). Steps and bounds clamp the time sliders and inputs.
+
+<TimeDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#dt', {
+  enableTime: true,
+  format: 'YYYY-MM-DD HH:mm',
+  hoursStep: 2,
+  minutesStep: 15,
+  minHours: 8,
+  maxHours: 18,
+});
+```
+
+### Cell render
+
+<code><purple>onRenderCell</purple></code> runs for day, month, and year cells. Return an object with any of <code><purple>html</purple></code>, <code><purple>classes</purple></code>, <code><purple>attrs</purple></code>, or <code>disabled<brown>:</brown> <red>true</red></code> to patch the cell element after it is created.
+
+<CellRenderDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+const DAY_MARKERS = [
+  {day: 1, emoji: '🎊', title: 'Start of month'},
+  {day: 3, emoji: '⚡', title: 'Sprint'},
+  {day: 7, emoji: '☕', title: 'Coffee & planning'},
+  {day: 10, emoji: '🎯', title: 'Checkpoint'},
+  {day: 14, emoji: '💝', title: 'Mid-month'},
+  {day: 18, emoji: '🌙', title: 'Late focus'},
+  {day: 21, emoji: '🚀', title: 'Ship window'},
+  {day: 24, emoji: '🍕', title: 'Team lunch'},
+  {day: 28, emoji: '✨', title: 'Wrap-up'},
+  {day: 31, emoji: '🎂', title: 'Month end'},
+];
+
+new Lightpickr('#input', {
+  onRenderCell({date, cellType}) {
+    if (cellType !== 'day') {
+      return;
+    }
+    const dayOfMonth = date.getDate();
+    const marker = DAY_MARKERS.find((d) => d.day === dayOfMonth);
+    if (!marker) {
+      return;
+    }
+    return {
+      html:
+        '<span style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05">' +
+        '<span style="font-size:1.05em" aria-hidden="true">' +
+        marker.emoji +
+        '</span>' +
+        '<span style="font-size:0.8em;opacity:0.92">' +
+        dayOfMonth +
+        '</span>' +
+        '</span>',
+      attrs: {title: marker.title},
+    };
+  },
+});
+```
+
+### Title formatting
+
+<code>navTitles</code> keys: <code><purple>day</purple></code>, <code><purple>month</purple></code>, <code><purple>year</purple></code>. Each value can be a template string or <code><gray>(</gray><orange>picker</orange><gray>)</gray> <brown>=></brown> <green>string</green></code>.
+
+Templates use the same **format tokens** as the **<code><purple>format</purple></code>** option (e.g. `MMMM`, `yyyy` / `YYYY`, `E` / `EEEE`, `yyyy1` / `yyyy2` for the year grid). HTML in templates is assigned with `innerHTML`. See [Options — format](/docs/documentation/options#format).
+
+<TitleFormattingDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#a', {
+  navTitles: {
+    day: '<b>MMMM</b> yyyy',
+    month: 'Pick month — yyyy',
+    year: 'yyyy1 – yyyy2',
+  },
+});
+
+new Lightpickr('#b', {
+  navTitles: {
+    day(picker) {
+      const d = new Date(picker.viewDate);
+      return (
+        'View: ' +
+        d.getFullYear() +
+        '-' +
+        String(d.getMonth() + 1).padStart(2, '0')
+      );
+    },
+  },
+});
+```
+
+### Footer buttons
+
+<code><purple>buttons</purple></code> can be <code><red>false</red></code> (default), a single entry, or an array. Use preset strings <code><green>"today"</green></code> and <code><green>"clear"</green></code>, or objects: <code>tagName</code>, <code>className</code>, <code>content</code> (string or <code><gray>(</gray><orange>instance</orange><gray>)</gray> <brown>=></brown> <green>string</green></code>), <code><purple>attrs</purple></code>, <code><purple>onClick</purple><gray>(</gray><orange>instance</orange><gray>)</gray></code>. The custom "Next Monday" control uses <code>className<brown>:</brown> <green>"lp-doc-footer-btn-block"</green></code> so it spans the footer; you can use <code>attrs: &#123; style: &quot;width: 100%&quot; &#125;</code> instead if you prefer inline style.
+
+<FooterButtonsDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#a', {
+  buttons: ['today', 'clear'],
+});
+
+new Lightpickr('#b', {
+  buttons: [
+    {
+      className: 'lp-doc-footer-btn-block',
+      content: 'Next Monday',
+      onClick(picker) {
+        const d = new Date();
+        const day = d.getDay();
+        const add = (8 - day) % 7 || 7;
+        d.setDate(d.getDate() + add);
+        picker.selectDate(d);
+      },
+    },
+  ],
+});
+```

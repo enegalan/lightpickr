@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+kbd {
+  margin: 0 3px 0 3px;
+}
+
+definition {
+  font-size: 0.875rem;
+  font-weight: normal;
+  text-rendering: geometricPrecision;
+  font-family: inherit;
+}
+
+param-type {
+  background: #95959521;
+  display: inline-block;
+  padding: 0 3px;
+  border-radius: 4px;
+}
+
+gray,
+gray * {
+  display: inline;
+  color: #5f6364;
+}
+
+red,
+red * {
+  display: inline;
+  color: #c92c2c;
+}
+
+blue,
+blue * {
+  display: inline;
+  color: #1990b8;
+}
+
+green,
+green * {
+  display: inline;
+  color: #2f9c0a;
+}
+
+brown,
+brown * {
+  display: inline;
+  color: #a67f59;
+}
+
+orange,
+orange * {
+  display: inline;
+  color: #e36209;
+}
+
+purple,
+purple * {
+  display: inline;
+  color: #9e25be;
+}
+
+#nd-toc definition {
+  display: none;
+}
+
+/* Full-width custom footer button (FooterButtonsDemo) */
+.lp-doc-footer-btn-block {
+  width: 100%;
+  box-sizing: border-box;
+}

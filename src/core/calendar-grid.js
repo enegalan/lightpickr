@@ -30,12 +30,12 @@ export function yearGridYearValues(centerYear) {
 /**
  * @param {number} y
  * @param {number} m 0-11
- * @param {number} firstDayOfWeek
+ * @param {number} firstDay
  * @returns {{ ts: number, outside: boolean }[]}
  */
-export function buildDayMonthCells(y, m, firstDayOfWeek) {
+export function buildDayMonthCells(y, m, firstDay) {
   const dim = daysInMonth(y, m);
-  const leading = (firstWeekdayOfMonth(y, m) - (firstDayOfWeek % 7) + 7) % 7;
+  const leading = (firstWeekdayOfMonth(y, m) - (firstDay % 7) + 7) % 7;
 
   const prevY = m - 1 < 0 ? y - 1 : y;
   const prevM = m - 1 < 0 ? 11 : m - 1;
