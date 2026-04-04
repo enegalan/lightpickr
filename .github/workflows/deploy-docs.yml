@@ -1,0 +1,81 @@
+name: Deploy docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/package.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages-docs
+  cancel-in-progress: false
+
+jobs:
+  should-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check docs package version changed
+        id: check
+        run: |
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          OLD=$(git show "${{ github.event.before }}":docs/package.json 2>/dev/null | jq -r .version || echo "")
+          NEW=$(jq -r .version docs/package.json)
+          if [ "$OLD" != "$NEW" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-deploy:
+    needs: should-deploy
+    if: needs.should-deploy.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            docs/package-lock.json
+
+      - name: Install and build library
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install and build docs
+        working-directory: docs
+        run: |
+          npm ci
+          npm run build:github-pages
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
