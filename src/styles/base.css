@@ -330,6 +330,50 @@
   bottom: auto;
 }
 
+.lp.lp--popover[data-popper-placement^="bottom"] .lp-popover-pointer,
+.lp.lp--popover[data-popper-placement^="bottom"] .lp--pointer {
+  bottom: calc(100% - var(--lp-pointer-half-size) + 1px);
+  top: auto;
+}
+
+.lp.lp--popover[data-popper-placement^="bottom"] .lp-popover-pointer::after,
+.lp.lp--popover[data-popper-placement^="bottom"] .lp--pointer::after {
+  transform: rotate(315deg);
+}
+
+.lp.lp--popover[data-popper-placement^="top"] .lp-popover-pointer,
+.lp.lp--popover[data-popper-placement^="top"] .lp--pointer {
+  top: calc(100% - var(--lp-pointer-half-size) + 1px);
+  bottom: auto;
+}
+
+.lp.lp--popover[data-popper-placement^="top"] .lp-popover-pointer::after,
+.lp.lp--popover[data-popper-placement^="top"] .lp--pointer::after {
+  transform: rotate(135deg);
+}
+
+.lp.lp--popover[data-popper-placement^="right"] .lp-popover-pointer,
+.lp.lp--popover[data-popper-placement^="right"] .lp--pointer {
+  right: calc(100% - var(--lp-pointer-half-size) + 1px);
+  left: auto;
+}
+
+.lp.lp--popover[data-popper-placement^="right"] .lp-popover-pointer::after,
+.lp.lp--popover[data-popper-placement^="right"] .lp--pointer::after {
+  transform: rotate(225deg);
+}
+
+.lp.lp--popover[data-popper-placement^="left"] .lp-popover-pointer,
+.lp.lp--popover[data-popper-placement^="left"] .lp--pointer {
+  left: calc(100% - var(--lp-pointer-half-size) + 1px);
+  right: auto;
+}
+
+.lp.lp--popover[data-popper-placement^="left"] .lp-popover-pointer::after,
+.lp.lp--popover[data-popper-placement^="left"] .lp--pointer::after {
+  transform: rotate(45deg);
+}
+
 .lp-header {
   margin-bottom: var(--lp-space-sm);
 }
