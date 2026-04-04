@@ -1,6 +1,6 @@
 {
   "name": "lightpickr-docs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "build": "next build --webpack",
     "build:github-pages": "LIGHTPICKR_GITHUB_PAGES=1 next build --webpack",
