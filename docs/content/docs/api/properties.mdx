@@ -5,19 +5,31 @@ description: Instance fields and getters
 
 ## Element References
 
-### $el <definition><param-type>HTMLElement</param-type></definition>
+<heading>
+### $el
+<definition><param-type>HTMLElement</param-type></definition>
+</heading>
 
 Field or inline container passed to `new Lightpickr(target)`.
 
-### $datepicker <definition><param-type>HTMLElement</param-type></definition>
+<heading>
+### $datepicker
+<definition><param-type>HTMLElement</param-type></definition>
+</heading>
 
 DOM element of the calendar.
 
-### $pointer <definition><param-type>HTMLElement</param-type></definition>
+<heading>
+### $pointer
+<definition><param-type>HTMLElement</param-type></definition>
+</heading>
 
 Popover arrow.
 
-### $backdrop <definition><param-type>HTMLElement <brown>|</brown> null</param-type></definition>
+<heading>
+### $backdrop
+<definition><param-type>HTMLElement <brown>|</brown> null</param-type></definition>
+</heading>
 
 Full-screen wrapper when **`isMobile`**.
 
@@ -25,11 +37,17 @@ Full-screen wrapper when **`isMobile`**.
 
 ## Boolean properties
 
-### visible <definition><param-type>boolean</param-type></definition>
+<heading>
+### visible
+<definition><param-type>boolean</param-type></definition>
+</heading>
 
 Is calendar visible.
 
-### isDestroyed <definition><param-type>boolean</param-type></definition>
+<heading>
+### isDestroyed
+<definition><param-type>boolean</param-type></definition>
+</heading>
 
 If <red>true</red> then calendar has been destroyed with destroy() method.
 
@@ -39,24 +57,39 @@ If <red>true</red> then calendar has been destroyed with destroy() method.
 
 These read from internal state and return **copies** or primitives suitable for inspection (mutate via **`update`** or methods, not by writing into returned arrays).
 
-### viewDate <definition><param-type>number</param-type></definition>
+<heading>
+### viewDate
+<definition><param-type>number</param-type></definition>
+</heading>
 
 Current view date.
 
-### currentView <definition><param-type>string</param-type> <brown>=</brown> <green>"day"</green> <brown>|</brown> <green>"month"</green> <brown>|</brown> <green>"year"</green></definition>
+<heading>
+### currentView
+<definition><param-type>string</param-type> <brown>=</brown> <green>"day"</green> <brown>|</brown> <green>"month"</green> <brown>|</brown> <green>"year"</green></definition>
+</heading>
 
 Current view of the calendar.
 
 After each change, **`onChangeView`** runs with a **different** label shape (`'days'`, `'months'`, `'years'`, `'time'`). See [onChangeView](/docs/documentation/events#onchangeview-view--void--no-op).
 
-### selectedDates <definition><param-type>number<gray>[</gray><gray>]</gray> <brown>|</brown> number<gray>[</gray><gray>]</gray><gray>[</gray><gray>]</gray></param-type></definition>
+<heading>
+### selectedDates
+<definition><param-type>number<gray>[</gray><gray>]</gray> <brown>|</brown> number<gray>[</gray><gray>]</gray><gray>[</gray><gray>]</gray></param-type></definition>
+</heading>
 
 An array of selected dates.
 
-### focusDate <definition><param-type>number <brown>|</brown> null</param-type></definition>
+<heading>
+### focusDate
+<definition><param-type>number <brown>|</brown> null</param-type></definition>
+</heading>
 
 A focused day timestamp.
 
-### disabledDates <definition><param-type>number<gray>[</gray><gray>]</gray></param-type></definition>
+<heading>
+### disabledDates
+<definition><param-type>number<gray>[</gray><gray>]</gray></param-type></definition>
+</heading>
 
 An arrat of disabled dates.

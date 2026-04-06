@@ -3,6 +3,7 @@ import { renderTimePanel } from './time-panel.js';
 import { renderDayView } from './views/day.js';
 import { renderMonthView, renderYearView } from './views/month-year.js';
 import { renderFooter } from './footer.js';
+import { bindHandlers } from './handlers.js';
 
 /**
  * @param {object} instance
@@ -11,20 +12,15 @@ import { renderFooter } from './footer.js';
 export function renderContainer(instance) {
   const s = instance._state;
   const hooks = s.render;
-  const root = instance.$datepicker;
-  root.innerHTML = '';
-  root.className = s.classes.container;
-  root.classList.add(s.inline ? s.classes.inline : s.classes.popover);
-  if (s.onlyTime) {
-    root.classList.add(s.classes.container + '--only-time');
-  }
+  instance.$datepicker.innerHTML = '';
+  instance.$datepicker.className = s.classes.container + ' ' + (s.inline ? s.classes.inline : s.classes.popover) + ' ' + (s.onlyTime ? s.classes.container + '--only-time' : '');
 
-  let container = root;
+  let container = instance.$datepicker;
   if (hooks.container) {
     const ctx = buildDayCtx(instance, s.viewDate, false);
     const custom = hooks.container(ctx);
     if (custom) {
-      root.appendChild(custom);
+      instance.$datepicker.appendChild(custom);
       container = custom;
     }
   }
@@ -44,8 +40,10 @@ export function renderContainer(instance) {
   renderFooter(instance, container);
 
   if (!s.inline && instance.$pointer) {
-    root.appendChild(instance.$pointer);
+    instance.$datepicker.appendChild(instance.$pointer);
   }
 
   instance._pluginOnRender();
+
+  bindHandlers(instance);
 }

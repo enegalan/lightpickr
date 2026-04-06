@@ -1,7 +1,6 @@
 import { trimFifo, pad2 } from './common.js';
-import lightpickrDefaults from '../core/defaults.js';
 import { defaultMonthNames, defaultWeekdayNames } from './locale.js';
-import { YEAR_GRID_COUNT } from '../core/calendar-grid.js';
+import lightpickrDefaults from '../core/defaults.js';
 
 /**
  * @param {number} ts
@@ -156,8 +155,8 @@ export function formatDate(format, ts, timePart, state) {
     const dayShort = defaultWeekdayNames(opts);
     const dayLong = defaultWeekdayNames(opts, true);
     const yy = String(y).slice(-2);
-    const blockStart = y - 5;
-    const blockEnd = blockStart + YEAR_GRID_COUNT - 1;
+    const blockStart = y - lightpickrDefaults.yearGridRadius;
+    const blockEnd = blockStart + lightpickrDefaults.yearGridCount - 1;
 
     let out = '';
     let i = 0;

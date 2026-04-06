@@ -78,12 +78,9 @@ function _buildWeekdayRow(instance, grid) {
       : { role: 'columnheader' };
     const cell = createEl(
       tag,
-      baseClass,
+      baseClass + (s.weekends.indexOf(idx) >= 0 ? ' ' + s.classes.headCell + '--weekend' : ''),
       attrs
     );
-    if (s.weekends.indexOf(idx) >= 0) {
-      cell.classList.add(s.classes.headCell + '--weekend');
-    }
     cell.textContent = names[idx];
     row.appendChild(cell);
   }

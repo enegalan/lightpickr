@@ -18,7 +18,11 @@ global.getComputedStyle = dom.window.getComputedStyle;
 const { default: Lightpickr } = await import('../src/index.js');
 
 const input = document.querySelector('#d');
-const p = new Lightpickr(input, { inline: false, startDate: '2026-03-01' });
+const p = new Lightpickr(input, {
+  inline: false,
+  startDate: '2026-03-01',
+  selectedDates: ['2026-03-01']
+});
 p.show();
 assert.ok(p.focusDate != null);
 const before = p.focusDate;

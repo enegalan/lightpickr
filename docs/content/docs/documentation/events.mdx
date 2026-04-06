@@ -7,7 +7,10 @@ Lightpickr does **not** emit DOM `CustomEvent`s on the field. Integrate via **co
 
 ---
 
-## onSelect <definition><param-type><gray>(</gray>&#123; date, dates, formattedDate, formattedDates, trigger, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+## onSelect
+<definition><param-type><gray>(</gray>&#123; date, dates, formattedDate, formattedDates, trigger, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 After the internal state commit that changes the selection and updates the bound field (if any).
 
@@ -22,7 +25,10 @@ After the internal state commit that changes the selection and updates the bound
 
 ---
 
-## onBeforeSelect <definition><param-type><gray>(</gray>&#123; date, datepicker &#125;<gray>)</gray> <brown>=></brown> boolean</param-type></definition>
+<heading>
+## onBeforeSelect
+<definition><param-type><gray>(</gray>&#123; date, datepicker &#125;<gray>)</gray> <brown>=></brown> boolean</param-type></definition>
+</heading>
 
 Triggered before cell should be selected. If returns <code><red>true</red></code> then cell will be selected, if <code><red>false</red></code> then not.
 
@@ -33,7 +39,10 @@ Triggered before cell should be selected. If returns <code><red>true</red></code
 
 ---
 
-## onChangeViewDate <definition><param-type><gray>(</gray>&#123; month, year, decade, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+## onChangeViewDate
+<definition><param-type><gray>(</gray>&#123; month, year, decade, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Triggered when navigating back and forth. It takes object as and argument with actual values of month, year and decade.
 
@@ -46,13 +55,19 @@ Triggered when navigating back and forth. It takes object as and argument with a
 
 ---
 
-## onChangeView <definition><param-type><gray>(</gray>view: <green>string</green><gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+## onChangeView
+<definition><param-type><gray>(</gray>view: <green>string</green><gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 When changing the view, for example, from days to months, this function will be called. The name of the current view will be passed as an argument.
 
 ---
 
-### onRenderCell <definition><param-type><gray>(</gray>&#123; date, cellType, datepicker &#125;<gray>)</gray> <brown>=></brown> &#123; html, classes, attrs, disabled &#125; <brown>|</brown> <blue>void</blue></param-type></definition>
+<heading>
+### onRenderCell
+<definition><param-type><gray>(</gray>&#123; date, cellType, datepicker &#125;<gray>)</gray> <brown>=></brown> &#123; html, classes, attrs, disabled &#125; <brown>|</brown> <blue>void</blue></param-type></definition>
+</heading>
 
 A function that will be called every time a calendar cell is drawn. It is used if you need to customize the cell in some way, change the contents or make it unavailable for selection.
 
@@ -75,7 +90,10 @@ This function can return an object, consist of next fields:
 
 ---
 
-### onShow <definition><param-type><gray>(</gray>isFinished, &#123; datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onShow
+<definition><param-type><gray>(</gray>isFinished, &#123; datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Callback function when the calendar appears. Called at the beginning of the animation, and when the animation has finished.
 
@@ -90,7 +108,10 @@ Callback function when the calendar appears. Called at the beginning of the anim
 
 ---
 
-### onHide <definition><param-type><gray>(</gray>isFinished, &#123; datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onHide
+<definition><param-type><gray>(</gray>isFinished, &#123; datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Callback function when closing the calendar. Called at the beginning of the hide animation, and when the animation has finished.
 
@@ -101,7 +122,10 @@ Callback function when closing the calendar. Called at the beginning of the hide
 
 ---
 
-### onClickDayName <definition><param-type><gray>(</gray>&#123; dayIndex, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onClickDayName
+<definition><param-type><gray>(</gray>&#123; dayIndex, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Triggered when day names are clicked.
 
@@ -112,7 +136,10 @@ Triggered when day names are clicked.
 
 ---
 
-### onFocus <definition><param-type><gray>(</gray>&#123; date, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onFocus
+<definition><param-type><gray>(</gray>&#123; date, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Callback which is triggered when cell receives focus
 
@@ -123,7 +150,10 @@ Callback which is triggered when cell receives focus
 
 ---
 
-### onTimeChange <definition><param-type><gray>(</gray>&#123; date, formattedDate, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onTimeChange
+<definition><param-type><gray>(</gray>&#123; date, formattedDate, datepicker &#125;<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Fires when time inputs or sliders commit a new time.
 
@@ -135,7 +165,10 @@ Fires when time inputs or sliders commit a new time.
 
 ---
 
-### onDestroy <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onDestroy
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Runs at the end of **<code><purple>destroy</purple><gray>()</gray></code>** after DOM is torn down, and **before** plugin **<code><purple>onDestroy</purple></code>** hooks.
 

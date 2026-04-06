@@ -1,20 +1,15 @@
 'use client';
 
-import {useEffect, useRef} from 'react';
+import {useRef} from 'react';
 import type {LightpickrPositionContext} from '@/types/lightpickr_position_context';
+import {demoFieldWrapClassName, demoInputClassName, useLightpickrInstance} from '@/lib/lightpickr_demo';
 
 export function ManualPositionDemo() {
   const ref = useRef<HTMLInputElement>(null);
-  const pickerRef = useRef<{destroy: () => void} | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const {default: Lightpickr} = await import('lightpickr');
-      await import('lightpickr/lightpickr.css');
-      if (cancelled || !ref.current) return;
-
-      pickerRef.current = new Lightpickr(ref.current, {
+  useLightpickrInstance(
+    ref,
+    (Lightpickr, el) =>
+      new Lightpickr(el, {
         autoClose: true,
         position({$datepicker, $target, $pointer}: LightpickrPositionContext) {
           const coords = $target.getBoundingClientRect();
@@ -30,24 +25,18 @@ export function ManualPositionDemo() {
 
           $pointer.style.display = 'none';
         },
-      });
-    })();
-
-    return () => {
-      cancelled = true;
-      pickerRef.current?.destroy();
-      pickerRef.current = null;
-    };
-  }, []);
+      }),
+    []
+  );
 
   return (
-    <div className="my-4 max-w-xs">
+    <div className={demoFieldWrapClassName}>
       <input
         ref={ref}
         type="text"
         readOnly
         placeholder="Focus to open (centered on field)"
-        className="w-full rounded-md border border-fd-border bg-fd-background px-2 py-1.5 text-sm"
+        className={demoInputClassName}
         aria-label="Demo field for manual position option"
       />
     </div>

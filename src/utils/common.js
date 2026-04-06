@@ -15,3 +15,11 @@ export function trimFifo(items, max) {
 export function pad2(n) {
     return String(n).padStart(2, '0');
 }
+
+/**
+* @param {unknown} el
+* @returns {boolean}
+*/
+export function isTextInputLike(el) {
+    return el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+}

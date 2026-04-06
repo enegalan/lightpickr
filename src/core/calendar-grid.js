@@ -1,27 +1,14 @@
 import { daysInMonth, firstWeekdayOfMonth, ymdToTsStartOfDay } from '../utils/time.js';
-
-/** @type {number} */
-export const YEAR_GRID_RADIUS = 5;
-
-/** @type {number} */
-export const YEAR_GRID_COUNT = 12;
-
-/**
- * @param {number} centerYear
- * @returns {number}
- */
-export function yearBlockStartYear(centerYear) {
-  return centerYear - YEAR_GRID_RADIUS;
-}
+import lightpickrDefaults from './defaults.js';
 
 /**
  * @param {number} centerYear
  * @returns {number[]}
  */
 export function yearGridYearValues(centerYear) {
-  const start = yearBlockStartYear(centerYear);
+  const start = centerYear - lightpickrDefaults.yearGridRadius;
   const out = [];
-  for (let i = 0; i < YEAR_GRID_COUNT; i++) {
+  for (let i = 0; i < lightpickrDefaults.yearGridCount; i++) {
     out.push(start + i);
   }
   return out;

@@ -47,7 +47,7 @@ export default {
     timeSlider: 'lp-time-slider',
     footer: 'lp-footer',
     footerBtn: 'lp-footer-btn',
-    popoverPointer: 'lp-popover-pointer lp--pointer',
+    popoverPointer: 'lp-popover-pointer',
     viewBody: 'lp-view-body'
   },
   properties: {
@@ -104,5 +104,7 @@ export default {
   anchor: null,
   disabledDates: [],
   selectedDates: false,
-  weekends: [6, 0]
+  weekends: [6, 0],
+  yearGridRadius: 5,
+  yearGridCount: 12,
 };

@@ -24,7 +24,7 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
   popover.style.top = top + 'px';
   popover.style.left = left + 'px';
   popover.style.transform = '';
-  _placePopoverPointer(popover, target, pointer, main, sec);
+  _placePopoverPointer(popover, target, pointer, main, sec, s);
 }
 
 /**
@@ -124,22 +124,17 @@ function _computePopoverCoords(r, w, h, main, sec, gx, gy) {
  * @param {HTMLElement|null|undefined} pointer
  * @param {string} main
  * @param {string} sec
+ * @param {CSSStyleDeclaration} popoverStyle
  * @returns {void}
  */
-function _placePopoverPointer(popover, target, pointer, main, sec) {
+function _placePopoverPointer(popover, target, pointer, main, sec, popoverStyle) {
   if (!(pointer instanceof HTMLElement)) {
     return;
   }
-  const vis = getComputedStyle(popover).getPropertyValue(lightpickrDefaults.properties.pointerVisible).trim();
-  if (vis !== '1') {
+  if (popoverStyle.getPropertyValue(lightpickrDefaults.properties.pointerVisible).trim() !== '1') {
     pointer.style.display = 'none';
     return;
   }
-  pointer.style.display = '';
-  pointer.style.left = '';
-  pointer.style.right = '';
-  pointer.style.top = '';
-  pointer.style.bottom = '';
   pointer.setAttribute(lightpickrDefaults.attributes.pointerMain, main);
   pointer.setAttribute(lightpickrDefaults.attributes.pointerSec, sec);
 
