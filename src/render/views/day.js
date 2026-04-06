@@ -35,7 +35,7 @@ export function renderDayView(instance, container) {
   const viewBody = createEl('div', c.viewBody);
   const monthsWrap = createEl('div', c.grid + ' ' + c.months);
   const block = createEl('div', c.monthBlock);
-  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(s).ariaDayGrid });
+  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(s.locale).ariaDayGrid });
 
   const gridEl = gridHook?.(ctx);
   if (gridEl) {
@@ -63,7 +63,7 @@ export function renderDayView(instance, container) {
  */
 function _buildWeekdayRow(instance, grid) {
   const s = instance._state;
-  const names = defaultWeekdayNames({ locale: s.locale });
+  const names = defaultWeekdayNames(s.locale, s.weekdaysField);
   const fd = s.firstDay % 7;
   const clickable = s.dayNameClickable === true;
 

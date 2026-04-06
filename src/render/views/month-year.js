@@ -26,7 +26,7 @@ export function renderMonthView(instance, container) {
     'month',
     canGoUp,
     instance._state.classes.monthGrid,
-    getTranslations(instance._state).ariaMonthGrid,
+    getTranslations(instance._state.locale).ariaMonthGrid,
     (mi) => {
       const ts = ymdToTsStartOfDay(y, mi, 1);
       return _buildMonthYearGridCell(
@@ -58,7 +58,7 @@ export function renderYearView(instance, container) {
     'year',
     false,
     instance._state.classes.yearGrid,
-    getTranslations(instance._state).ariaYearGrid,
+    getTranslations(instance._state.locale).ariaYearGrid,
     (i) => {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);

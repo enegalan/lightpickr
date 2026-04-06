@@ -43,19 +43,19 @@ for (const { code, locale } of localeBundles) {
 
     assert.equal(defaultMonthNames({ locale }, 'monthsLong')[0], locale.monthsLong[0]);
     assert.equal(defaultMonthNames({ locale }, 'monthsShort')[0], locale.monthsShort[0]);
-    assert.equal(defaultWeekdayNames({ locale })[0], locale.weekdaysShort[0]);
-    assert.equal(defaultWeekdayNames({ locale })[6], locale.weekdaysShort[6]);
+    assert.equal(defaultWeekdayNames(locale, 'weekdaysShort')[0], locale.weekdaysShort[0]);
+    assert.equal(defaultWeekdayNames(locale, 'weekdaysShort')[6], locale.weekdaysShort[6]);
 
-    const ui = getTranslations({ locale });
+    const ui = getTranslations(locale);
     assert.equal(ui.btnToday, locale.btnToday);
     assert.equal(ui.ariaDayGrid, locale.ariaDayGrid);
   });
 }
 
 test('getTranslations: default and partial override', () => {
-  assert.equal(getTranslations({ locale: 'default' }).btnToday, DEFAULT_TRANSLATIONS.btnToday);
-  assert.equal(getTranslations({ locale: { btnToday: 'Hoy' } }).btnToday, 'Hoy');
-  assert.equal(getTranslations({ locale: { btnToday: 'Hoy' } }).btnClear, DEFAULT_TRANSLATIONS.btnClear);
+  assert.equal(getTranslations('default').btnToday, DEFAULT_TRANSLATIONS.btnToday);
+  assert.equal(getTranslations({ btnToday: 'Hoy' }).btnToday, 'Hoy');
+  assert.equal(getTranslations({ btnToday: 'Hoy' }).btnClear, DEFAULT_TRANSLATIONS.btnClear);
 });
 
 const dom = new JSDOM('<!doctype html><html><body><input id="x" /></body></html>', {

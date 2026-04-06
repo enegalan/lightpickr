@@ -148,12 +148,11 @@ export function formatDate(format, ts, timePart, state) {
     const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : dateObj.getHours();
     const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
     const opts = state && typeof state === 'object' ? state : lightpickrDefaults;
-    opts.locale = opts.locale != null ? opts.locale : lightpickrDefaults.locale;
     opts.monthsField = opts.monthsField && typeof opts.monthsField === 'string' ? opts.monthsField : lightpickrDefaults.monthsField;
-    const monthShort = defaultMonthNames(opts, 'monthsShort');
-    const monthLong = defaultMonthNames(opts, 'monthsLong');
-    const dayShort = defaultWeekdayNames(opts);
-    const dayLong = defaultWeekdayNames(opts, true);
+    const monthShort = defaultMonthNames(opts.locale, 'monthsShort');
+    const monthLong = defaultMonthNames(opts.locale, 'monthsLong');
+    const dayShort = defaultWeekdayNames(opts.locale, 'weekdaysShort');
+    const dayLong = defaultWeekdayNames(opts.locale, 'weekdaysLong');
     const yy = String(y).slice(-2);
     const blockStart = y - lightpickrDefaults.yearGridRadius;
     const blockEnd = blockStart + lightpickrDefaults.yearGridCount - 1;

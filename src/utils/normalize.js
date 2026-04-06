@@ -103,7 +103,7 @@ export function normalizeAllowedViews(views) {
  */
 export function normalizeFirstDay(firstDay) {
   if (typeof firstDay !== 'number' || !Number.isFinite(firstDay)) {
-      return null;
+    return null;
   }
   return ((Math.floor(firstDay) % 7) + 7) % 7;
 }

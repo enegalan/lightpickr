@@ -41,7 +41,7 @@ export function renderFooter(instance, container) {
 
     if (def.preset === 'today' || def.preset === 'clear') {
       const action = def.preset;
-      const ui = getTranslations(s);
+      const ui = getTranslations(s.locale);
       el = createEl('button', s.classes.footerBtn, {
         type: 'button',
         [s.attributes.footerAction]: action

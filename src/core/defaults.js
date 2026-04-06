@@ -81,6 +81,7 @@ export default {
   locale: defaultLocale,
   format: 'YYYY-MM-DD',
   monthsField: 'monthsShort',
+  weekdaysField: 'weekdaysShort',
   view: 'day',
   viewOrder: ['day', 'month', 'year'],
   showOtherMonths: true,

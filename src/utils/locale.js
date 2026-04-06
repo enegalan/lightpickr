@@ -4,43 +4,33 @@ import lightpickrDefaults from '../core/defaults.js';
 export const DEFAULT_TRANSLATIONS = Object.freeze(_localeStringFields(lightpickrDefaults.locale));
 
 /**
- * @param {import('./state.js').LightpickrOptions|import('./state.js').LightpickrInternalState} opts
+ * @param {import('./state.js').LightpickrLocale} locale
  * @param {string} [monthsField]
  * @returns {string[]}
  */
-export function defaultMonthNames(opts, monthsField) {
+export function defaultMonthNames(locale, monthsField) {
     const field = typeof monthsField === 'string' && monthsField.trim() ? monthsField.trim() : lightpickrDefaults.monthsField;
-    if (opts.locale && typeof opts.locale === 'object') {
-        const locale = opts.locale;
-        if (Array.isArray(locale[field]) && locale[field].length === 12) {
-            return locale[field];
-        }
-    }
-    return defaultMonthNames({ locale: lightpickrDefaults.locale }, monthsField);
+    return (locale || lightpickrDefaults.locale)[field];
 }
 
 /**
- * @param {import('./state.js').LightpickrOptions} opts
- * @param {boolean} longNames
+ * @param {import('./state.js').LightpickrLocale} locale
+ * @param {string} [weekdaysField]
  * @returns {string[]}
  */
-export function defaultWeekdayNames(opts, longNames = false) {
-    const field = longNames ? 'weekdaysLong' : 'weekdaysShort';
-    if (opts.locale && typeof opts.locale === 'object' && Array.isArray(opts.locale[field]) && opts.locale[field].length === 7) {
-        return opts.locale[field];
-    }
-    return defaultWeekdayNames({ locale: lightpickrDefaults.locale }, longNames);
+export function defaultWeekdayNames(locale, weekdaysField) {
+    const field = typeof weekdaysField === 'string' && weekdaysField.trim() ? weekdaysField.trim() : lightpickrDefaults.weekdaysField;
+    return (locale || lightpickrDefaults.locale)[field];
 }
 
 /**
- * @param {import('./state.js').LightpickrOptions|import('./state.js').LightpickrInternalState} opts
+ * @param {import('./state.js').LightpickrLocale} locale
  * @returns {Readonly<typeof DEFAULT_TRANSLATIONS>}
  */
-export function getTranslations(opts) {
+export function getTranslations(locale) {
     const out = Object.assign({}, DEFAULT_TRANSLATIONS);
-    const loc = opts && opts.locale;
-    if (loc && typeof loc === 'object') {
-        Object.assign(out, _localeStringFields(loc, Object.keys(out)));
+    if (locale && typeof locale === 'object') {
+        Object.assign(out, _localeStringFields(locale, Object.keys(out)));
     }
     return /** @type {Readonly<typeof DEFAULT_TRANSLATIONS>} */ (out);
 }

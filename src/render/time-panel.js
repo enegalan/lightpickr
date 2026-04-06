@@ -21,7 +21,7 @@ export function renderTimePanel(instance, container) {
   }
 
   const { hours: h, minutes: m } = s.timePart;
-  const ui = getTranslations(s);
+  const ui = getTranslations(s.locale);
   const clock = _formatClock12Parts(h, m, ui.am, ui.pm);
 
   const layout = createEl('div', s.classes.timeLayout);
@@ -93,7 +93,7 @@ export function syncTimePanelDom(instance) {
     return;
   }
 
-  const ui = getTranslations(instance._state);
+  const ui = getTranslations(instance._state.locale);
   const { hours, minutes } = instance._state.timePart;
   const { hourStr, minuteStr, ampm, fullLabel } = _formatClock12Parts(hours, minutes, ui.am, ui.pm);
 
