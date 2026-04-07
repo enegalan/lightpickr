@@ -1,0 +1,34 @@
+---
+description: Workflow for minimal, lightweight changes in lightpickr
+alwaysApply: true
+---
+
+# Lightpickr — change workflow
+
+Lightpickr stays **small on purpose**. Follow this order for every task; skip later steps only when an earlier step already fully satisfies the request.
+
+## 1. Lock scope
+
+- Restate the **single** outcome: what must change for the user, and what must **not** change.
+- If the request is ambiguous, implement the **narrowest** interpretation unless the user explicitly widened it.
+
+## 2. Find the smallest owner
+
+- Search for an **existing** function, option, hook, or module that already participates in that behavior.
+- Prefer **one** edit site. Avoid spreading the same concern across new files unless the existing structure cannot hold it.
+
+## 3. Adapt first, add last
+
+- **First**: change or branch inside existing code paths.
+- **Only if blocked**: add a new option, export, or file—and then only the **minimum** addition.
+- If you add something, look for **dead or redundant** code you can remove in the same change so net size does not creep up.
+
+## 4. Keep the diff tight
+
+- Do not rename, reformat, or refactor unrelated code in the same change.
+- Do not add explanatory comments or abstractions unless the user asked for documentation or the logic is genuinely non-obvious.
+
+## 5. Finish
+
+- Touch **only** the tests that prove the new behavior or guard regressions; do not broaden test scope for “coverage completeness” unless requested.
+- Before stopping, mentally diff against the goal: **fewest files, fewest lines, same public API** unless the task required expanding it.
