@@ -13,7 +13,7 @@ export function tsToYmd(ts) {
 
 /**
  * @param {number} y
- * @param {number} m 0-11
+ * @param {number} m
  * @param {number} d
  * @returns {number}
  */
@@ -350,7 +350,7 @@ function _timestampFromDateString(str) {
 /**
  * @private
  * @param {number} y
- * @param {number} mo 1-12
+ * @param {number} mo
  * @param {number} d
  * @param {number} [h]
  * @param {number} [mi]

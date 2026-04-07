@@ -1,6 +1,6 @@
 import { normalizeAllowedViews, normalizeView } from './normalize.js';
 import lightpickrDefaults from '../core/defaults.js';
-import { buildDayMonthCells, yearGridYearValues } from '../core/calendar-grid.js';
+import { buildDayMonthCells, buildYearGridYears } from '../core/calendar-grid.js';
 import { tsToYmd, ymdToTsStartOfDay } from './time.js';
 
 /**
@@ -47,7 +47,7 @@ export function getViewDates(view, state) {
       out.push(ymdToTsStartOfDay(y, mi, 1));
     }
   } else if (view === 'year') {
-    const years = yearGridYearValues(y);
+    const years = buildYearGridYears(y);
     for (let i = 0; i < years.length; i++) {
       out.push(ymdToTsStartOfDay(years[i], 0, 1));
     }

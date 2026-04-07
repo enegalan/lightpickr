@@ -1,6 +1,6 @@
 import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
 import { isSameDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
-import { yearGridYearValues } from '../../core/calendar-grid.js';
+import { buildYearGridYears } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
 import { buildCtx } from '../context.js';
 import { buildDefaultHeader } from '../header.js';
@@ -49,7 +49,7 @@ export function renderMonthView(instance, container) {
  */
 export function renderYearView(instance, container) {
   const y = tsToYmd(instance._state.viewDate).y;
-  const years = yearGridYearValues(y);
+  const years = buildYearGridYears(y);
 
   _renderThreeColumnGridView(
     instance,

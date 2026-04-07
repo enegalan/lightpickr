@@ -5,7 +5,7 @@ import lightpickrDefaults from './defaults.js';
  * @param {number} centerYear
  * @returns {number[]}
  */
-export function yearGridYearValues(centerYear) {
+export function buildYearGridYears(centerYear) {
   const start = centerYear - lightpickrDefaults.yearGridRadius;
   const out = [];
   for (let i = 0; i < lightpickrDefaults.yearGridCount; i++) {
@@ -16,7 +16,7 @@ export function yearGridYearValues(centerYear) {
 
 /**
  * @param {number} y
- * @param {number} m 0-11
+ * @param {number} m
  * @param {number} firstDay
  * @returns {{ ts: number, outside: boolean }[]}
  */
@@ -34,21 +34,24 @@ export function buildDayMonthCells(y, m, firstDay) {
 
   const out = [];
   for (let cell = 0; cell < totalCells; cell++) {
-    let ts;
     let outside = false;
+    let year, month, day;
     if (cell < leading) {
-      const d = prevDim - (leading - cell - 1);
-      ts = ymdToTsStartOfDay(prevY, prevM, d);
       outside = true;
+      year = prevY;
+      month = prevM;
+      day = prevDim - (leading - cell - 1);
     } else if (dayNum <= dim) {
-      ts = ymdToTsStartOfDay(y, m, dayNum++);
+      year = y;
+      month = m;
+      day = dayNum++;
     } else {
-      const nm = m + 1 > 11 ? 0 : m + 1;
-      const ny = m + 1 > 11 ? y + 1 : y;
-      ts = ymdToTsStartOfDay(ny, nm, nextMonthDay++);
       outside = true;
+      year = m + 1 > 11 ? y + 1 : y;
+      month = m + 1 > 11 ? 0 : m + 1;
+      day = nextMonthDay++;
     }
-    out.push({ ts, outside });
+    out.push({ ts: ymdToTsStartOfDay(year, month, day), outside });
   }
   return out;
 }
