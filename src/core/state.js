@@ -107,7 +107,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {boolean} [isMobile]
  * @property {string | ((date: Date | Date[]) => string)} [format]
  * @property {string} [monthsField]
- * @property {string|('day'|'days'|'month'|'months'|'year'|'years')} [view]
+ * @property {string|('day'|'month'|'year')} [view]
  * @property {('day'|'month'|'year')|('day'|'month'|'year')[]} [allowedViews]
  * @property {boolean} [showOtherMonths]
  * @property {boolean} [selectOtherMonths]
@@ -131,7 +131,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {(payload: LightpickrSelectPayload) => void} [onSelect]
  * @property {(payload: { date: Date, datepicker: any }) => boolean} [onBeforeSelect]
  * @property {(payload: { month: number, year: number, decade: [number, number], datepicker: any }) => void} [onChangeViewDate]
- * @property {(view: 'days'|'months'|'years'|'time') => void} [onChangeView]
+ * @property {(view: 'day'|'month'|'year'|'time') => void} [onChangeView]
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} [onShow]
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} [onHide]
  * @property {(payload: { dayIndex: number, datepicker: any }) => void} [onClickDayName]
@@ -186,7 +186,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {(payload: LightpickrSelectPayload) => void} onSelect
  * @property {(payload: { date: Date, datepicker: any }) => boolean} onBeforeSelect
  * @property {(payload: { month: number, year: number, decade: [number, number], datepicker: any }) => void} onChangeViewDate
- * @property {(view: 'days'|'months'|'years'|'time') => void} onChangeView
+ * @property {(view: 'day'|'month'|'year'|'time') => void} onChangeView
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} onShow
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} onHide
  * @property {(payload: { dayIndex: number, datepicker: any }) => void} onClickDayName
@@ -377,7 +377,7 @@ function _extractRawOptions(state) {
     isMobile: state.isMobile,
     format: state.format,
     monthsField: state.monthsField,
-    view: state.currentView === 'time' ? 'days' : state.currentView + 's',
+    view: state.currentView === 'time' ? 'day' : state.currentView,
     allowedViews: state.allowedViews.slice(),
     showOtherMonths: state.showOtherMonths,
     selectOtherMonths: state.selectOtherMonths,

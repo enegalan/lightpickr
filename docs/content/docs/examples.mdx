@@ -50,7 +50,7 @@ new Lightpickr('#my-input', {
 
 ### Month selection
 
-For choosing only month without any certain date you could use combination of using an **inline** calendar and limit which views appear: **<purple>allowedViews</purple>** <code><gray>[</gray><green>"month"</green><gray>,</gray> <green>"year"</green><gray>]</gray></code> hides the day grid. Start on the month grid with **<purple>view</purple>** <code><green>"month"</green></code> or <code><green>"months"</green></code>; click the title to open the year grid, then return to months.
+For choosing only month without any certain date you could use combination of using an **inline** calendar and limit which views appear: **<purple>allowedViews</purple>** <code><gray>[</gray><green>"month"</green><gray>,</gray> <green>"year"</green><gray>]</gray></code> hides the day grid. Start on the month grid with **<purple>view</purple>** <code><green>"month"</green></code>; click the title to open the year grid, then return to the month grid.
 
 Because there is no day step, Lightpickr does not fill the selection from the day grid. The example below listens to **<purple>onChangeViewDate</purple>** and calls **<code><purple>selectDate</purple></code>** with the **first day of the month** you are viewing, so the chosen month still becomes a real date value. Details: [Options — allowedViews](/docs/documentation/options#allowedviews).
 

@@ -835,13 +835,7 @@ function _onViewEvents(prev, next, instance) {
     });
   }
   if (prev.currentView !== next.currentView) {
-    const map = {
-      day: 'days',
-      month: 'months',
-      year: 'years',
-      time: 'time'
-    };
-    next.onChangeView(map[next.currentView]);
+    next.onChangeView(next.currentView);
   }
 }
 
