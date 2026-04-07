@@ -1,14 +1,31 @@
-import { daysInMonth, firstWeekdayOfMonth, ymdToTsStartOfDay } from '../utils/time.js';
-import lightpickrDefaults from './defaults.js';
+import { daysInMonth, firstWeekdayOfMonth, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /**
- * @param {number} centerYear
+ * @param {number} viewYear
+ * @param {number} viewMonth
+ * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]}
  */
-export function buildYearGridYears(centerYear) {
-  const start = centerYear - lightpickrDefaults.yearGridRadius;
+export function buildMonthViewTimestamps(state) {
+  const { y } = tsToYmd(state.viewDate);
   const out = [];
-  for (let i = 0; i < lightpickrDefaults.yearGridCount; i++) {
+  const n = Math.max(1, Math.floor(state.monthViewCount));
+  for (let mm = 0; mm < n; mm++) {
+    out.push(ymdToTsStartOfDay(y, mm, 1));
+  }
+  return out;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @returns {number[]}
+ */
+export function buildYearViewYears(state) {
+  const n = Math.max(1, Math.floor(state.yearViewCount));
+  const y = tsToYmd(state.viewDate).y;
+  const start = n === 12 ? Math.floor(y / 12) * 12 : y - state.yearViewRadius;
+  const out = [];
+  for (let i = 0; i < n; i++) {
     out.push(start + i);
   }
   return out;
@@ -17,12 +34,13 @@ export function buildYearGridYears(centerYear) {
 /**
  * @param {number} y
  * @param {number} m
- * @param {number} firstDay
+ * @param {import('./state.js').LightpickrInternalState} state
  * @returns {{ ts: number, outside: boolean }[]}
  */
-export function buildDayMonthCells(y, m, firstDay) {
+export function buildDayMonthCells(state) {
+  const { y, m } = tsToYmd(state.viewDate);
   const dim = daysInMonth(y, m);
-  const leading = (firstWeekdayOfMonth(y, m) - (firstDay % 7) + 7) % 7;
+  const leading = (firstWeekdayOfMonth(y, m) - (state.firstDay % 7) + 7) % 7;
 
   const prevY = m - 1 < 0 ? y - 1 : y;
   const prevM = m - 1 < 0 ? 11 : m - 1;

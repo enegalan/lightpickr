@@ -21,7 +21,7 @@ export function navigateNextPrev(state, dir) {
     next.viewDate = ts;
   } else if (v === 'year') {
     const { y, m } = tsToYmd(state.viewDate);
-    next.viewDate = ymdToTsStartOfDay(y + dir * 12, m, 1);
+    next.viewDate = ymdToTsStartOfDay(y + dir * state.yearViewCount, m, 1);
   } else if (v === 'time') {
     const { ts } = addMonths(state.viewDate, dir);
     next.viewDate = ts;
@@ -239,10 +239,12 @@ function _navTargetPeriodYmd(state, dir) {
     }
     case 'year': {
       const { y } = tsToYmd(state.viewDate);
-      const startYearOfBlock = y + dir * lightpickrDefaults.yearGridCount - lightpickrDefaults.yearGridRadius;
+      const n = Math.max(1, Math.floor(state.yearViewCount));
+      const yTarget = y + dir * n;
+      const startYearOfBlock = n === 12 ? Math.floor(yTarget / 12) * 12 : yTarget - state.yearViewRadius;
       return {
         startYear: startYearOfBlock,
-        endYear: startYearOfBlock + lightpickrDefaults.yearGridCount - 1,
+        endYear: startYearOfBlock + n - 1,
         startMonth: 0,
         endMonth: 11,
         startDay: 1,

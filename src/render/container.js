@@ -17,7 +17,7 @@ export function renderContainer(instance) {
 
   let container = instance.$datepicker;
   if (hooks.container) {
-    const ctx = buildCtx(instance, s.viewDate, false);
+    const ctx = buildCtx(instance, s.viewDate);
     const custom = hooks.container(ctx);
     if (custom) {
       instance.$datepicker.appendChild(custom);

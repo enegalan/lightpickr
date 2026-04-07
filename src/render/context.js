@@ -24,7 +24,7 @@ import { isDateDisabled } from '../core/selection.js';
  * @param {boolean} outside
  * @returns {RenderCtx}
  */
-export function buildCtx(instance, dayTs, outside) {
+export function buildCtx(instance, dayTs, outside = false) {
   const d = startOfDayTs(dayTs);
   const flags = _dayFlags(instance._state, d);
   return {
@@ -39,38 +39,29 @@ export function buildCtx(instance, dayTs, outside) {
     isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, d),
     isOutside: outside,
     isWeekend: instance._state.weekends.indexOf(new Date(d).getDay()) >= 0,
-    state: _publicStateSnapshot(instance),
+    state: {
+      inline: instance._state.inline,
+      range: instance._state.range,
+      multipleLimit: instance._state.multipleLimit,
+      multipleEnabled: instance._state.multipleEnabled,
+      enableTime: instance._state.enableTime,
+      onlyTime: instance._state.onlyTime,
+      minDate: instance._state.minDate,
+      maxDate: instance._state.maxDate,
+      disabledDates: instance._state.disabledDatesSorted.slice(),
+      locale: instance._state.locale,
+      firstDay: instance._state.firstDay,
+      weekends: instance._state.weekends.slice(),
+      format: instance._state.format,
+      currentView: instance._state.currentView,
+      viewDate: instance._state.viewDate,
+      focusDate: instance._state.focusDate,
+      visible: instance._state.visible,
+      selectedDates: cloneSelectedDates(instance._state.selectedDates),
+      timePart: Object.assign({}, instance._state.timePart),
+      allowedViews: instance._state.allowedViews.slice()
+    },
     instance: instance
-  };
-}
-
-/**
- * @private
- * @param {object} instance
- * @returns {object}
- */
-function _publicStateSnapshot(instance) {
-  return {
-    inline: instance._state.inline,
-    range: instance._state.range,
-    multipleLimit: instance._state.multipleLimit,
-    multipleEnabled: instance._state.multipleEnabled,
-    enableTime: instance._state.enableTime,
-    onlyTime: instance._state.onlyTime,
-    minDate: instance._state.minDate,
-    maxDate: instance._state.maxDate,
-    disabledDates: instance._state.disabledDatesSorted.slice(),
-    locale: instance._state.locale,
-    firstDay: instance._state.firstDay,
-    weekends: instance._state.weekends.slice(),
-    format: instance._state.format,
-    currentView: instance._state.currentView,
-    viewDate: instance._state.viewDate,
-    focusDate: instance._state.focusDate,
-    visible: instance._state.visible,
-    selectedDates: cloneSelectedDates(instance._state.selectedDates),
-    timePart: Object.assign({}, instance._state.timePart),
-    allowedViews: instance._state.allowedViews.slice()
   };
 }
 

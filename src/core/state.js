@@ -18,7 +18,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {string[]} [weekdaysLong]
  * @property {string} [ariaDayGrid]
  * @property {string} [ariaMonthGrid]
- * @property {string} [ariaYearGrid]
+ * @property {string} [ariaYearView]
  * @property {string} [ariaTimeHours]
  * @property {string} [ariaTimeMinutes]
  * @property {string} [btnToday]
@@ -144,6 +144,14 @@ import lightpickrDefaults from './defaults.js';
  * @property {Record<string, string>} [properties]
  * @property {string | LightpickrPositionFn} [position]
  * @property {string | HTMLElement | null} [anchor]
+ * @property {number} [yearViewRadius]
+ * @property {number} [yearViewCount]
+ * @property {number} [monthViewCount]
+ * @property {number} [monthViewRadius]
+ * @property {number} [monthViewCols]
+ * @property {number} [monthViewRows]
+ * @property {number} [yearViewCols]
+ * @property {number} [yearViewRows]
  */
 
 /**
@@ -207,6 +215,14 @@ import lightpickrDefaults from './defaults.js';
  * @property {number|null} pendingRangeStart
  * @property {string | LightpickrPositionFn} position
  * @property {string | HTMLElement | null} anchor
+ * @property {number} yearViewRadius
+ * @property {number} yearViewCount
+ * @property {number} monthViewCount
+ * @property {number} monthViewRadius
+ * @property {number} monthViewCols
+ * @property {number} monthViewRows
+ * @property {number} yearViewCols
+ * @property {number} yearViewRows
  */
 
 /**
@@ -262,17 +278,41 @@ export function createStateFromOptions(incomingRaw) {
 
   const allowedViews = normalizeAllowedViews(raw.allowedViews);
 
-  const minHours = Number.isFinite(Number(raw.minHours)) ? Math.max(0, Math.min(23, Math.floor(Number(raw.minHours)))) : 0;
-  const rawMaxHours = Number.isFinite(Number(raw.maxHours)) ? Math.floor(Number(raw.maxHours)) : 24;
+  const minHours = Number.isFinite(Number(raw.minHours)) ? Math.max(0, Math.min(23, Math.floor(Number(raw.minHours)))) : lightpickrDefaults.minHours;
+  const rawMaxHours = Number.isFinite(Number(raw.maxHours)) ? Math.floor(Number(raw.maxHours)) : lightpickrDefaults.maxHours;
   const maxHours = Math.max(minHours, Math.min(23, rawMaxHours >= 24 ? 23 : rawMaxHours));
-  const minMinutes = Number.isFinite(Number(raw.minMinutes)) ? Math.max(0, Math.min(59, Math.floor(Number(raw.minMinutes)))) : 0;
-  const rawMaxMinutes = Number.isFinite(Number(raw.maxMinutes)) ? Math.max(minMinutes, Math.min(59, Math.floor(Number(raw.maxMinutes)))) : 59;
+  const minMinutes = Number.isFinite(Number(raw.minMinutes)) ? Math.max(0, Math.min(59, Math.floor(Number(raw.minMinutes)))) : lightpickrDefaults.minMinutes;
+  const rawMaxMinutes = Number.isFinite(Number(raw.maxMinutes)) ? Math.max(minMinutes, Math.min(59, Math.floor(Number(raw.maxMinutes)))) : lightpickrDefaults.maxMinutes;
   const maxMinutes = Math.max(minMinutes, rawMaxMinutes >= 59 ? 59 : rawMaxMinutes);
-  const hoursStep = Number.isFinite(Number(raw.hoursStep)) ? Math.max(1, Math.floor(Number(raw.hoursStep))) : 1;
-  const minutesStep = Number.isFinite(Number(raw.minutesStep)) ? Math.max(1, Math.floor(Number(raw.minutesStep))) : 1;
+  const hoursStep = Number.isFinite(Number(raw.hoursStep)) ? Math.max(1, Math.floor(Number(raw.hoursStep))) : lightpickrDefaults.hoursStep;
+  const minutesStep = Number.isFinite(Number(raw.minutesStep)) ? Math.max(1, Math.floor(Number(raw.minutesStep))) : lightpickrDefaults.minutesStep;
+  const yearViewCount = Number.isFinite(Number(raw.yearViewCount)) ? Math.floor(Number(raw.yearViewCount)) : lightpickrDefaults.yearViewCount;
+  const yearViewRadius = Number.isFinite(Number(raw.yearViewRadius)) ? Math.floor(Number(raw.yearViewRadius)) : lightpickrDefaults.yearViewRadius;
+  const monthViewCount = Number.isFinite(Number(raw.monthViewCount)) ? Math.floor(Number(raw.monthViewCount)) : lightpickrDefaults.monthViewCount;
+  const monthViewRadius = Number.isFinite(Number(raw.monthViewRadius)) ? Math.floor(Number(raw.monthViewRadius)) : lightpickrDefaults.monthViewRadius;
+  let monthViewCols = Number.isFinite(Number(raw.monthViewCols)) ? Math.min(monthViewCount, Math.floor(Number(raw.monthViewCols))) : lightpickrDefaults.monthViewCols;
+  let monthViewRows = Number.isFinite(Number(raw.monthViewRows)) ? Math.min(monthViewCount, Math.floor(Number(raw.monthViewRows))) : lightpickrDefaults.monthViewRows;
+  let yearViewCols = Number.isFinite(Number(raw.yearViewCols)) ? Math.min(yearViewCount, Math.floor(Number(raw.yearViewCols))) : lightpickrDefaults.yearViewCols;
+  let yearViewRows = Number.isFinite(Number(raw.yearViewRows)) ? Math.min(yearViewCount, Math.floor(Number(raw.yearViewRows))) : lightpickrDefaults.yearViewRows;
+
+  if (monthViewCols > 0 && monthViewRows > 0) {
+    monthViewRows = Math.max(monthViewRows, Math.ceil(monthViewCount / monthViewCols));
+  } else if (monthViewCols > 0) {
+    monthViewRows = Math.ceil(monthViewCount / monthViewCols);
+  } else if (monthViewRows > 0) {
+    monthViewCols = Math.ceil(monthViewCount / monthViewRows);
+  }
+
+  if (yearViewCols > 0 && yearViewRows > 0) {
+    yearViewRows = Math.max(yearViewRows, Math.ceil(yearViewCount / yearViewCols));
+  } else if (yearViewCols > 0) {
+    yearViewRows = Math.ceil(yearViewCount / yearViewCols);
+  } else if (yearViewRows > 0) {
+    yearViewCols = Math.ceil(yearViewCount / yearViewRows);
+  }
 
   const nextState = {
-    inline: raw.inline != null ? Boolean(raw.inline) : false,
+    inline: Boolean(raw.inline),
     range,
     multipleEnabled,
     multipleLimit: range ? multipleLimit : multipleEnabled ? multipleLimit : 1,
@@ -282,28 +322,24 @@ export function createStateFromOptions(incomingRaw) {
     minDate: minTs != null ? startOfDayTs(minTs) : null,
     maxDate: maxTs != null ? startOfDayTs(maxTs) : null,
     disabledDatesSorted: disabled.map(startOfDayTs),
-    locale: raw.locale != null ? raw.locale : 'default',
+    locale: raw.locale,
     firstDay: normalizeFirstDay(raw.firstDay) ?? 1,
     weekends: normalizeWeekendIndexes(raw.weekends),
     isMobile: Boolean(raw.isMobile),
-    monthsField: typeof raw.monthsField === 'string' && raw.monthsField.trim()
-      ? raw.monthsField.trim()
-      : /** @type {string} */ (lightpickrDefaults.monthsField),
+    monthsField: raw.monthsField.trim(),
     allowedViews,
     showOtherMonths: raw.showOtherMonths !== false,
     selectOtherMonths: raw.selectOtherMonths !== false,
     moveToOtherMonthsOnSelect: raw.moveToOtherMonthsOnSelect !== false,
     disableNavWhenOutOfRange: raw.disableNavWhenOutOfRange !== false,
-    format: typeof raw.format === 'function' || typeof raw.format === 'string'
-      ? raw.format
-      : /** @type {string} */ (lightpickrDefaults.format),
-    multipleSeparator: typeof raw.multipleSeparator === 'string' ? raw.multipleSeparator : /** @type {string} */ (lightpickrDefaults.multipleSeparator),
-    dynamicRange: raw.dynamicRange !== false,
-    buttons: raw.buttons != null ? raw.buttons : false,
-    autoClose: typeof raw.autoClose === 'boolean' ? raw.autoClose : lightpickrDefaults.autoClose,
-    prevHtml: typeof raw.prevHtml === 'string' ? raw.prevHtml : /** @type {string} */ (lightpickrDefaults.prevHtml),
-    nextHtml: typeof raw.nextHtml === 'string' ? raw.nextHtml : /** @type {string} */ (lightpickrDefaults.nextHtml),
-    navTitles: Object.assign({}, raw.navTitles),
+    format: raw.format,
+    multipleSeparator: raw.multipleSeparator,
+    dynamicRange: Boolean(raw.dynamicRange),
+    buttons: raw.buttons ?? false,
+    autoClose: Boolean(raw.autoClose),
+    prevHtml: raw.prevHtml,
+    nextHtml: raw.nextHtml,
+    navTitles: raw.navTitles,
     minHours,
     maxHours,
     minMinutes,
@@ -322,9 +358,9 @@ export function createStateFromOptions(incomingRaw) {
     onTimeChange: typeof raw.onTimeChange === 'function' ? raw.onTimeChange : function () {},
     onDestroy: typeof raw.onDestroy === 'function' ? raw.onDestroy : function () {},
     render,
-    classes: Object.assign({}, raw.classes),
-    attributes: Object.assign({}, raw.attributes),
-    properties: Object.assign({}, raw.properties),
+    classes: raw.classes,
+    attributes: raw.attributes,
+    properties: raw.properties,
     currentView: onlyTime ? 'time' : clampView(allowedViews, raw.view),
     viewDate,
     focusDate: null,
@@ -333,10 +369,16 @@ export function createStateFromOptions(incomingRaw) {
     rangeAnchor: null,
     timePart: { hours: new Date().getHours(), minutes: new Date().getMinutes() },
     pendingRangeStart: null,
-    position: typeof raw.position === 'function' || typeof raw.position === 'string'
-      ? raw.position
-      : /** @type {string} */ (lightpickrDefaults.position),
-    anchor: Object.assign({}, raw.anchor),
+    position: raw.position,
+    anchor: raw.anchor,
+    yearViewCount,
+    yearViewRadius,
+    monthViewCount,
+    monthViewRadius,
+    monthViewCols,
+    monthViewRows,
+    yearViewCols,
+    yearViewRows,
   };
   nextState.selectedDates = parseSelectedDates(nextState, raw.selectedDates);
   return nextState;
@@ -411,6 +453,14 @@ function _extractRawOptions(state) {
     attributes: state.attributes,
     properties: state.properties,
     position: state.position,
-    anchor: state.anchor
+    anchor: state.anchor,
+    yearViewCount: state.yearViewCount,
+    yearViewRadius: state.yearViewRadius,
+    monthViewCount: state.monthViewCount,
+    monthViewRadius: state.monthViewRadius,
+    monthViewCols: state.monthViewCols,
+    monthViewRows: state.monthViewRows,
+    yearViewCols: state.yearViewCols,
+    yearViewRows: state.yearViewRows,
   };
 }

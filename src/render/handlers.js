@@ -242,11 +242,11 @@ function _bindDelegatedHandlers(instance) {
   });
 
   const off3 = _delegate(root, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
-    const monthIndex = _parseElementNumber(el, instance._state.attributes.month);
-    if (monthIndex == null) {
+    const monthTs = _parseElementNumber(el, instance._state.attributes.month);
+    if (typeof monthTs !== 'number' || !Number.isFinite(monthTs)) {
       return;
     }
-    _onMonthPick(instance, monthIndex);
+    _onMonthPick(instance, monthTs);
   });
 
   const off4 = _delegate(root, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
@@ -678,13 +678,13 @@ function _onDayClick(instance, ts) {
 /**
  * @private
  * @param {object} instance
- * @param {number} monthIndex
+ * @param {number} monthTs
  * @returns {void}
  */
-function _onMonthPick(instance, monthIndex) {
-  const y = tsToYmd(instance._state.viewDate).y;
+function _onMonthPick(instance, monthTs) {
   const next = Object.assign({}, instance._state);
-  next.viewDate = ymdToTsStartOfDay(y, monthIndex, 1);
+  const ymd = tsToYmd(startOfDayTs(monthTs));
+  next.viewDate = ymdToTsStartOfDay(ymd.y, ymd.m, 1);
   next.currentView = instance._state.allowedViews.indexOf('day') >= 0 ? 'day' : instance._state.allowedViews[0];
   instance._commit(next, { emitSelect: false });
 };
@@ -896,7 +896,7 @@ function _parseElementNumber(element, attr) {
 */
 function _delegate(root, selector, type, handler) {
   const fn = function (ev) {
-    const match = ev.target instanceof HTMLElement ? ev.target.closest(selector) : null;
+    const match = ev.target instanceof Element ? ev.target.closest(selector) : null;
     if (match != null && root.contains(match)) {
       handler(ev, match);
     }

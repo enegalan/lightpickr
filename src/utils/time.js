@@ -1,6 +1,5 @@
 import { trimFifo, pad2 } from './common.js';
 import { defaultMonthNames, defaultWeekdayNames } from './locale.js';
-import lightpickrDefaults from '../core/defaults.js';
 
 /**
  * @param {number} ts
@@ -147,15 +146,14 @@ export function formatDate(format, ts, timePart, state) {
     const dow = dateObj.getDay();
     const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : dateObj.getHours();
     const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
-    const opts = state && typeof state === 'object' ? state : lightpickrDefaults;
-    opts.monthsField = opts.monthsField && typeof opts.monthsField === 'string' ? opts.monthsField : lightpickrDefaults.monthsField;
-    const monthShort = defaultMonthNames(opts.locale, 'monthsShort');
-    const monthLong = defaultMonthNames(opts.locale, 'monthsLong');
-    const dayShort = defaultWeekdayNames(opts.locale, 'weekdaysShort');
-    const dayLong = defaultWeekdayNames(opts.locale, 'weekdaysLong');
+    const monthShort = defaultMonthNames(state.locale, 'monthsShort');
+    const monthLong = defaultMonthNames(state.locale, 'monthsLong');
+    const dayShort = defaultWeekdayNames(state.locale, 'weekdaysShort');
+    const dayLong = defaultWeekdayNames(state.locale, 'weekdaysLong');
     const yy = String(y).slice(-2);
-    const blockStart = y - lightpickrDefaults.yearGridRadius;
-    const blockEnd = blockStart + lightpickrDefaults.yearGridCount - 1;
+    const n = Math.max(1, Number.isFinite(Number(state?.yearViewCount)) ? Math.floor(Number(state.yearViewCount)) : 12);
+    const blockStart = n === 12 ? Math.floor(y / 12) * 12 : y - (Number.isFinite(Number(state?.yearViewRadius)) ? Math.floor(Number(state.yearViewRadius)) : 5);
+    const blockEnd = blockStart + n - 1;
 
     let out = '';
     let i = 0;
@@ -282,6 +280,15 @@ export function parseSelectedDates(state, selectedDates) {
         return trimFifo(normalized, state.multipleLimit);
     }
     return normalized.length ? [normalized[0]] : [];
+}
+
+/**
+ * @param {number} dayTs
+ * @param {number[]} dates
+ * @returns {number}
+ */
+export function findDayIndex(dayTs, dates) {
+    return (Array.isArray(dates) ? dates : []).findIndex((x) => isSameDay(x, dayTs));
 }
 
 /**

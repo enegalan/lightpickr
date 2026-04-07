@@ -1,7 +1,7 @@
 import { normalizeAllowedViews, normalizeView } from './normalize.js';
 import lightpickrDefaults from '../core/defaults.js';
-import { buildDayMonthCells, buildYearGridYears } from '../core/calendar-grid.js';
-import { tsToYmd, ymdToTsStartOfDay } from './time.js';
+import { buildDayMonthCells, buildMonthViewTimestamps, buildYearViewYears } from '../core/calendar-grid.js';
+import { ymdToTsStartOfDay } from './time.js';
 
 /**
  * @param {unknown} views
@@ -35,19 +35,19 @@ export function clampView(views, requestedView) {
  */
 export function getViewDates(view, state) {
   const out = [];
-  const { y, m } = tsToYmd(state.viewDate);
 
   if (view === 'day') {
-    const cells = buildDayMonthCells(y, m, state.firstDay);
+    const cells = buildDayMonthCells(state);
     for (let i = 0; i < cells.length; i++) {
       out.push(cells[i].ts);
     }
   } else if (view === 'month') {
-    for (let mi = 0; mi < 12; mi++) {
-      out.push(ymdToTsStartOfDay(y, mi, 1));
+    const stamps = buildMonthViewTimestamps(state);
+    for (let i = 0; i < stamps.length; i++) {
+      out.push(stamps[i]);
     }
   } else if (view === 'year') {
-    const years = buildYearGridYears(y);
+    const years = buildYearViewYears(state);
     for (let i = 0; i < years.length; i++) {
       out.push(ymdToTsStartOfDay(years[i], 0, 1));
     }

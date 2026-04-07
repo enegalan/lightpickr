@@ -11,7 +11,7 @@ assert.equal(formatDate('E · EEEE', tsMarch15, null, { locale: en, monthsField:
 assert.equal(formatDate('MMM MMMM', tsMarch15, null, { locale: en, monthsField: 'monthsShort' }), 'Mar March');
 assert.equal(
   formatDate('yyyy1–yyyy2', startOfDayTs(new Date(2026, 0, 1).getTime()), null, { locale: en, monthsField: 'monthsShort' }),
-  '2021–2032'
+  '2016–2027'
 );
 assert.equal(formatDate('T', tsMarch15, null, { locale: en, monthsField: 'monthsShort' }), String(tsMarch15));
 

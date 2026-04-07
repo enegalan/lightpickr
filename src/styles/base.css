@@ -451,10 +451,15 @@
   color: var(--lp-cell-weekend-color);
 }
 
-.lp-month-grid,
-.lp-year-grid {
+.lp-month-view {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--lp-month-view-cols), minmax(0, 1fr));
+  gap: var(--lp-grid-gap);
+}
+
+.lp-year-view {
+  display: grid;
+  grid-template-columns: repeat(var(--lp-year-view-cols), minmax(0, 1fr));
   gap: var(--lp-grid-gap);
 }
 
@@ -782,8 +787,8 @@
   background: var(--lp-nav-button-bg-hover);
 }
 
-.lp-year-grid .lp-cell,
-.lp-month-grid .lp-cell {
+.lp-year-view .lp-cell,
+.lp-month-view .lp-cell {
   width: auto;
   height: auto;
 }

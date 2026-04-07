@@ -74,6 +74,36 @@ new Lightpickr('#inline-root', {
 });
 ```
 
+### Custom month/year grid shape
+
+You can change how many cells are shown and column/row layout. See [Options — monthViewCount](/docs/documentation/options#monthviewcount) through **yearViewRows**.
+
+<CustomGridShapeDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#inline-grid', {
+  inline: true,
+  view: 'month',
+  allowedViews: ['month', 'year'],
+  autoClose: false,
+
+  // Month view: 8 months (Jan–Aug of the view year) in a 4×2 grid.
+  monthViewCount: 8,
+  monthViewRadius: 1,
+  monthViewCols: 4,
+  monthViewRows: 2,
+
+  // Year view: 15 years in a 5x3 grid, centered with radius 7.
+  yearViewCount: 15,
+  yearViewRadius: 7,
+  yearViewCols: 5,
+  yearViewRows: 3
+});
+```
+
 ### Mobile devices mode
 
 Lightpickr has a mode that opens the calendar as a **modal**: it is centered on the screen with slightly larger sizing to make date selection easier on small viewports. Enable it with **<code><purple>isMobile</purple></code>** (see [Options — isMobile](/docs/documentation/options#ismobile)). Use **<purple>autoClose</purple>** to control whether the modal closes after a date is chosen (`true` closes it).

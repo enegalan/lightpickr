@@ -16,9 +16,7 @@ export function renderDayView(instance, container) {
   const c = instance._state.classes;
   const { header: headerHook } = instance._state.render;
 
-  const vd = instance._state.viewDate;
-  const ctx = buildCtx(instance, vd, false);
-  const { y, m } = tsToYmd(vd);
+  const ctx = buildCtx(instance, instance._state.viewDate);
 
   const header = createEl('div', c.header);
   const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, 'day', instance._state.allowedViews.indexOf('month') >= 0);
@@ -33,7 +31,7 @@ export function renderDayView(instance, container) {
   const block = createEl('div', c.monthBlock);
   const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(instance._state.locale).ariaDayGrid });
   _buildDayGridHeadRow(instance, grid);
-  _buildDayGridBodyRows(instance, grid, y, m);
+  _buildDayGridBodyRows(instance, grid);
 
   block.appendChild(grid);
   monthsWrap.appendChild(block);
@@ -80,13 +78,11 @@ function _buildDayGridHeadRow(instance, grid) {
  * @private
  * @param {object} instance
  * @param {HTMLElement} grid
- * @param {number} y
- * @param {number} m
  * @returns {void}
  */
-function _buildDayGridBodyRows(instance, grid, y, m) {
+function _buildDayGridBodyRows(instance, grid) {
   const c = instance._state.classes;
-  const cells = buildDayMonthCells(y, m, instance._state.firstDay);
+  const cells = buildDayMonthCells(instance._state);
 
   /** @type {HTMLElement|null} */
   let row = null;
