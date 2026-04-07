@@ -4,11 +4,10 @@ import { clearSelectionState, selectDateExplicit, unselectDate } from './core/se
 import { cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
 import { bindDocListeners, syncInstanceClasses, scheduleFocusActiveKeyboardCell, emitEvents } from './render/handlers.js';
 import { renderContainer } from './render/container.js';
-import { getViewDatesFromState } from './render/context.js';
+import { getViewDates } from './utils/view.js';
 import { applyStringPosition } from './core/positioning.js';
 import { reseedKeyboardFocusForView } from './core/keyboard.js';
-import { createEl } from './render/dom.js';
-import { isTextInputLike } from './utils/common.js';
+import { isTextInputLike, createEl } from './utils/common.js';
 import lightpickrDefaults from './core/defaults.js';
 
 /**
@@ -337,7 +336,7 @@ Lightpickr.prototype.setFocusDate = function (date) {
  * @returns {number[]}
  */
 Lightpickr.prototype.getViewDates = function (view) {
-  return getViewDatesFromState(this._state, view);
+  return getViewDates(view, this._state);
 };
 
 /**

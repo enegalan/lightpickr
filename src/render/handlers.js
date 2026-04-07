@@ -2,7 +2,6 @@ import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
 import { applyDaySelection, applyRangeEndpointDrag } from '../core/selection.js';
 import { isTextInputLike } from '../utils/common.js';
 import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
-import { delegate, parseElementNumber } from './dom.js';
 import { syncTimePanelDom } from './time-panel.js';
 
 /**
@@ -185,7 +184,7 @@ function _bindDelegatedHandlers(instance) {
   const s = instance._state;
   const cellBtnSel = 'button.' + s.classes.cell;
 
-  const offCellPointerDown = delegate(root, cellBtnSel, 'pointerdown', function (ev, el) {
+  const offCellPointerDown = _delegate(root, cellBtnSel, 'pointerdown', function (ev, el) {
     if (!(el instanceof HTMLButtonElement) || el.disabled) {
       return;
     }
@@ -220,15 +219,15 @@ function _bindDelegatedHandlers(instance) {
     _clearPressedCellActive(instance);
   };
 
-  const off1 = delegate(root, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
-    const ts = parseElementNumber(el, instance._state.attributes.day);
+  const off1 = _delegate(root, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
+    const ts = _parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
     _onDayClick(instance, ts);
   });
 
-  const off2 = delegate(root, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
+  const off2 = _delegate(root, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
     if (el instanceof HTMLButtonElement && el.disabled) {
       return;
     }
@@ -242,24 +241,24 @@ function _bindDelegatedHandlers(instance) {
     }
   });
 
-  const off3 = delegate(root, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
-    const monthIndex = parseElementNumber(el, instance._state.attributes.month);
+  const off3 = _delegate(root, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
+    const monthIndex = _parseElementNumber(el, instance._state.attributes.month);
     if (monthIndex == null) {
       return;
     }
     _onMonthPick(instance, monthIndex);
   });
 
-  const off4 = delegate(root, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
-    const y = parseElementNumber(el, instance._state.attributes.year);
+  const off4 = _delegate(root, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
+    const y = _parseElementNumber(el, instance._state.attributes.year);
     if (y == null) {
       return;
     }
     _onYearPick(instance, y);
   });
 
-  const offDayName = delegate(root, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
-    const dayIndex = parseElementNumber(el, instance._state.attributes.dayName);
+  const offDayName = _delegate(root, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
+    const dayIndex = _parseElementNumber(el, instance._state.attributes.dayName);
     if (dayIndex == null) {
       return;
     }
@@ -288,7 +287,7 @@ function _bindDelegatedHandlers(instance) {
       return;
     }
     const dayBtn = el.closest('[' + instance._state.attributes.day + ']');
-    const ts = parseElementNumber(dayBtn, instance._state.attributes.day);
+    const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
@@ -338,7 +337,7 @@ function _bindRangeDragHandlers(instance) {
     if (!(dayBtn.classList.contains(instance._state.classes.cellRangeStart) || dayBtn.classList.contains(instance._state.classes.cellRangeEnd))) {
       return;
     }
-    const ts = parseElementNumber(dayBtn, instance._state.attributes.day);
+    const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
@@ -377,7 +376,7 @@ function _bindRangeDragHandlers(instance) {
     if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
       return;
     }
-    const ts = parseElementNumber(dayBtn, instance._state.attributes.day);
+    const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
     if (ts == null) {
       return;
     }
@@ -442,7 +441,7 @@ function _syncPendingRangeHoverClasses(instance) {
 
   for (let i = 0; i < buttons.length; i++) {
     const el = /** @type {HTMLButtonElement} */ (buttons[i]);
-    const ts = parseElementNumber(el, instance._state.attributes.day);
+    const ts = _parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       continue;
     }
@@ -872,4 +871,44 @@ function _clearPressedCellActive(instance) {
     instance._pressedCellEl.classList.remove(instance._state.classes.cellActive);
     instance._pressedCellEl = null;
   }
+}
+
+/**
+ * @private
+ * @param {Element} element
+ * @param {string} attr
+ * @returns {number|null}
+*/
+function _parseElementNumber(element, attr) {
+  if (!(element instanceof Element)) {
+    return null;
+  }
+  const raw = element.getAttribute(attr);
+  if (raw == null) {
+    return null;
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+
+/**
+  * @private
+  * @param {ParentNode} root
+  * @param {string} selector
+  * @param {string} type
+  * @param {(ev: Event, target: Element) => void} handler
+  * @returns {() => void}
+*/
+function _delegate(root, selector, type, handler) {
+  const fn = function (ev) {
+    const match = ev.target instanceof HTMLElement ? ev.target.closest(selector) : null;
+    if (match != null && root.contains(match)) {
+      handler(ev, match);
+    }
+  };
+  root.addEventListener(type, fn);
+  return function () {
+    root.removeEventListener(type, fn);
+  };
 }

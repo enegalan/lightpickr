@@ -10,7 +10,7 @@ export const DEFAULT_TRANSLATIONS = Object.freeze(_localeStringFields(lightpickr
  */
 export function defaultMonthNames(locale, monthsField) {
     const field = typeof monthsField === 'string' && monthsField.trim() ? monthsField.trim() : lightpickrDefaults.monthsField;
-    return (locale || lightpickrDefaults.locale)[field];
+    return (Array.isArray(locale) ? locale : locale || lightpickrDefaults.locale)[field] || lightpickrDefaults.locale[field];
 }
 
 /**
@@ -20,7 +20,7 @@ export function defaultMonthNames(locale, monthsField) {
  */
 export function defaultWeekdayNames(locale, weekdaysField) {
     const field = typeof weekdaysField === 'string' && weekdaysField.trim() ? weekdaysField.trim() : lightpickrDefaults.weekdaysField;
-    return (locale || lightpickrDefaults.locale)[field];
+    return (Array.isArray(locale) ? locale : locale || lightpickrDefaults.locale)[field] || lightpickrDefaults.locale[field];
 }
 
 /**

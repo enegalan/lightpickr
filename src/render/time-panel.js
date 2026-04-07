@@ -1,7 +1,6 @@
 import { getTranslations } from '../utils/locale.js';
-import { pad2 } from '../utils/common.js';
-import { createEl } from './dom.js';
-import { buildDayCtx } from './context.js';
+import { pad2, createEl } from '../utils/common.js';
+import { buildCtx } from './context.js';
 
 /**
  * @param {object} instance
@@ -12,7 +11,7 @@ export function renderTimePanel(instance, container) {
   const s = instance._state;
   const wrap = createEl('div', s.classes.timePanel);
 
-  const timeCtx = buildDayCtx(instance, s.viewDate, false);
+  const timeCtx = buildCtx(instance, s.viewDate, false);
   const hookEl = s.render.time?.(timeCtx);
   if (hookEl) {
     wrap.appendChild(hookEl);

@@ -1,6 +1,6 @@
 import { getTranslations } from '../utils/locale.js';
-import { createEl } from './dom.js';
-import { buildDayCtx } from './context.js';
+import { createEl } from '../utils/common.js';
+import { buildCtx } from './context.js';
 
 /**
  * @param {object} instance
@@ -10,7 +10,7 @@ import { buildDayCtx } from './context.js';
 export function renderFooter(instance, container) {
   const s = instance._state;
 
-  const ctx = buildDayCtx(instance, s.viewDate, false);
+  const ctx = buildCtx(instance, s.viewDate, false);
   const custom = s.render.footer?.(ctx);
   if (custom) {
     const wrap = createEl('div', s.classes.footer);

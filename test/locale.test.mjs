@@ -22,7 +22,7 @@ const localeBundles = await Promise.all(
   })
 );
 
-/** Same order as `_buildWeekdayRow` with default `firstDay` 1 (Monday). */
+/** Same order as `_buildDayGridHeadRow` with default `firstDay` 1 (Monday). */
 function weekdayHeadLabels(weekdaysShort, firstDay) {
   const fd = firstDay % 7;
   const labels = [];
@@ -41,8 +41,8 @@ for (const { code, locale } of localeBundles) {
     assert.equal(locale.weekdaysShort.length, 7);
     assert.equal(locale.weekdaysLong.length, 7);
 
-    assert.equal(defaultMonthNames({ locale }, 'monthsLong')[0], locale.monthsLong[0]);
-    assert.equal(defaultMonthNames({ locale }, 'monthsShort')[0], locale.monthsShort[0]);
+    assert.equal(defaultMonthNames(locale, 'monthsLong')[0], locale.monthsLong[0]);
+    assert.equal(defaultMonthNames(locale, 'monthsShort')[0], locale.monthsShort[0]);
     assert.equal(defaultWeekdayNames(locale, 'weekdaysShort')[0], locale.weekdaysShort[0]);
     assert.equal(defaultWeekdayNames(locale, 'weekdaysShort')[6], locale.weekdaysShort[6]);
 
@@ -56,6 +56,11 @@ test('getTranslations: default and partial override', () => {
   assert.equal(getTranslations('default').btnToday, DEFAULT_TRANSLATIONS.btnToday);
   assert.equal(getTranslations({ btnToday: 'Hoy' }).btnToday, 'Hoy');
   assert.equal(getTranslations({ btnToday: 'Hoy' }).btnClear, DEFAULT_TRANSLATIONS.btnClear);
+});
+
+test('defaultMonthNames/defaultWeekdayNames: string locale uses built-in bundle', () => {
+  assert.equal(defaultMonthNames('default', 'monthsShort')[0], lightpickrDefaults.locale.monthsShort[0]);
+  assert.equal(defaultWeekdayNames(null, 'weekdaysShort')[0], lightpickrDefaults.locale.weekdaysShort[0]);
 });
 
 const dom = new JSDOM('<!doctype html><html><body><input id="x" /></body></html>', {

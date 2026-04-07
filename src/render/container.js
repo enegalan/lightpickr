@@ -1,4 +1,4 @@
-import { buildDayCtx } from './context.js';
+import { buildCtx } from './context.js';
 import { renderTimePanel } from './time-panel.js';
 import { renderDayView } from './views/day.js';
 import { renderMonthView, renderYearView } from './views/month-year.js';
@@ -17,7 +17,7 @@ export function renderContainer(instance) {
 
   let container = instance.$datepicker;
   if (hooks.container) {
-    const ctx = buildDayCtx(instance, s.viewDate, false);
+    const ctx = buildCtx(instance, s.viewDate, false);
     const custom = hooks.container(ctx);
     if (custom) {
       instance.$datepicker.appendChild(custom);

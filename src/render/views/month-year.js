@@ -1,9 +1,9 @@
 import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
 import { isSameDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { yearGridYearValues } from '../../core/calendar-grid.js';
-import { createEl } from '../dom.js';
-import { buildDefaultNav } from '../context.js';
-import { applyRenderCellPatch } from '../cell.js';
+import { createEl } from '../../utils/common.js';
+import { buildCtx } from '../context.js';
+import { buildDefaultHeader } from '../header.js';
 
 /** @private */
 const THREE_COL_GRID_ROWS = 4;
@@ -35,7 +35,6 @@ export function renderMonthView(instance, container) {
         String(mi),
         mi === m,
         ts,
-        'month',
         months[mi] + ' ' + String(y),
         months[mi]
       );
@@ -63,7 +62,7 @@ export function renderYearView(instance, container) {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);
       const yyStr = String(yy);
-      return _buildMonthYearGridCell(instance, instance._state.attributes.year, yyStr, yy === y, ts, 'year', yyStr, yyStr);
+      return _buildMonthYearGridCell(instance, instance._state.attributes.year, yyStr, yy === y, ts, yyStr, yyStr);
     }
   );
 }
@@ -75,12 +74,23 @@ export function renderYearView(instance, container) {
  * @param {string} dataValueStr
  * @param {boolean} selected
  * @param {number} ts
- * @param {'month'|'year'} cellType
  * @param {string} ariaLabel
  * @param {string} textContent
  * @returns {HTMLElement}
  */
-function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, cellType, ariaLabel, textContent) {
+function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, ariaLabel, textContent) {
+  const ctx = buildCtx(instance, ts, false);
+  const cellFn = instance._state.render.cell;
+  if (typeof cellFn === 'function') {
+    const custom = cellFn(ctx);
+    if (custom instanceof HTMLElement) {
+      if (!custom.getAttribute(dataAttr)) {
+        custom.setAttribute(dataAttr, dataValueStr);
+      }
+      return custom;
+    }
+  }
+
   const c = instance._state.classes;
   const isFocused = instance._state.focusDate != null && isSameDay(instance._state.focusDate, ts);
   const cellClass =
@@ -95,20 +105,6 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
   };
   const el = createEl('button', cellClass, attrs);
   el.textContent = textContent;
-
-  const out = instance._state.onRenderCell({
-    date: new Date(ts),
-    cellType,
-    datepicker: instance
-  });
-
-  if (out && typeof out === 'object') {
-    applyRenderCellPatch(el, out);
-  }
-
-  if (!el.getAttribute(dataAttr)) {
-    el.setAttribute(dataAttr, dataValueStr);
-  }
 
   return el;
 }
@@ -125,9 +121,16 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
  * @returns {void}
  */
 function _renderThreeColumnGridView(instance, container, view, canGoUp, gridExtraClass, ariaLabel, buildCell) {
-  const c = instance._state.classes;
+  const s = instance._state;
+  const c = s.classes;
+  const { header: headerHook } = s.render;
+  const ctx = buildCtx(instance, s.viewDate, false);
+
   const header = createEl('div', c.header);
-  header.appendChild(buildDefaultNav(instance, view, canGoUp));
+  const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, view, canGoUp);
+  if (headerEl) {
+    header.appendChild(headerEl);
+  }
   container.appendChild(header);
 
   const viewBody = createEl('div', c.viewBody);
@@ -145,4 +148,3 @@ function _renderThreeColumnGridView(instance, container, view, canGoUp, gridExtr
   viewBody.appendChild(grid);
   container.appendChild(viewBody);
 }
-

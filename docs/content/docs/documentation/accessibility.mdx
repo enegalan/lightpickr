@@ -52,5 +52,5 @@ The popover pointer element has **<code>aria-hidden<brown>=</brown><green>"true"
 
 ## Customization risks
 
-- **<code><purple>onRenderCell</purple></code>** can inject arbitrary **HTML**; keep content safe if it includes user data.
+- **<code><purple>render</purple></code>** option properties can inject arbitrary **HTML**; keep content safe if it includes user data.
 - **<code><purple>navTitles</purple></code>** templates use **`innerHTML`**; only use trusted strings or escape input.

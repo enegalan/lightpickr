@@ -31,10 +31,9 @@ import lightpickrDefaults from './defaults.js';
  * @typedef {Object} LightpickrRenderHooks
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [container]
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [header]
- * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [nav]
- * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [grid]
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [time]
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [footer]
+ * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [cell]
  */
 
 /**
@@ -133,7 +132,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {(payload: { date: Date, datepicker: any }) => boolean} [onBeforeSelect]
  * @property {(payload: { month: number, year: number, decade: [number, number], datepicker: any }) => void} [onChangeViewDate]
  * @property {(view: 'days'|'months'|'years'|'time') => void} [onChangeView]
- * @property {(payload: { date: Date, cellType: 'day'|'month'|'year', datepicker: any }) => ({ html?: string, classes?: string, disabled?: boolean, attrs?: Record<string, string|number|undefined> } | void)} [onRenderCell]
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} [onShow]
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} [onHide]
  * @property {(payload: { dayIndex: number, datepicker: any }) => void} [onClickDayName]
@@ -189,7 +187,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {(payload: { date: Date, datepicker: any }) => boolean} onBeforeSelect
  * @property {(payload: { month: number, year: number, decade: [number, number], datepicker: any }) => void} onChangeViewDate
  * @property {(view: 'days'|'months'|'years'|'time') => void} onChangeView
- * @property {(payload: { date: Date, cellType: 'day'|'month'|'year', datepicker: any }) => ({ html?: string, classes?: string, disabled?: boolean, attrs?: Record<string, string|number|undefined> } | void)} onRenderCell
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} onShow
  * @property {(isFinished: boolean, payload: { datepicker: any }) => void} onHide
  * @property {(payload: { dayIndex: number, datepicker: any }) => void} onClickDayName
@@ -258,10 +255,9 @@ export function createStateFromOptions(incomingRaw) {
   const render = {
     container: raw.render?.container ?? null,
     header: raw.render?.header ?? null,
-    nav: raw.render?.nav ?? null,
-    grid: raw.render?.grid ?? null,
     time: raw.render?.time ?? null,
-    footer: raw.render?.footer ?? null
+    cell: raw.render?.cell ?? null,
+    footer: raw.render?.footer ?? null,
   };
 
   const allowedViews = normalizeAllowedViews(raw.allowedViews);
@@ -319,7 +315,6 @@ export function createStateFromOptions(incomingRaw) {
     onBeforeSelect: typeof raw.onBeforeSelect === 'function' ? raw.onBeforeSelect : function () { return true; },
     onChangeViewDate: typeof raw.onChangeViewDate === 'function' ? raw.onChangeViewDate : function () {},
     onChangeView: typeof raw.onChangeView === 'function' ? raw.onChangeView : function () {},
-    onRenderCell: typeof raw.onRenderCell === 'function' ? raw.onRenderCell : function () {},
     onShow: typeof raw.onShow === 'function' ? raw.onShow : function () {},
     onHide: typeof raw.onHide === 'function' ? raw.onHide : function () {},
     onClickDayName: typeof raw.onClickDayName === 'function' ? raw.onClickDayName : function () {},
@@ -405,7 +400,6 @@ function _extractRawOptions(state) {
     onBeforeSelect: state.onBeforeSelect,
     onChangeViewDate: state.onChangeViewDate,
     onChangeView: state.onChangeView,
-    onRenderCell: state.onRenderCell,
     onShow: state.onShow,
     onHide: state.onHide,
     onClickDayName: state.onClickDayName,

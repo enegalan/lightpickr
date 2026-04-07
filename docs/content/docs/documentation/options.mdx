@@ -465,6 +465,76 @@ Minutes step.
 ## Custom DOM
 
 <heading>
+### render
+<definition><param-type><purple>Partial</purple>&lt;&#123; container, header, time, footer, cell &#125;&gt;</param-type></definition>
+</heading>
+
+Every hook uses the same <code><purple>ctx</purple></code> shape (table below). Each is a function <code><gray>(</gray>ctx<gray>)</gray> <brown>=></brown> <blue>HTMLElement</blue> <brown>|</brown> <gray>null</gray> <brown>|</brown> <gray>undefined</gray></code>: return an element to **replace** that part of the UI, or return <gray>null</gray>/<gray>undefined</gray> (or omit the hook key) so the library keeps its default markup.
+
+Hooks run whenever the panel is re-rendered. For <code><purple>cell</purple></code>, <code><purple>ctx.date</purple></code> is always the start-of-day timestamp for **that** cell (the calendar day, the first of the month in the month grid, or Jan&nbsp;1 of the year in the year grid). To tell which grid is active, use <code><purple>ctx.state.currentView</purple></code>: <code><green>"day"</green></code> or <code><green>"time"</green></code> for day cells, <code><green>"month"</green></code> for month cells, <code><green>"year"</green></code> for year cells. You must set classes, <code><purple>data-lp-{'*'}</purple></code> attributes (e.g. <code><purple>data-lp-day</purple></code>), <code><purple>role</purple></code>, <code><purple>tabindex</purple></code>, <code><purple>aria-{'*'}</purple></code>, and <code><purple>disabled</purple></code> on the element you return. If the month/year hook returns a node without the expected <code><purple>data-lp-month</purple></code> / <code><purple>data-lp-year</purple></code> attribute, the library sets it from the default value for that slot.
+
+The same <code><purple>ctx</purple></code> fields apply to every hook:
+
+| Field                         | Type      | Role                                                                                                                 |
+|-------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------|
+| `date`                        | `number`  | Start-of-day timestamp for the context day (usually the month's anchor, i.e. <code><purple>viewDate</purple></code>) |
+| `viewDate`                    | `number`  | Current view anchor (start of that day)                                                                              |
+| `isSelected`                  | `boolean` | Day is selected (or part of a range)                                                                                 |
+| `isDisabled`                  | `boolean` | Day is not selectable                                                                                                |
+| `isToday`                     | `boolean` | Day is "today"                                                                                                       |
+| `isInRange`                   | `boolean` | Inside a completed range                                                                                             |
+| `isRangeStart` / `isRangeEnd` | `boolean` | Range endpoints                                                                                                      |
+| `isFocused`                   | `boolean` | Keyboard focus is on this day                                                                                        |
+| `isOutside`                   | `boolean` | For day cells: outside the visible month (<code><purple>showOtherMonths</purple></code>)                             |
+| `isWeekend`                   | `boolean` | Weekday index is in <code><purple>weekends</purple></code>                                                           |
+| `state`                       | `object`  | Read-only snapshot of public options/state (locale, selection, <code><purple>currentView</purple></code>, etc.)      |
+| `instance`                    | `object`  | The Lightpickr instance                                                                                              |
+
+**Hook roles**
+
+- **`container`** — If the function returns an element, it is appended under the root <code><purple>.lp</purple></code> panel and the active view + footer mount **inside** that node. If you define the hook but return <gray>null</gray>, behavior matches having no hook.
+- **`header`** — Return a node to place inside the header wrapper for **day**, **month**, and **year** views (same <code><purple>ctx</purple></code>; use <code><purple>state.currentView</purple></code> to branch). Return <gray>null</gray> for the default prev / title / next bar.
+- **`time`** — When time is enabled (<code><purple>enableTime</purple></code> or <code><purple>onlyTime</purple></code>), return the full inner content for the time panel. Omit or return <gray>null</gray> for the default time UI.
+- **`footer`** — Return a node to use as the footer body. When this hook returns an element, the <code><purple>buttons</purple></code> footer is not used for that render. Omit or return <gray>null</gray> to use the default footer from <code><purple>buttons</purple></code>.
+- **`cell`** — Return a root element for that calendar cell (typically a <code><purple>button</purple></code>), or <gray>null</gray>/<gray>undefined</gray> to use the built-in cell. Mirror the default structure from the stylesheet (<code><purple>options.classes</purple></code>) and <code><purple>options.attributes</purple></code> so clicks, keyboard, and range styling still work.
+
+```js
+new Lightpickr('#my-input', {
+  inline: true,
+  render: {
+    header(ctx) {
+      const el = document.createElement('div');
+      el.textContent = 'Pick a date';
+      return el;
+    },
+  },
+});
+```
+
+```js
+new Lightpickr('#my-input', {
+  render: {
+    cell(ctx) {
+      const v = ctx.state.currentView;
+      if (v !== 'day') return; // Only day view
+      if (new Date(ctx.date).getDay() !== 5) return; // Only day 5 of current view month
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lp-cell my-friday';
+      b.setAttribute('data-lp-day', String(ctx.date));
+      b.setAttribute('role', 'gridcell');
+      b.setAttribute('tabindex', ctx.isFocused ? '0' : '-1');
+      b.setAttribute('aria-selected', ctx.isSelected ? 'true' : 'false');
+      b.setAttribute('aria-disabled', ctx.isDisabled ? 'true' : 'false');
+      b.textContent = String(new Date(ctx.date).getDate());
+      if (ctx.isDisabled) b.disabled = true;
+      return b;
+    },
+  },
+});
+```
+
+<heading>
 ### classes
 <definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
 </heading>

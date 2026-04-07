@@ -2,9 +2,9 @@ import { buildDayMonthCells } from '../../core/calendar-grid.js';
 import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
 import lightpickrDefaults from '../../core/defaults.js';
 import { formatDate, tsToYmd } from '../../utils/time.js';
-import { createEl } from '../dom.js';
-import { buildDayCtx, buildDefaultNav } from '../context.js';
-import { applyRenderCellPatch } from '../cell.js';
+import { createEl } from '../../utils/common.js';
+import { buildCtx } from '../context.js';
+import { buildDefaultHeader } from '../header.js';
 import { renderTimePanel } from '../time-panel.js';
 
 /**
@@ -13,19 +13,15 @@ import { renderTimePanel } from '../time-panel.js';
  * @returns {void}
  */
 export function renderDayView(instance, container) {
-  const s = instance._state;
-  const c = s.classes;
-  const { header: headerHook, nav: navHook, grid: gridHook } = s.render;
+  const c = instance._state.classes;
+  const { header: headerHook } = instance._state.render;
 
-  const vd = s.viewDate;
-  const ctx = buildDayCtx(instance, vd, false);
+  const vd = instance._state.viewDate;
+  const ctx = buildCtx(instance, vd, false);
   const { y, m } = tsToYmd(vd);
 
   const header = createEl('div', c.header);
-  const headerEl =
-    headerHook?.(ctx) ||
-    navHook?.(ctx) ||
-    buildDefaultNav(instance, 'day', s.allowedViews.indexOf('month') >= 0);
+  const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, 'day', instance._state.allowedViews.indexOf('month') >= 0);
 
   if (headerEl) {
     header.appendChild(headerEl);
@@ -35,22 +31,16 @@ export function renderDayView(instance, container) {
   const viewBody = createEl('div', c.viewBody);
   const monthsWrap = createEl('div', c.grid + ' ' + c.months);
   const block = createEl('div', c.monthBlock);
-  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(s.locale).ariaDayGrid });
-
-  const gridEl = gridHook?.(ctx);
-  if (gridEl) {
-    grid.appendChild(gridEl);
-  } else {
-    _buildWeekdayRow(instance, grid);
-    _buildDayGrid(instance, grid, y, m);
-  }
+  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(instance._state.locale).ariaDayGrid });
+  _buildDayGridHeadRow(instance, grid);
+  _buildDayGridBodyRows(instance, grid, y, m);
 
   block.appendChild(grid);
   monthsWrap.appendChild(block);
   viewBody.appendChild(monthsWrap);
   container.appendChild(viewBody);
 
-  if (s.enableTime && s.currentView !== 'time') {
+  if (instance._state.enableTime && instance._state.currentView !== 'time') {
     renderTimePanel(instance, container);
   }
 }
@@ -61,24 +51,23 @@ export function renderDayView(instance, container) {
  * @param {HTMLElement} grid
  * @returns {void}
  */
-function _buildWeekdayRow(instance, grid) {
-  const s = instance._state;
-  const names = defaultWeekdayNames(s.locale, s.weekdaysField);
-  const fd = s.firstDay % 7;
-  const clickable = s.dayNameClickable === true;
+function _buildDayGridHeadRow(instance, grid) {
+  const names = defaultWeekdayNames(instance._state.locale, instance._state.weekdaysField);
+  const fd = instance._state.firstDay % 7;
+  const clickable = instance._state.dayNameClickable === true;
 
   const tag = clickable ? 'button' : 'div';
-  const baseClass = s.classes.headCell + (clickable ? ' ' + s.classes.headCell + '--clickable' : '');
+  const baseClass = instance._state.classes.headCell + (clickable ? ' ' + instance._state.classes.headCell + '--clickable' : '');
 
-  const row = createEl('div', s.classes.row + ' ' + s.classes.row + '--head', { role: 'row' });
+  const row = createEl('div', instance._state.classes.row + ' ' + instance._state.classes.row + '--head', { role: 'row' });
   for (let i = 0; i < 7; i++) {
     const idx = (fd + i) % 7;
     const attrs = clickable
-      ? { type: 'button', [s.attributes.dayName]: String(idx), role: 'columnheader' }
+      ? { type: 'button', [instance._state.attributes.dayName]: String(idx), role: 'columnheader' }
       : { role: 'columnheader' };
     const cell = createEl(
       tag,
-      baseClass + (s.weekends.indexOf(idx) >= 0 ? ' ' + s.classes.headCell + '--weekend' : ''),
+      baseClass + (instance._state.weekends.indexOf(idx) >= 0 ? ' ' + instance._state.classes.headCell + '--weekend' : ''),
       attrs
     );
     cell.textContent = names[idx];
@@ -95,99 +84,73 @@ function _buildWeekdayRow(instance, grid) {
  * @param {number} m
  * @returns {void}
  */
-function _buildDayGrid(instance, grid, y, m) {
-  const s = instance._state;
-  const c = s.classes;
-  const cells = buildDayMonthCells(y, m, s.firstDay);
+function _buildDayGridBodyRows(instance, grid, y, m) {
+  const c = instance._state.classes;
+  const cells = buildDayMonthCells(y, m, instance._state.firstDay);
 
   /** @type {HTMLElement|null} */
   let row = null;
   for (let cell = 0; cell < cells.length; cell++) {
     if (cell % 7 === 0) {
-      row = createEl('div', s.classes.row, { role: 'row' });
+      row = createEl('div', instance._state.classes.row, { role: 'row' });
       grid.appendChild(row);
     }
 
     const { ts, outside } = cells[cell];
 
-    if (outside && !s.showOtherMonths) {
+    if (outside && !instance._state.showOtherMonths) {
       row && row.appendChild(
         createEl('span', c.cell + ' ' + c.cellOutside + ' ' + c.cellDisabled)
       );
       continue;
     }
 
-    const ctx = buildDayCtx(instance, ts, outside);
-    row && row.appendChild(_buildDayCellWithRenderHook(instance, ctx));
-  }
-}
-
-/**
- * @private
- * @param {object} instance
- * @param {import('../context.js').RenderCtx} ctx
- * @returns {HTMLElement}
- */
-function _defaultDayCell(instance, ctx) {
-  const s = instance._state;
-  const format = typeof s.format === 'string' ? s.format : lightpickrDefaults.format;
-  const c = s.classes;
-  const extra = [c.cell];
-  const flagClassPairs = [
-    [ctx.isSelected, c.cellSelected],
-    [ctx.isDisabled, c.cellDisabled],
-    [ctx.isToday, c.cellToday],
-    [ctx.isInRange, c.cellRange],
-    [ctx.isRangeStart, c.cellRangeStart],
-    [ctx.isRangeEnd, c.cellRangeEnd],
-    [ctx.isOutside, c.cellOutside],
-    [ctx.isWeekend, c.cellWeekend],
-    [ctx.isFocused, c.cellFocused]
-  ];
-  for (let i = 0; i < flagClassPairs.length; i++) {
-    if (flagClassPairs[i][0]) {
-      extra.push(flagClassPairs[i][1]);
+    const ctx = buildCtx(instance, ts, outside);
+    let cellEl = null;
+    if (typeof instance._state.render.cell === 'function') {
+      const customCellRenderer = instance._state.render.cell(ctx);
+      cellEl = customCellRenderer instanceof HTMLElement ? customCellRenderer : null;
     }
-  }
+    if (!cellEl) {
+      const format = typeof instance._state.format === 'string' ? instance._state.format : lightpickrDefaults.format;
+      const extra = [c.cell];
+      const flagClassPairs = [
+        [ctx.isSelected, c.cellSelected],
+        [ctx.isDisabled, c.cellDisabled],
+        [ctx.isToday, c.cellToday],
+        [ctx.isInRange, c.cellRange],
+        [ctx.isRangeStart, c.cellRangeStart],
+        [ctx.isRangeEnd, c.cellRangeEnd],
+        [ctx.isOutside, c.cellOutside],
+        [ctx.isWeekend, c.cellWeekend],
+        [ctx.isFocused, c.cellFocused]
+      ];
+      for (let i = 0; i < flagClassPairs.length; i++) {
+        if (flagClassPairs[i][0]) {
+          extra.push(flagClassPairs[i][1]);
+        }
+      }
 
-  const { d } = tsToYmd(ctx.date);
-  const label = formatDate(format, ctx.date, null, s);
-  const el = createEl('button', extra.join(' '), {
-    type: 'button',
-    [s.attributes.day]: String(ctx.date),
-    role: 'gridcell',
-    tabindex: ctx.isFocused ? '0' : '-1',
-    'aria-label': label,
-    'aria-selected': ctx.isSelected ? 'true' : 'false',
-    'aria-disabled': ctx.isDisabled || (ctx.isOutside && !s.selectOtherMonths) ? 'true' : 'false'
-  });
-  el.textContent = String(d);
+      const { d } = tsToYmd(ctx.date);
+      const label = formatDate(format, ctx.date, null, instance._state);
+      cellEl = createEl('button', extra.join(' '), {
+        type: 'button',
+        [instance._state.attributes.day]: String(ctx.date),
+        role: 'gridcell',
+        tabindex: ctx.isFocused ? '0' : '-1',
+        'aria-label': label,
+        'aria-selected': ctx.isSelected ? 'true' : 'false',
+        'aria-disabled': ctx.isDisabled || (ctx.isOutside && !instance._state.selectOtherMonths) ? 'true' : 'false'
+      });
+      cellEl.textContent = String(d);
 
-  if (ctx.isDisabled) {
-    el.disabled = true;
+      if (ctx.isDisabled) {
+        cellEl.disabled = true;
+      }
+      if (ctx.isOutside && !instance._state.selectOtherMonths) {
+        cellEl.disabled = true;
+      }
+    }
+    cellEl && row && row.appendChild(cellEl);
   }
-  if (ctx.isOutside && !s.selectOtherMonths) {
-    el.disabled = true;
-  }
-  return el;
-}
-
-/**
- * @private
- * @param {object} instance
- * @param {import('../context.js').RenderCtx} ctx
- * @returns {HTMLElement}
- */
-function _buildDayCellWithRenderHook(instance, ctx) {
-  const s = instance._state;
-  const fallback = _defaultDayCell(instance, ctx);
-  const out = s.onRenderCell({
-    date: new Date(ctx.date),
-    cellType: 'day',
-    datepicker: instance
-  });
-  if (!out || typeof out !== 'object') {
-    return fallback;
-  }
-  return applyRenderCellPatch(fallback, out);
 }

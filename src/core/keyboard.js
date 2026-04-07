@@ -1,4 +1,4 @@
-import { getViewDatesFromState } from '../render/context.js';
+import { getViewDates } from '../utils/view.js';
 import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
 import { isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
@@ -31,13 +31,13 @@ export function isDayNavigationKey(key) {
  */
 export function reseedKeyboardFocusForView(state) {
   if (state.currentView === 'month') {
-    return _stateWithDefaultMonthYearGridFocus(state, getViewDatesFromState(state, 'month'), 'month');
+    return _stateWithDefaultMonthYearGridFocus(state, getViewDates('month', state), 'month');
   }
   if (state.currentView === 'year') {
-    return _stateWithDefaultMonthYearGridFocus(state, getViewDatesFromState(state, 'year'), 'year');
+    return _stateWithDefaultMonthYearGridFocus(state, getViewDates('year', state), 'year');
   }
   if (state.currentView === 'day' || state.currentView === 'time') {
-    return _stateWithDefaultDayFocus(state, getViewDatesFromState(state, 'day'));
+    return _stateWithDefaultDayFocus(state, getViewDates('day', state));
   }
   return state;
 }
@@ -76,7 +76,7 @@ export function applyEventKey(state, evLike) {
       s,
       key,
       shiftKey,
-      getViewDatesFromState(s, s.currentView),
+      getViewDates(s.currentView, s),
       s.currentView
     );
     return { type: 'grid', seed, next };
@@ -96,7 +96,7 @@ export function applyEventKey(state, evLike) {
       s = seeded;
     }
   }
-  const next = _nextStateAfterDayViewKey(s, key, shiftKey, getViewDatesFromState(s, 'day'));
+  const next = _nextStateAfterDayViewKey(s, key, shiftKey, getViewDates('day', s));
   return { type: 'grid', seed, next };
 }
 
@@ -263,7 +263,7 @@ function _nextStateAfterMonthYearGridKey(state, key, shiftKey, gridDates, curren
     }
     return _stateWithDefaultMonthYearGridFocus(
       nextNav,
-      /** @type {number[]} */ (getViewDatesFromState(nextNav, 'year')),
+      /** @type {number[]} */ (getViewDates('year', nextNav)),
       'year'
     );
   }
