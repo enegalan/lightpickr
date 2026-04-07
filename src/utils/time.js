@@ -1,4 +1,4 @@
-import { trimFifo, pad2 } from './common.js';
+import { clampInt, pad2, toInt, trimFifo } from './common.js';
 import { defaultMonthNames, defaultWeekdayNames } from './locale.js';
 
 /**
@@ -151,8 +151,8 @@ export function formatDate(format, ts, timePart, state) {
     const dayShort = defaultWeekdayNames(state.locale, 'weekdaysShort');
     const dayLong = defaultWeekdayNames(state.locale, 'weekdaysLong');
     const yy = String(y).slice(-2);
-    const n = Math.max(1, Number.isFinite(Number(state?.yearViewCount)) ? Math.floor(Number(state.yearViewCount)) : 12);
-    const blockStart = n === 12 ? Math.floor(y / 12) * 12 : y - (Number.isFinite(Number(state?.yearViewRadius)) ? Math.floor(Number(state.yearViewRadius)) : 5);
+    const n = clampInt(state?.yearViewCount, 1, Number.POSITIVE_INFINITY, 12);
+    const blockStart = n === 12 ? Math.floor(y / 12) * 12 : y - toInt(state?.yearViewRadius, 5);
     const blockEnd = blockStart + n - 1;
 
     let out = '';

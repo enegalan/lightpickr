@@ -1,3 +1,4 @@
+import { clampInt } from '../utils/common.js';
 import { daysInMonth, firstWeekdayOfMonth, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /**
@@ -9,7 +10,7 @@ import { daysInMonth, firstWeekdayOfMonth, tsToYmd, ymdToTsStartOfDay } from '..
 export function buildMonthViewTimestamps(state) {
   const { y } = tsToYmd(state.viewDate);
   const out = [];
-  const n = Math.max(1, Math.floor(state.monthViewCount));
+  const n = clampInt(state.monthViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
   for (let mm = 0; mm < n; mm++) {
     out.push(ymdToTsStartOfDay(y, mm, 1));
   }
@@ -21,7 +22,7 @@ export function buildMonthViewTimestamps(state) {
  * @returns {number[]}
  */
 export function buildYearViewYears(state) {
-  const n = Math.max(1, Math.floor(state.yearViewCount));
+  const n = clampInt(state.yearViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
   const y = tsToYmd(state.viewDate).y;
   const start = n === 12 ? Math.floor(y / 12) * 12 : y - state.yearViewRadius;
   const out = [];

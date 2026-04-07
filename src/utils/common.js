@@ -1,4 +1,38 @@
 /**
+ * @returns {void}
+ */
+export function noop() {
+}
+
+/**
+ * @returns {boolean}
+ */
+export function truthy() {
+    return true;
+}
+
+/**
+ * @param {unknown} value
+ * @param {number} defaultVal
+ * @returns {number}
+ */
+export function toInt(value, defaultVal = 0) {
+    return Number.isFinite(Number(value)) ? Math.floor(Number(value)) : defaultVal;
+}
+
+/**
+ * @param {unknown} value
+ * @param {number} min
+ * @param {number} max
+ * @param {number} defaultVal
+ * @returns {number}
+ */
+export function clampInt(value, min, max, defaultVal = 0) {
+    const n = toInt(value, defaultVal);
+    return Math.max(min, Math.min(max, n));
+}
+
+/**
  * @template T
  * @param {T[]} items
  * @param {number} max

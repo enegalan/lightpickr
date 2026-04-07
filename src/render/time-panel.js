@@ -1,5 +1,5 @@
 import { getTranslations } from '../utils/locale.js';
-import { pad2, createEl } from '../utils/common.js';
+import { clampInt, createEl, pad2 } from '../utils/common.js';
 import { buildCtx } from './context.js';
 
 /**
@@ -131,8 +131,8 @@ export function syncTimePanelDom(instance) {
  * @returns {{ hourStr: string, minuteStr: string, ampm: string, fullLabel: string }}
  */
 function _formatClock12Parts(hours24, minutes, amStr, pmStr) {
-  const h = Math.max(0, Math.min(23, Math.floor(hours24)));
-  const m = Math.max(0, Math.min(59, Math.floor(minutes)));
+  const h = clampInt(hours24, 0, 23, 0);
+  const m = clampInt(minutes, 0, 59, 0);
   const h12 = h % 12 === 0 ? 12 : h % 12;
   const ampm = h < 12 ? amStr : pmStr;
   const hourStr = pad2(h12);

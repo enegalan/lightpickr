@@ -1,7 +1,7 @@
 import { normalizeAllowedViews, normalizeView } from './normalize.js';
-import lightpickrDefaults from '../core/defaults.js';
 import { buildDayMonthCells, buildMonthViewTimestamps, buildYearViewYears } from '../core/calendar-grid.js';
 import { ymdToTsStartOfDay } from './time.js';
+import lightpickrDefaults from '../core/defaults.js';
 
 /**
  * @param {unknown} views

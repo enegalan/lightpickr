@@ -72,7 +72,6 @@ export function buildCtx(instance, dayTs, outside = false) {
  * @returns {object}
  */
 function _dayFlags(s, d) {
-  const today = startOfDayTs(Date.now());
   let isSelected = false;
   let isInRange = false;
   let isRangeStart = false;
@@ -105,7 +104,7 @@ function _dayFlags(s, d) {
   return {
     isSelected,
     isDisabled: isDateDisabled(s, d),
-    isToday: isSameDay(d, today),
+    isToday: isSameDay(d, startOfDayTs(Date.now())),
     isInRange,
     isRangeStart,
     isRangeEnd

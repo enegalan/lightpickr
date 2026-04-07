@@ -7,7 +7,7 @@ import { renderContainer } from './render/container.js';
 import { getViewDates } from './utils/view.js';
 import { applyStringPosition } from './core/positioning.js';
 import { reseedKeyboardFocusForView } from './core/keyboard.js';
-import { isTextInputLike, createEl } from './utils/common.js';
+import { createEl, isTextInputLike, noop } from './utils/common.js';
 import lightpickrDefaults from './core/defaults.js';
 
 /**
@@ -507,7 +507,7 @@ Lightpickr.prototype._positionPopover = function (isViewChange) {
       $anchor: anchorEl,
       $pointer: this.$pointer,
       isViewChange: !!isViewChange,
-      done: function () {}
+      done: noop
     });
     this._positionHideCleanup = typeof ret === 'function' ? ret : null;
     return;

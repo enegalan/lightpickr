@@ -1,3 +1,4 @@
+import { clampInt } from '../utils/common.js';
 import { getViewDates } from '../utils/view.js';
 import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
 import { findDayIndex, isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
@@ -110,10 +111,10 @@ function _moveGridIndex(idx, key, cols, len) {
     idx = 0;
   }
   if (key === 'Home') {
-    return Math.min(len - 1, Math.floor(idx / cols) * cols);
+    return clampInt(Math.floor(idx / cols) * cols, 0, len - 1, 0);
   }
   if (key === 'End') {
-    return Math.min(len - 1, Math.floor(idx / cols) * cols + (cols - 1));
+    return clampInt(Math.floor(idx / cols) * cols + (cols - 1), 0, len - 1, 0);
   }
   if (key === 'ArrowLeft') {
     return idx - 1;
@@ -230,7 +231,7 @@ function _nextStateAfterDayViewKey(state, key, shiftKey, dayGridDates) {
     return state;
   }
   let idx = state.focusDate != null ? findDayIndex(state.focusDate, dayGridDates) : 0;
-  idx = Math.max(0, Math.min(dayGridDates.length - 1, _moveGridIndex(idx, key, GRID_COLS_DAY, dayGridDates.length)));
+  idx = clampInt(_moveGridIndex(idx, key, GRID_COLS_DAY, dayGridDates.length), 0, dayGridDates.length - 1, 0);
   const picked = dayGridDates[idx];
   let next = setFocusDateState(state, picked);
   const { y, m } = tsToYmd(next.viewDate);
@@ -282,6 +283,6 @@ function _nextStateAfterMonthYearGridKey(state, key, shiftKey, gridDates, curren
   }
   let idx = state.focusDate != null ? gridDates.findIndex((x) => isSameDay(x, state.focusDate)) : 0;
   const gridCols = currentView === 'month' ? state.monthViewCols : state.yearViewCols;
-  idx = Math.max(0, Math.min(gridDates.length - 1, _moveGridIndex(idx, key, gridCols, gridDates.length)));
+  idx = clampInt(_moveGridIndex(idx, key, gridCols, gridDates.length), 0, gridDates.length - 1, 0);
   return setFocusDateState(state, gridDates[idx]);
 }

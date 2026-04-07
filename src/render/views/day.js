@@ -1,11 +1,11 @@
 import { buildDayMonthCells } from '../../core/calendar-grid.js';
 import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
-import lightpickrDefaults from '../../core/defaults.js';
 import { formatDate, tsToYmd } from '../../utils/time.js';
 import { createEl } from '../../utils/common.js';
 import { buildCtx } from '../context.js';
 import { buildDefaultHeader } from '../header.js';
 import { renderTimePanel } from '../time-panel.js';
+import lightpickrDefaults from '../../core/defaults.js';
 
 /**
  * @param {object} instance

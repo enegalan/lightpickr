@@ -1,3 +1,4 @@
+import { clampInt } from '../utils/common.js';
 import { clampView } from '../utils/view.js';
 import { addMonths, addYears, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 import lightpickrDefaults from './defaults.js';
@@ -142,14 +143,8 @@ export function navigateDown(state) {
  */
 export function setCurrentViewState(state, view, params) {
   let next = Object.assign({}, state);
-  if (state.onlyTime) {
-    next.currentView = 'time';
-  } else if (view === 'time') {
-    next.currentView = state.enableTime ? 'time' : clampView(state.allowedViews, 'day');
-  } else {
-    next.currentView = clampView(state.allowedViews, view);
-  }
-  if (params && params.date != null) {
+  next.currentView = state.onlyTime || (state.enableTime || view === 'time') ? 'time' : clampView(state.allowedViews, 'day');
+  if (params?.date != null) {
     next = setViewDateState(next, params.date);
   }
   return next;
@@ -239,7 +234,7 @@ function _navTargetPeriodYmd(state, dir) {
     }
     case 'year': {
       const { y } = tsToYmd(state.viewDate);
-      const n = Math.max(1, Math.floor(state.yearViewCount));
+      const n = clampInt(state.yearViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
       const yTarget = y + dir * n;
       const startYearOfBlock = n === 12 ? Math.floor(yTarget / 12) * 12 : yTarget - state.yearViewRadius;
       return {

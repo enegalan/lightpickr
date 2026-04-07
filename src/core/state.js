@@ -1,6 +1,7 @@
 import { clampView } from '../utils/view.js';
 import { parseSelectedDates, startOfDayTs, toTimestamp } from '../utils/time.js';
 import { normalizeShowEvents, normalizeWeekendIndexes, normalizeAllowedViews, normalizeFirstDay } from '../utils/normalize.js';
+import { clampInt, noop, toInt, truthy } from '../utils/common.js';
 import lightpickrDefaults from './defaults.js';
 
 /**
@@ -240,6 +241,7 @@ export function createStateFromOptions(incomingRaw) {
   raw.attributes = { ...lightpickrDefaults.attributes, ...(incoming.attributes) };
   raw.properties = { ...lightpickrDefaults.properties, ...(incoming.properties) };
   const onlyTime = Boolean(raw.onlyTime);
+  const enableTime = onlyTime || Boolean(raw.enableTime);
   const range = onlyTime ? false : Boolean(raw.range);
   const multiple = onlyTime ? false : raw.multiple;
   let multipleLimit = 1;
@@ -251,9 +253,9 @@ export function createStateFromOptions(incomingRaw) {
     multipleLimit = 1;
     multipleEnabled = false;
   } else {
-    const n = Number(multiple);
-    if (Number.isFinite(n) && n > 1) {
-      multipleLimit = Math.floor(n);
+    const n = toInt(multiple, 0);
+    if (n > 1) {
+      multipleLimit = n;
       multipleEnabled = true;
     }
   }
@@ -278,22 +280,21 @@ export function createStateFromOptions(incomingRaw) {
 
   const allowedViews = normalizeAllowedViews(raw.allowedViews);
 
-  const minHours = Number.isFinite(Number(raw.minHours)) ? Math.max(0, Math.min(23, Math.floor(Number(raw.minHours)))) : lightpickrDefaults.minHours;
-  const rawMaxHours = Number.isFinite(Number(raw.maxHours)) ? Math.floor(Number(raw.maxHours)) : lightpickrDefaults.maxHours;
-  const maxHours = Math.max(minHours, Math.min(23, rawMaxHours >= 24 ? 23 : rawMaxHours));
-  const minMinutes = Number.isFinite(Number(raw.minMinutes)) ? Math.max(0, Math.min(59, Math.floor(Number(raw.minMinutes)))) : lightpickrDefaults.minMinutes;
-  const rawMaxMinutes = Number.isFinite(Number(raw.maxMinutes)) ? Math.max(minMinutes, Math.min(59, Math.floor(Number(raw.maxMinutes)))) : lightpickrDefaults.maxMinutes;
-  const maxMinutes = Math.max(minMinutes, rawMaxMinutes >= 59 ? 59 : rawMaxMinutes);
-  const hoursStep = Number.isFinite(Number(raw.hoursStep)) ? Math.max(1, Math.floor(Number(raw.hoursStep))) : lightpickrDefaults.hoursStep;
-  const minutesStep = Number.isFinite(Number(raw.minutesStep)) ? Math.max(1, Math.floor(Number(raw.minutesStep))) : lightpickrDefaults.minutesStep;
-  const yearViewCount = Number.isFinite(Number(raw.yearViewCount)) ? Math.floor(Number(raw.yearViewCount)) : lightpickrDefaults.yearViewCount;
-  const yearViewRadius = Number.isFinite(Number(raw.yearViewRadius)) ? Math.floor(Number(raw.yearViewRadius)) : lightpickrDefaults.yearViewRadius;
-  const monthViewCount = Number.isFinite(Number(raw.monthViewCount)) ? Math.floor(Number(raw.monthViewCount)) : lightpickrDefaults.monthViewCount;
-  const monthViewRadius = Number.isFinite(Number(raw.monthViewRadius)) ? Math.floor(Number(raw.monthViewRadius)) : lightpickrDefaults.monthViewRadius;
-  let monthViewCols = Number.isFinite(Number(raw.monthViewCols)) ? Math.min(monthViewCount, Math.floor(Number(raw.monthViewCols))) : lightpickrDefaults.monthViewCols;
-  let monthViewRows = Number.isFinite(Number(raw.monthViewRows)) ? Math.min(monthViewCount, Math.floor(Number(raw.monthViewRows))) : lightpickrDefaults.monthViewRows;
-  let yearViewCols = Number.isFinite(Number(raw.yearViewCols)) ? Math.min(yearViewCount, Math.floor(Number(raw.yearViewCols))) : lightpickrDefaults.yearViewCols;
-  let yearViewRows = Number.isFinite(Number(raw.yearViewRows)) ? Math.min(yearViewCount, Math.floor(Number(raw.yearViewRows))) : lightpickrDefaults.yearViewRows;
+  const minHours = clampInt(raw.minHours, 0, 23, lightpickrDefaults.minHours);
+  const rawMaxHours = toInt(raw.maxHours, lightpickrDefaults.maxHours);
+  const maxHours = clampInt(rawMaxHours >= 24 ? 23 : rawMaxHours, minHours, 23, minHours);
+  const minMinutes = clampInt(raw.minMinutes, 0, 59, lightpickrDefaults.minMinutes);
+  const maxMinutes = clampInt(raw.maxMinutes, minMinutes, 59, lightpickrDefaults.maxMinutes);
+  const hoursStep = clampInt(raw.hoursStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.hoursStep);
+  const minutesStep = clampInt(raw.minutesStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.minutesStep);
+  const yearViewCount = clampInt(raw.yearViewCount, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.yearViewCount);
+  const yearViewRadius = clampInt(raw.yearViewRadius, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.yearViewRadius);
+  const monthViewCount = clampInt(raw.monthViewCount, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.monthViewCount);
+  const monthViewRadius = clampInt(raw.monthViewRadius, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.monthViewRadius);
+  let monthViewCols = clampInt(raw.monthViewCols, Number.NEGATIVE_INFINITY, monthViewCount, lightpickrDefaults.monthViewCols);
+  let monthViewRows = clampInt(raw.monthViewRows, Number.NEGATIVE_INFINITY, monthViewCount, lightpickrDefaults.monthViewRows);
+  let yearViewCols = clampInt(raw.yearViewCols, Number.NEGATIVE_INFINITY, yearViewCount, lightpickrDefaults.yearViewCols);
+  let yearViewRows = clampInt(raw.yearViewRows, Number.NEGATIVE_INFINITY, yearViewCount, lightpickrDefaults.yearViewRows);
 
   if (monthViewCols > 0 && monthViewRows > 0) {
     monthViewRows = Math.max(monthViewRows, Math.ceil(monthViewCount / monthViewCols));
@@ -317,7 +318,7 @@ export function createStateFromOptions(incomingRaw) {
     multipleEnabled,
     multipleLimit: range ? multipleLimit : multipleEnabled ? multipleLimit : 1,
     onlyTime,
-    enableTime: onlyTime || Boolean(raw.enableTime),
+    enableTime,
     showEvents: normalizeShowEvents(raw.showEvent),
     minDate: minTs != null ? startOfDayTs(minTs) : null,
     maxDate: maxTs != null ? startOfDayTs(maxTs) : null,
@@ -347,21 +348,21 @@ export function createStateFromOptions(incomingRaw) {
     hoursStep,
     minutesStep,
     dayNameClickable: typeof raw.onClickDayName === 'function',
-    onSelect: typeof raw.onSelect === 'function' ? raw.onSelect : function () {},
-    onBeforeSelect: typeof raw.onBeforeSelect === 'function' ? raw.onBeforeSelect : function () { return true; },
-    onChangeViewDate: typeof raw.onChangeViewDate === 'function' ? raw.onChangeViewDate : function () {},
-    onChangeView: typeof raw.onChangeView === 'function' ? raw.onChangeView : function () {},
-    onShow: typeof raw.onShow === 'function' ? raw.onShow : function () {},
-    onHide: typeof raw.onHide === 'function' ? raw.onHide : function () {},
-    onClickDayName: typeof raw.onClickDayName === 'function' ? raw.onClickDayName : function () {},
-    onFocus: typeof raw.onFocus === 'function' ? raw.onFocus : function () {},
-    onTimeChange: typeof raw.onTimeChange === 'function' ? raw.onTimeChange : function () {},
-    onDestroy: typeof raw.onDestroy === 'function' ? raw.onDestroy : function () {},
+    onSelect: typeof raw.onSelect === 'function' ? raw.onSelect : noop,
+    onBeforeSelect: typeof raw.onBeforeSelect === 'function' ? raw.onBeforeSelect : truthy,
+    onChangeViewDate: typeof raw.onChangeViewDate === 'function' ? raw.onChangeViewDate : noop,
+    onChangeView: typeof raw.onChangeView === 'function' ? raw.onChangeView : noop,
+    onShow: typeof raw.onShow === 'function' ? raw.onShow : noop,
+    onHide: typeof raw.onHide === 'function' ? raw.onHide : noop,
+    onClickDayName: typeof raw.onClickDayName === 'function' ? raw.onClickDayName : noop,
+    onFocus: typeof raw.onFocus === 'function' ? raw.onFocus : noop,
+    onTimeChange: typeof raw.onTimeChange === 'function' ? raw.onTimeChange : noop,
+    onDestroy: typeof raw.onDestroy === 'function' ? raw.onDestroy : noop,
     render,
     classes: raw.classes,
     attributes: raw.attributes,
     properties: raw.properties,
-    currentView: onlyTime ? 'time' : clampView(allowedViews, raw.view),
+    currentView: onlyTime || enableTime ? 'time' : clampView(allowedViews, raw.view),
     viewDate,
     focusDate: null,
     visible: false,
