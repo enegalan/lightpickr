@@ -1,7 +1,5 @@
-import { trimFifo, pad2 } from './common.js';
-import lightpickrDefaults from '../core/defaults.js';
+import { clampInt, pad2, toInt, trimFifo } from './common.js';
 import { defaultMonthNames, defaultWeekdayNames } from './locale.js';
-import { YEAR_GRID_COUNT } from '../core/calendar-grid.js';
 
 /**
  * @param {number} ts
@@ -14,7 +12,7 @@ export function tsToYmd(ts) {
 
 /**
  * @param {number} y
- * @param {number} m 0-11
+ * @param {number} m
  * @param {number} d
  * @returns {number}
  */
@@ -148,16 +146,14 @@ export function formatDate(format, ts, timePart, state) {
     const dow = dateObj.getDay();
     const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : dateObj.getHours();
     const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
-    const opts = state && typeof state === 'object' ? state : lightpickrDefaults;
-    opts.locale = opts.locale != null ? opts.locale : lightpickrDefaults.locale;
-    opts.monthsField = opts.monthsField && typeof opts.monthsField === 'string' ? opts.monthsField : lightpickrDefaults.monthsField;
-    const monthShort = defaultMonthNames(opts, 'monthsShort');
-    const monthLong = defaultMonthNames(opts, 'monthsLong');
-    const dayShort = defaultWeekdayNames(opts);
-    const dayLong = defaultWeekdayNames(opts, true);
+    const monthShort = defaultMonthNames(state.locale, 'monthsShort');
+    const monthLong = defaultMonthNames(state.locale, 'monthsLong');
+    const dayShort = defaultWeekdayNames(state.locale, 'weekdaysShort');
+    const dayLong = defaultWeekdayNames(state.locale, 'weekdaysLong');
     const yy = String(y).slice(-2);
-    const blockStart = y - 5;
-    const blockEnd = blockStart + YEAR_GRID_COUNT - 1;
+    const n = clampInt(state?.yearViewCount, 1, Number.POSITIVE_INFINITY, 12);
+    const blockStart = n === 12 ? Math.floor(y / 12) * 12 : y - toInt(state?.yearViewRadius, 5);
+    const blockEnd = blockStart + n - 1;
 
     let out = '';
     let i = 0;
@@ -287,6 +283,15 @@ export function parseSelectedDates(state, selectedDates) {
 }
 
 /**
+ * @param {number} dayTs
+ * @param {number[]} dates
+ * @returns {number}
+ */
+export function findDayIndex(dayTs, dates) {
+    return (Array.isArray(dates) ? dates : []).findIndex((x) => isSameDay(x, dayTs));
+}
+
+/**
  * @private
  * @param {number} value
  * @param {number} min
@@ -352,7 +357,7 @@ function _timestampFromDateString(str) {
 /**
  * @private
  * @param {number} y
- * @param {number} mo 1-12
+ * @param {number} mo
  * @param {number} d
  * @param {number} [h]
  * @param {number} [mi]

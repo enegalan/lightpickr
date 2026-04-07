@@ -40,21 +40,33 @@ Capture <code><orange>picker</orange></code> in a closure if handlers need <code
 
 2. **Return object** (all keys optional):
 
-### onInit <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onInit
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Runs **immediately** when <code><purple>use</purple><gray>()</gray></code> returns. Good for one-time DOM, logging, or extra listeners.
 
-### onDestroy <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onDestroy
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Runs during <code><purple>destroy</purple><gray>()</gray></code>, **after** <code><purple>options.onDestroy</purple></code>. Release listeners, timers.
 
-### onRender <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onRender
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Runs after <code><purple>renderContainer</purple></code> finishes. **No arguments**—query <code><purple>picker.$datepicker</purple></code> if needed.
 
-### onSelect <definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+<heading>
+### onSelect
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Runs after the option <code><purple>onSelect</purple></code> path fires. **No payload**; read <code><purple>picker.selectedDates</purple></code> / <code><purple>getSelectedPayload</purple><gray>()</gray></code> if you need data.
+Runs after the option <code><purple>onSelect</purple></code> path fires. **No payload**; read <code><purple>picker.selectedDates</purple></code> if you need data.
 
 ### Several plugins: order of execution
 
@@ -76,7 +88,7 @@ Plugins may:
 function logPlugin(picker) {
   return {
     onSelect() {
-      console.log('timestamps', picker.getSelectedPayload());
+      console.log('timestamps', picker.selectedDates);
     },
   };
 }

@@ -68,10 +68,30 @@ orange * {
 purple,
 purple * {
   display: inline;
-  color: #9e25be;
+  color: #c423ef;
 }
 
-#nd-toc definition {
+heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+heading h1,
+heading h2,
+heading h3,
+heading h4,
+heading h5,
+heading h6 {
+  margin: 0;
+}
+
+heading h1 svg,
+heading h2 svg,
+heading h3 svg,
+heading h4 svg,
+heading h5 svg,
+heading h6 svg {
   display: none;
 }
 

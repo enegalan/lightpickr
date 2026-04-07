@@ -5,7 +5,7 @@ export default {
     weekdaysLong: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
     ariaDayGrid: 'Fechas del calendario',
     ariaMonthGrid: 'Meses',
-    ariaYearGrid: 'Años',
+    ariaYearView: 'Años',
     ariaTimeHours: 'Horas',
     ariaTimeMinutes: 'Minutos',
     btnToday: 'Hoy',

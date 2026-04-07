@@ -1,4 +1,4 @@
-import { cloneSelectedDates, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { cloneSelectedDates, findDayIndex, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp } from '../utils/time.js';
 import { trimFifo } from '../utils/common.js';
 
 /**
@@ -68,7 +68,7 @@ export function applyDaySelection(state, dayTs) {
     if (!Array.isArray(dates) || (dates.length && Array.isArray(dates[0]))) {
       dates = [];
     }
-    const idx = dates.findIndex((x) => isSameDay(x, d));
+    const idx = findDayIndex(d, dates);
     if (idx >= 0) {
       dates = dates.slice();
       dates.splice(idx, 1);

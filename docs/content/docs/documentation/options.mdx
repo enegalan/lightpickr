@@ -11,17 +11,26 @@ description: Constructor options for new Lightpickr(target, options)
 
 ## Mounting & layout
 
-### inline <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### inline
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 Makes the calendar to be permanently visible
 
 <InlineDemo />
 
-### isMobile <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### isMobile
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 If <red>true</red>, then the calendar will appear as a modal window with slightly enlarged dimensions.
 
-### position <definition><param-type>string <brown>|</brown> <blue>function</blue></param-type> <brown>=</brown> <green>"bottom left"</green></definition>
+<heading>
+### position
+<definition><param-type><green>string</green> <brown>|</brown> <blue>function</blue></param-type> <brown>=</brown> <green>"bottom left"</green></definition>
+</heading>
 
 If it is a string then the first value is position along the main axis, the second is position along the secondary one. For example, <gray>{'{'}</gray><red>position</red><brown>:</brown> <green>'top right'</green><gray>{'\}'}</gray> — set the calendar position to the top right of the text field.
 
@@ -67,7 +76,10 @@ new Lightpickr('#my-input', {
 });
 ```
 
-### anchor <definition><param-type>HTMLElement <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+<heading>
+### anchor
+<definition><param-type>HTMLElement <brown>|</brown> <green>string</green> <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+</heading>
 
 Optional node the popover is **aligned to**. Pass an **`HTMLElement`** or **selector** to use a wrapper, icon, etc. If that node is not the constructor **<purple>$target</purple>**, **<purple>showEvent</purple>** is wired to it as well. Unmatched selectors fall back to the default reference.
 
@@ -77,19 +89,31 @@ Optional node the popover is **aligned to**. Pass an **`HTMLElement`** or **sele
 
 <RangeDemo />
 
-### multiple <definition><param-type>boolean <brown>|</brown> number</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### multiple
+<definition><param-type>boolean <brown>|</brown> number</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 If <red>true</red>, then you can select an unlimited number of dates. If you pass a number, the number of selected dates will be limited by it's value.
 
-### dynamicRange <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+<heading>
+### dynamicRange
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+</heading>
 
 If <red>true</red>, then after selecting dates in range mode, they can be changed by dragging them.
 
-### autoClose <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+<heading>
+### autoClose
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+</heading>
 
 When <red>true</red>, the popover hides after a complete selection: single date, or the second endpoint of a **range**. In **multiple** mode it does not close after each day. Set to <red>false</red> to keep the calendar open after selection.
 
-### multipleSeparator <definition><param-type>string</param-type> <brown>=</brown> <green>", "</green></definition>
+<heading>
+### multipleSeparator
+<definition><param-type><green>string</green></param-type> <brown>=</brown> <green>", "</green></definition>
+</heading>
 
 Separator between dates in text field. It is used in the multiple date selection mode and in the range mode.
 
@@ -97,26 +121,41 @@ Separator between dates in text field. It is used in the multiple date selection
 
 ## Dates & bounds
 
-### startDate <definition><param-type>number <brown>|</brown> Date <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <blue>Date</blue></definition>
+<heading>
+### startDate
+<definition><param-type>number <brown>|</brown> <blue>Date</blue> <brown>|</brown> <green>string</green> <brown>|</brown> null</param-type> <brown>=</brown> <blue>Date</blue></definition>
+</heading>
 
 Sets the start view date of calendar.
 
-### minDate <definition><param-type>number <brown>|</brown> Date <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+<heading>
+### minDate
+<definition><param-type>number <brown>|</brown> <blue>Date</blue> <brown>|</brown> <green>string</green> <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+</heading>
 
 The minimum possible date to select.
 
-### maxDate <definition><param-type>number <brown>|</brown> Date <brown>|</brown> string <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+<heading>
+### maxDate
+<definition><param-type>number <brown>|</brown> <blue>Date</blue> <brown>|</brown> <green>string</green> <brown>|</brown> null</param-type> <brown>=</brown> <gray>null</gray></definition>
+</heading>
 
 The maximum possible date to select.
 
-### disabledDates <definition><param-type><gray>(</gray>number <brown>|</brown> Date <brown>|</brown> string<gray>)</gray><gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <gray>[</gray><gray>]</gray></definition>
+<heading>
+### disabledDates
+<definition><param-type><gray>(</gray>number <brown>|</brown> <blue>Date</blue> <brown>|</brown> <green>string</green><gray>)</gray><gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <gray>[</gray><gray>]</gray></definition>
+</heading>
 
 List of disabled days.
 
-### selectedDates <definition><param-type><gray>(</gray>Date <brown>|</brown> string <brown>|</brown> number<gray>)</gray><gray>[</gray><gray>]</gray> <brown>|</brown> false</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### selectedDates
+<definition><param-type><gray>(</gray><blue>Date</blue> <brown>|</brown> <green>string</green> <brown>|</brown> number<gray>)</gray><gray>[</gray><gray>]</gray> <brown>|</brown> false</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 - Single / multiple: flat list of days.
-- Range: array of `[a,b]` pairs.
+- Range: array of <code><gray>[</gray>a<gray>,</gray>b<gray>]</gray></code> pairs.
 
 <SelectedDatesMultiDemo />
 
@@ -133,69 +172,93 @@ new Lightpickr('#my-input', {
 });
 ```
 
-### showOtherMonths <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+<heading>
+### showOtherMonths
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+</heading>
 
-If <red>true</red>, dates from other months will be displayed in days view.
+If <code><red>true</red></code>, dates from other months will be displayed in days view.
 
-### selectOtherMonths <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+<heading>
+### selectOtherMonths
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+</heading>
 
-If <red>true</red>, it will be possible to select dates from other months.
+If <code><red>true</red></code>, it will be possible to select dates from other months.
 
-### moveToOtherMonthsOnSelect <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+<heading>
+### moveToOtherMonthsOnSelect
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+</heading>
 
-If <red>true</red>, then selecting dates from another month will be causing transition to this month.
+If <code><red>true</red></code>, then selecting dates from another month will be causing transition to this month.
 
-### disableNavWhenOutOfRange <definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+<heading>
+### disableNavWhenOutOfRange
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>true</red></definition>
+</heading>
 
 Whether it is necessary to prohibit switching to the next or previous month/year/decade if they go beyond the minimum or maximum dates.
 
-If <red>true</red>, then calendar navigation buttons will be deactivated if such case occurs.
+If <code><red>true</red></code>, then calendar navigation buttons will be deactivated if such case occurs.
 
 ---
 
 ## Locale & formatting
 
-### locale <definition><param-type>object <brown>|</brown> string</param-type> <brown>=</brown> <green>"default"</green></definition>
+<heading>
+### locale
+<definition><param-type>object <brown>|</brown> <green>string</green></param-type> <brown>=</brown> <green>"default"</green></definition>
+</heading>
 
-Language of the calendar. Available locales are in `lightpickr/locale/`.
+Language of the calendar. Available locales are in <code>lightpickr<brown>/</brown>locale<brown>/</brown></code>.
 
-Supports **full object** from `lightpickr/locale/*` or a **partial** object. See [Localization](/docs/documentation/localization).
+Supports **full object** from <code>lightpickr<brown>/</brown>locale<brown>/</brown>*</code> or a **partial** object. See [Localization](/docs/documentation/localization).
 
-### firstDay <definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+<heading>
+### firstDay
+<definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+</heading>
 
 The index of the day from which the week begins. Possible values are from 0 (Sunday) to 6 (Saturday).
 
-### weekends <definition><param-type>number<gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <gray>[</gray><red>6</red><gray>, </gray><red>0</red><gray>]</gray></definition>
+<heading>
+### weekends
+<definition><param-type>number<gray>[]</gray></param-type> <brown>=</brown> <gray>[</gray><red>6</red><gray>, </gray><red>0</red><gray>]</gray></definition>
+</heading>
 
-Indexes of the days that will be considered a weekend. The .-weekend- class will be added to them. By default, this is Saturday and Sunday.
+Indexes of the days that will be considered a weekend. The `.-weekend-` class will be added to them. By default, this is Saturday and Sunday.
 
-### format <definition><param-type>string <brown>|</brown> <blue>function</blue></param-type> <brown>=</brown> <green>"YYYY-MM-DD"</green></definition>
+<heading>
+### format
+<definition><param-type><green>string</green> <brown>|</brown> <blue>function</blue></param-type> <brown>=</brown> <green>"YYYY-MM-DD"</green></definition>
+</heading>
 
-Date format. By default, the **string** pattern is taken from the current locale; a value passed here overrides that. You can also pass a **function** to build the field value yourself (see below).
+Date format. By default, the **<code><green>string</green></code>** pattern is taken from the current locale; a value passed here overrides that. You can also pass a **<code><purple>function</purple></code>** to build the field value yourself (see below).
 
-**Available tokens** when **`format`** is a string (longer sequences match first; parsing is left-to-right):
+**Available tokens** when **<code><purple>format</purple></code>** is a string (longer sequences match first; parsing is left-to-right):
 
-| Token           | Meaning |
-|-----------------|--------------------------------------------------------------------------------------------------------------------------|
-| `T`             | Selected instant as milliseconds (Unix timestamp)                                                                        |
-| `E`             | Short weekday name from locale **<purple>weekdaysShort</purple>**                                                        |
-| `EEEE`          | Full weekday name from locale **<purple>weekdaysLong</purple>**                                                          |
-| `d`             | Day of month, 1–31                                                                                                       |
-| `dd` / `DD`     | Day of month with leading zero                                                                                           |
-| `M`             | Month number 1–12                                                                                                        |
-| `MM`            | Month number with leading zero (01–12)                                                                                   |
-| `MMM`           | Short month name from locale (same source as **<purple>monthsField</purple>**, usually **<purple>monthsShort</purple>**) |
-| `MMMM`          | Full month name from locale **<purple>monthsLong</purple>**                                                              |
-| `yy`            | Two-digit year                                                                                                           |
-| `yyyy` / `YYYY` | Four-digit year                                                                                                          |
-| `yyyy1`         | First year of the current year block                                                                                     |
-| `yyyy2`         | Last year of that block                                                                                                  |
-| `HH`            | Hours 00–23                                                                                                              |
-| `mm`            | Minutes 00–59                                                                                                            |
+| Token           | Meaning                                                                                                                                            |
+|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `T`             | Selected instant as milliseconds (Unix timestamp)                                                                                                  |
+| `E`             | Short weekday name from locale **<code><purple>weekdaysShort</purple></code>**                                                                     |
+| `EEEE`          | Full weekday name from locale **<code><purple>weekdaysLong</purple></code>**                                                                       |
+| `d`             | Day of month, 1–31                                                                                                                                 |
+| `dd` / `DD`     | Day of month with leading zero                                                                                                                     |
+| `M`             | Month number 1–12                                                                                                                                  |
+| `MM`            | Month number with leading zero (01–12)                                                                                                             |
+| `MMM`           | Short month name from locale (same source as **<code><purple>monthsField</purple></code>**, usually **<code><purple>monthsShort</purple></code>**) |
+| `MMMM`          | Full month name from locale **<code><purple>monthsLong</purple></code>**                                                                           |
+| `yy`            | Two-digit year                                                                                                                                     |
+| `yyyy` / `YYYY` | Four-digit year                                                                                                                                    |
+| `yyyy1`         | First year of the current year block                                                                                                               |
+| `yyyy2`         | Last year of that block                                                                                                                            |
+| `HH`            | Hours 00–23                                                                                                                                        |
+| `mm`            | Minutes 00–59                                                                                                                                      |
 
-There is no escape for literals inside a string pattern; avoid embedding these letters in fixed text, or use a function **<purple>format</purple>** instead.
+There is no escape for literals inside a string pattern; avoid embedding these letters in fixed text, or use a function **<code><purple>format</purple></code>** instead.
 
-**Function <purple>format</purple>:** should return a string. For a single selection, the argument is one <blue>Date</blue>. If **multi-date** selection is enabled, a <blue>Date</blue><gray>[</gray><gray>]</gray> of all selected dates is passed so you can build one string for the whole field. With <green>range</green>, each segment is formatted with <gray>[</gray>startDate, endDate<gray>]</gray>; multiple ranges are joined with <green>multipleSeparator</green>.
+**Function <code><purple>format</purple></code>:** should return a string. For a single selection, the argument is one <blue>Date</blue>. If **multi-date** selection is enabled, a <code><blue>Date</blue><gray>[]</gray></code> of all selected dates is passed so you can build one string for the whole field. With <code><purple>range</purple></code>, each segment is formatted with <gray>[</gray>startDate<gray>,</gray> endDate<gray>]</gray>; multiple ranges are joined with <code><green>multipleSeparator</green></code>.
 
 <FormatFunctionDemo />
 
@@ -215,7 +278,10 @@ new Lightpickr('#input', {
   With <green>multiple</green><brown>:</brown> <red>true</red>, implement against an array, for example <code><purple>const</purple> <red>dates</red> <brown>=</brown> <blue>Array.isArray</blue><gray>(</gray>date<gray>)</gray> <brown>?</brown> date <brown>:</brown> <gray>[</gray>date<gray>]</gray></code> before formatting.
 </Callout>
 
-### monthsField <definition><param-type>string</param-type> <brown>=</brown> <green>"monthsShort"</green></definition>
+<heading>
+### monthsField
+<definition><param-type><green>string</green></param-type> <brown>=</brown> <green>"monthsShort"</green></definition>
+</heading>
 
 Locale key used for **short** month names in the month grid and for the **`MMM`** format token. Long names always come from **<purple>monthsLong</purple>**.
 
@@ -223,7 +289,10 @@ Locale key used for **short** month names in the month grid and for the **`MMM`*
 
 ## Views & chrome
 
-### view <definition><param-type>string</param-type> <brown>=</brown> <green>"day"</green></definition>
+<heading>
+### view
+<definition><param-type>string</param-type> <brown>=</brown> <green>"day"</green></definition>
+</heading>
 
 The initial view of the calendar. Possible values:
 
@@ -233,11 +302,73 @@ The initial view of the calendar. Possible values:
 | `month` | Displaying months of one year      |
 | `year`  | Displaying the years of one decade |
 
-### allowedViews <definition><param-type>string <brown>|</brown> string<gray>[]</gray></param-type> <brown>=</brown> <gray>[</gray><green>"day"</green>, <green>"month"</green>, <green>"year"</green><gray>]</gray></definition>
+<heading>
+### allowedViews
+<definition><param-type><green>string</green> <brown>|</brown> <green>string</green><gray>[]</gray></param-type> <brown>=</brown> <gray>[</gray><green>"day"</green>, <green>"month"</green>, <green>"year"</green><gray>]</gray></definition>
+</heading>
 
 Order defines drill **down** (e.g. day → month → year).
 
-### navTitles <definition><param-type>&#123; day?, month?, year? &#125;</param-type> <brown>=</brown> <gray>defaults below</gray></definition>
+<heading>
+### monthViewCount
+<definition><param-type>number</param-type> <brown>=</brown> <red>12</red></definition>
+</heading>
+
+How many month cells appear in the **month** view.
+
+<heading>
+### monthViewRadius
+<definition><param-type>number</param-type> <brown>=</brown> <red>5</red></definition>
+</heading>
+
+How many steps **before** **`viewDate`'s month** the visible range would start if the month grid were centered on that month.
+
+<heading>
+### monthViewCols
+<definition><param-type>number</param-type> <brown>=</brown> <red>3</red></definition>
+</heading>
+
+Number of columns in the **month** view grid.
+
+<heading>
+### monthViewRows
+<definition><param-type>number</param-type> <brown>=</brown> <red>4</red></definition>
+</heading>
+
+Number of rows in the **month** view grid.
+
+<heading>
+### yearViewCount
+<definition><param-type>number</param-type> <brown>=</brown> <red>12</red></definition>
+</heading>
+
+How many year cells appear in the **year** view.
+
+<heading>
+### yearViewRadius
+<definition><param-type>number</param-type> <brown>=</brown> <red>5</red></definition>
+</heading>
+
+How many **years** appear in the grid **before** the year that matches **`viewDate`**.
+
+<heading>
+### yearViewCols
+<definition><param-type>number</param-type> <brown>=</brown> <red>3</red></definition>
+</heading>
+
+Number of columns in the **year** view grid.
+
+<heading>
+### yearViewRows
+<definition><param-type>number</param-type> <brown>=</brown> <red>4</red></definition>
+</heading>
+
+Number of rows in the **year** view grid.
+
+<heading>
+### navTitles
+<definition><param-type>&#123; day?, month?, year? &#125;</param-type> <brown>=</brown> <gray>defaults below</gray></definition>
+</heading>
 
 Title templates in the calendar navigation. You can use HTML tags and tokens from dateFormat. You can also pass the function as a value - it will receive an instance of the calendar as an argument, and should return a string.
 
@@ -261,7 +392,10 @@ new Lightpickr('#el', {
 })
 ```
 
-### prevHtml <definition><param-type>string</param-type> <brown>=</brown> <gray>default below</gray></definition>
+<heading>
+### prevHtml
+<definition><param-type><green>string</green></param-type> <brown>=</brown> <gray>default below</gray></definition>
+</heading>
 
 `Previous` button inner HTML. Default value is:
 
@@ -269,7 +403,10 @@ new Lightpickr('#el', {
 <svg><path d="M17,12 l -5,5 l 5,5"></path></svg>
 ```
 
-### nextHtml <definition><param-type>string</param-type> <brown>=</brown> <gray>default below</gray></definition>
+<heading>
+### nextHtml
+<definition><param-type><green>string</green></param-type> <brown>=</brown> <gray>default below</gray></definition>
+</heading>
 
 `Next` button inner HTML. Default value is:
 
@@ -281,11 +418,17 @@ new Lightpickr('#el', {
 
 ## Opening & footer
 
-### showEvent <definition><param-type>string <brown>|</brown> string<gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <green>"focus"</green></definition>
+<heading>
+### showEvent
+<definition><param-type><green>string</green> <brown>|</brown> <green>string</green><gray>[</gray><gray>]</gray></param-type> <brown>=</brown> <green>"focus"</green></definition>
+</heading>
 
 DOM events on which calendar will be shown.
 
-### buttons <definition><param-type>string <brown>|</brown> object <brown>|</brown> array <brown>|</brown> false</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### buttons
+<definition><param-type><green>string</green> <brown>|</brown> object <brown>|</brown> array <brown>|</brown> false</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 This option allows you to add action buttons to body of the calendar. You could add two pre installed buttons or create your own.
 
@@ -315,37 +458,61 @@ To create your own button you should pass and object of the following type:
 
 ## Time
 
-### enableTime <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### enableTime
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 Turns on timepicker.
 
 <TimeDemo />
 
-### onlyTime <definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+<heading>
+### onlyTime
+<definition><param-type>boolean</param-type> <brown>=</brown> <red>false</red></definition>
+</heading>
 
 If you need to choose only time, without date.
 
-### minHours <definition><param-type>number</param-type> <brown>=</brown> <red>0</red></definition>
+<heading>
+### minHours
+<definition><param-type>number</param-type> <brown>=</brown> <red>0</red></definition>
+</heading>
 
 Minimum possible hours value.
 
-### maxHours <definition><param-type>number</param-type> <brown>=</brown> <red>24</red></definition>
+<heading>
+### maxHours
+<definition><param-type>number</param-type> <brown>=</brown> <red>24</red></definition>
+</heading>
 
 Maximum possible hours value.
 
-### minMinutes <definition><param-type>number</param-type> <brown>=</brown> <red>0</red></definition>
+<heading>
+### minMinutes
+<definition><param-type>number</param-type> <brown>=</brown> <red>0</red></definition>
+</heading>
 
 Minimum possible minutes value.
 
-### maxMinutes <definition><param-type>number</param-type> <brown>=</brown> <red>59</red></definition>
+<heading>
+### maxMinutes
+<definition><param-type>number</param-type> <brown>=</brown> <red>59</red></definition>
+</heading>
 
 Maximum possible minutes value.
 
-### hoursStep <definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+<heading>
+### hoursStep
+<definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+</heading>
 
 Hours step.
 
-### minutesStep <definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+<heading>
+### minutesStep
+<definition><param-type>number</param-type> <brown>=</brown> <red>1</red></definition>
+</heading>
 
 Minutes step.
 
@@ -353,14 +520,91 @@ Minutes step.
 
 ## Custom DOM
 
-### classes <definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
+<heading>
+### render
+<definition><param-type><purple>Partial</purple>&lt;&#123; container, header, time, footer, cell &#125;&gt;</param-type></definition>
+</heading>
 
-Map of **class strings**. See the **options.classes** [CSS classes](/docs/documentation/classes).
+Every hook uses the same <code><purple>ctx</purple></code> shape (table below). Each is a function <code><gray>(</gray>ctx<gray>)</gray> <brown>=></brown> <blue>HTMLElement</blue> <brown>|</brown> <gray>null</gray> <brown>|</brown> <gray>undefined</gray></code>: return an element to **replace** that part of the UI, or return <gray>null</gray>/<gray>undefined</gray> (or omit the hook key) so the library keeps its default markup.
 
-### attributes <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+The same <code><purple>ctx</purple></code> fields apply to every hook:
 
-Map of **attribute names**. See the **options.attributes** subsection on the [CSS classes](/docs/documentation/classes) page.
+| Field                         | Type      | Role                                                                                                                 |
+|-------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------|
+| `date`                        | `number`  | Start-of-day timestamp for the context day (usually the month's anchor, i.e. <code><purple>viewDate</purple></code>) |
+| `viewDate`                    | `number`  | Current view anchor (start of that day)                                                                              |
+| `isSelected`                  | `boolean` | Day is selected (or part of a range)                                                                                 |
+| `isDisabled`                  | `boolean` | Day is not selectable                                                                                                |
+| `isToday`                     | `boolean` | Day is "today"                                                                                                       |
+| `isInRange`                   | `boolean` | Inside a completed range                                                                                             |
+| `isRangeStart` / `isRangeEnd` | `boolean` | Range endpoints                                                                                                      |
+| `isFocused`                   | `boolean` | Keyboard focus is on this day                                                                                        |
+| `isOutside`                   | `boolean` | For day cells: outside the visible month (<code><purple>showOtherMonths</purple></code>)                             |
+| `isWeekend`                   | `boolean` | Weekday index is in <code><purple>weekends</purple></code>                                                           |
+| `state`                       | `object`  | Read-only snapshot of public options/state (locale, selection, <code><purple>currentView</purple></code>, etc.)      |
+| `instance`                    | `object`  | The Lightpickr instance                                                                                              |
 
-### properties <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+**Hook roles**
 
-Maps logical keys to **CSS variable names** used by the default stylesheet and string positioning. See the **options.properties** subsection on the [CSS classes](/docs/documentation/classes) page.
+- **`container`** — If the function returns an element, it is appended under the root <code><purple>.lp</purple></code> panel and the active view + footer mount **inside** that node. If you define the hook but return <gray>null</gray>, behavior matches having no hook.
+- **`header`** — Return a node to place inside the header wrapper for **day**, **month**, and **year** views (same <code><purple>ctx</purple></code>; use <code><purple>state.currentView</purple></code> to branch). Return <gray>null</gray> for the default prev / title / next bar.
+- **`time`** — When time is enabled (<code><purple>enableTime</purple></code> or <code><purple>onlyTime</purple></code>), return the full inner content for the time panel. Omit or return <gray>null</gray> for the default time UI.
+- **`footer`** — Return a node to use as the footer body. When this hook returns an element, the <code><purple>buttons</purple></code> footer is not used for that render. Omit or return <gray>null</gray> to use the default footer from <code><purple>buttons</purple></code>.
+- **`cell`** — Return a root element for that calendar cell (typically a <code><purple>button</purple></code>), or <gray>null</gray>/<gray>undefined</gray> to use the built-in cell. Mirror the default structure from the stylesheet (<code><purple>options.classes</purple></code>) and <code><purple>options.attributes</purple></code> so clicks, keyboard, and range styling still work.
+
+```js
+new Lightpickr('#my-input', {
+  inline: true,
+  render: {
+    header(ctx) {
+      const el = document.createElement('div');
+      el.textContent = 'Pick a date';
+      return el;
+    },
+  },
+});
+```
+
+```js
+new Lightpickr('#my-input', {
+  render: {
+    cell(ctx) {
+      const v = ctx.state.currentView;
+      if (v !== 'day') return; // Only day view
+      if (new Date(ctx.date).getDay() !== 5) return; // Only day 5 of current view month
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lp-cell my-friday';
+      b.setAttribute('data-lp-day', String(ctx.date));
+      b.setAttribute('role', 'gridcell');
+      b.setAttribute('tabindex', ctx.isFocused ? '0' : '-1');
+      b.setAttribute('aria-selected', ctx.isSelected ? 'true' : 'false');
+      b.setAttribute('aria-disabled', ctx.isDisabled ? 'true' : 'false');
+      b.textContent = String(new Date(ctx.date).getDate());
+      if (ctx.isDisabled) b.disabled = true;
+      return b;
+    },
+  },
+});
+```
+
+<heading>
+### classes
+<definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
+</heading>
+
+Map of **class strings**. See the **options.classes** [CSS classes](/docs/documentation/classes#optionsclasses).
+
+<heading>
+### attributes
+<definition><param-type><purple>Record</purple>&lt;<green>string</green>, <green>string</green>&gt;</param-type></definition>
+</heading>
+
+Map of **attribute names**. See the **options.attributes** subsection on the [CSS classes](/docs/documentation/classes#optionsattributes) page.
+
+<heading>
+### properties
+<definition><param-type><purple>Record</purple>&lt;<green>string</green>, <green>string</green>&gt;</param-type></definition>
+</heading>
+
+Maps logical keys to **CSS variable names** used by the default stylesheet and string positioning. See the **options.properties** subsection on the [CSS classes](/docs/documentation/classes#optionsproperties) page.

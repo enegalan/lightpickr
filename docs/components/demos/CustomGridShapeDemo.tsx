@@ -3,7 +3,7 @@
 import {useRef} from 'react';
 import {demoFieldWrapClassName, useLightpickrInstance} from '@/lib/lightpickr_demo';
 
-export function MonthSelectionDemo() {
+export function CustomGridShapeDemo() {
   const mountRef = useRef<HTMLDivElement>(null);
   useLightpickrInstance(
     mountRef,
@@ -13,17 +13,14 @@ export function MonthSelectionDemo() {
         view: 'month',
         allowedViews: ['month', 'year'],
         autoClose: false,
-        format: 'YYYY-MM',
-        startDate: new Date(),
-        selectedDates: [new Date()],
-        onChangeViewDate(payload: {
-          month: number;
-          year: number;
-          datepicker: {selectDate: (d: Date) => void};
-        }) {
-          const {month, year, datepicker} = payload;
-          datepicker.selectDate(new Date(year, month, 1));
-        },
+        monthViewCount: 8,
+        monthViewRadius: 1,
+        monthViewCols: 4,
+        monthViewRows: 2,
+        yearViewCount: 15,
+        yearViewRadius: 7,
+        yearViewCols: 5,
+        yearViewRows: 3,
       }),
     []
   );
@@ -32,7 +29,7 @@ export function MonthSelectionDemo() {
     <div
       ref={mountRef}
       className={demoFieldWrapClassName}
-      aria-label="Month-only Lightpickr demo"
+      aria-label="Custom month/year grid shape Lightpickr demo"
     />
   );
 }

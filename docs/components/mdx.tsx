@@ -4,6 +4,7 @@ import {AnimePopperDemo} from '@/components/demos/AnimePopperDemo';
 import {BasicDemo} from '@/components/demos/BasicDemo';
 import {BasicPositioningDemo} from '@/components/demos/BasicPositioningDemo';
 import {CellRenderDemo} from '@/components/demos/CellRenderDemo';
+import {CustomGridShapeDemo} from '@/components/demos/CustomGridShapeDemo';
 import {FooterButtonsDemo} from '@/components/demos/FooterButtonsDemo';
 import {FormatFunctionDemo} from '@/components/demos/FormatFunctionDemo';
 import {InlineDemo} from '@/components/demos/InlineDemo';
@@ -33,6 +34,7 @@ export function getMDXComponents(components?: MDXComponents) {
     SelectedInitialDateDemo,
     TimeDemo,
     CellRenderDemo,
+    CustomGridShapeDemo,
     TitleFormattingDemo,
     FooterButtonsDemo,
     FormatFunctionDemo,

@@ -5,7 +5,10 @@ description: options.classes, data attributes, and theming variables on .lp
 
 The shipped stylesheet uses the **`lp`** prefix.
 
-## options.classes <definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
+<heading>
+## options.classes
+<definition><param-type><purple>Partial</purple>&lt;LightpickrClassMap&gt;</param-type></definition>
+</heading>
 
 Each value is a **class name string**.
 
@@ -19,7 +22,7 @@ Each value is a **class name string**.
 | `gridRowContents`          | `lp-grid-row--contents`            | Contents of row in month/year grids   |
 | `months`                   | `lp-months`                        | Wraps month block(s)                  |
 | `monthBlock`               | `lp-month-block`                   | Single month column                   |
-| `monthGrid`                | `lp-month-grid`                    | Month/year picker grid                |
+| `monthView`                | `lp-month-view`                    | Month/year view grid container                |
 | `cell`                     | `lp-cell`                          | Day / month / year cell button        |
 | `inline`                   | `lp--inline`                       | Root modifier when inline             |
 | `popover`                  | `lp--popover`                      | Root modifier when floating           |
@@ -27,7 +30,7 @@ Each value is a **class name string**.
 | `mobileBackdrop`           | `lp-mobile-backdrop`               | Full-screen wrapper for mobile        |
 | `headCell`                 | `lp-head-cell`                     | Weekday header cells                  |
 | `row`                      | `lp-row`                           | Day row                               |
-| `yearGrid`                 | `lp-year-grid`                     | Year grid container                   |
+| `yearView`                 | `lp-year-view`                     | Year view grid container              |
 | `cellSelected`             | `lp-cell--selected`                | Selected cell                         |
 | `cellDisabled`             | `lp-cell--disabled`                | Disabled cell                         |
 | `cellToday`                | `lp-cell--today`                   | Today cell                            |
@@ -57,10 +60,13 @@ Each value is a **class name string**.
 | `footer`                   | `lp-footer`                        | Footer wrapper                        |
 | `footerActions`            | `lp-footer--actions`               | Footer actions                        |
 | `footerBtn`                | `lp-footer-btn`                    | Footer control                        |
-| `popoverPointer`           | `lp-popover-pointer lp--pointer`   | Popover arrow                         |
+| `popoverPointer`           | `lp-popover-pointer`               | Popover arrow                         |
 | `viewBody`                 | `lp-view-body`                     | Main view body under header           |
 
-## options.attributes <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+<heading>
+## options.attributes
+<definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+</heading>
 
 Attribute **names**. Merge with `options.attributes` if you need to avoid collisions.
 
@@ -78,7 +84,10 @@ Attribute **names**. Merge with `options.attributes` if you need to avoid collis
 | `footerAction` | `data-lp-footer-action` | Preset footer buttons                     |
 | `footerBound`  | `data-lp-footer-bound`  | Footer binding marker                     |
 
-## options.properties <definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+<heading>
+## options.properties
+<definition><param-type><purple>Record</purple>&lt;string, string&gt;</param-type></definition>
+</heading>
 
 Maps **logical keys** to **CSS custom property names** (including the `--` prefix).
 
@@ -90,9 +99,9 @@ Maps **logical keys** to **CSS custom property names** (including the `--` prefi
 | `popoverGapY`           | `--lp-popover-gap-y`           | Vertical gap                               |
 | `popoverViewportMargin` | `--lp-popover-viewport-margin` | Min inset from viewport edge when clamping |
 
-## CSS variables on `.lp`
+## CSS variables
 
-Defined in the shipped stylesheet. Override on a container that wraps the picker or on `.lp` itself.
+Defined in the shipped stylesheet. Override on a container that wraps the picker or on `:root` itself.
 
 ### Core layout & chrome
 
@@ -115,7 +124,6 @@ Defined in the shipped stylesheet. Override on a container that wraps the picker
 | `--lp-space-md`          | 0.75rem                          | Padding gaps            |
 | `--lp-space-lg`          | 1rem                             | Padding gaps            |
 | `--lp-space-xl`          | 1.25rem                          | Padding gaps            |
-| `--lp-head-font-weight`  | `600`                            | Header font weight      |
 | `--lp-title-font-weight` | `600`                            | Title font weight       |
 | `--lp-title-font-size`   | `0.875rem`                       | Title font size         |
 | `--lp-inline-max-width`  | `none`                           | Inline panel max width  |

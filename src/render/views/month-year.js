@@ -1,14 +1,9 @@
 import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
 import { isSameDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
-import { yearGridYearValues } from '../../core/calendar-grid.js';
-import { createEl } from '../dom.js';
-import { buildDefaultNav } from '../context.js';
-import { applyRenderCellPatch } from '../cell.js';
-
-/** @private */
-const THREE_COL_GRID_ROWS = 4;
-/** @private */
-const THREE_COL_GRID_COLS = 3;
+import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
+import { createEl } from '../../utils/common.js';
+import { buildCtx } from '../context.js';
+import { buildDefaultHeader } from '../header.js';
 
 /**
  * @param {object} instance
@@ -17,27 +12,30 @@ const THREE_COL_GRID_COLS = 3;
  */
 export function renderMonthView(instance, container) {
   const { y, m } = tsToYmd(instance._state.viewDate);
-  const canGoUp = instance._state.allowedViews.indexOf('year') >= 0;
-  const months = defaultMonthNames({ locale: instance._state.locale }, instance._state.monthsField);
+  const months = defaultMonthNames(instance._state.locale, instance._state.monthsField);
+  const stamps = buildMonthViewTimestamps(instance._state);
 
-  _renderThreeColumnGridView(
+  _renderMonthYearGridView(
     instance,
     container,
-    'month',
-    canGoUp,
-    instance._state.classes.monthGrid,
-    getTranslations(instance._state).ariaMonthGrid,
-    (mi) => {
-      const ts = ymdToTsStartOfDay(y, mi, 1);
+    instance._state.allowedViews.indexOf('year') >= 0,
+    instance._state.classes.monthView,
+    getTranslations(instance._state.locale).ariaMonthGrid,
+    instance._state.monthViewCount,
+    instance._state.monthViewCols,
+    instance._state.monthViewRows,
+    (i) => {
+      const ts = stamps[i];
+      const { y: yy, m: mm } = tsToYmd(ts);
+      const ariaLabel = months[mm] + ' ' + String(yy);
       return _buildMonthYearGridCell(
         instance,
         instance._state.attributes.month,
-        String(mi),
-        mi === m,
+        String(ts),
+        yy === y && mm === m,
         ts,
-        'month',
-        months[mi] + ' ' + String(y),
-        months[mi]
+        ariaLabel,
+        instance._state.monthViewCount > 12 ? months[mm] + ' ' + String(yy) : months[mm]
       );
     }
   );
@@ -50,20 +48,30 @@ export function renderMonthView(instance, container) {
  */
 export function renderYearView(instance, container) {
   const y = tsToYmd(instance._state.viewDate).y;
-  const years = yearGridYearValues(y);
+  const years = buildYearViewYears(instance._state);
 
-  _renderThreeColumnGridView(
+  _renderMonthYearGridView(
     instance,
     container,
-    'year',
     false,
-    instance._state.classes.yearGrid,
-    getTranslations(instance._state).ariaYearGrid,
+    instance._state.classes.yearView,
+    getTranslations(instance._state.locale).ariaYearView,
+    instance._state.yearViewCount,
+    instance._state.yearViewCols,
+    instance._state.yearViewRows,
     (i) => {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);
       const yyStr = String(yy);
-      return _buildMonthYearGridCell(instance, instance._state.attributes.year, yyStr, yy === y, ts, 'year', yyStr, yyStr);
+      return _buildMonthYearGridCell(
+        instance,
+        instance._state.attributes.year,
+        yyStr,
+        yy === y,
+        ts,
+        yyStr,
+        yyStr
+      );
     }
   );
 }
@@ -75,12 +83,23 @@ export function renderYearView(instance, container) {
  * @param {string} dataValueStr
  * @param {boolean} selected
  * @param {number} ts
- * @param {'month'|'year'} cellType
  * @param {string} ariaLabel
  * @param {string} textContent
  * @returns {HTMLElement}
  */
-function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, cellType, ariaLabel, textContent) {
+function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, ariaLabel, textContent) {
+  const ctx = buildCtx(instance, ts);
+  const cellFn = instance._state.render.cell;
+  if (typeof cellFn === 'function') {
+    const custom = cellFn(ctx);
+    if (custom instanceof HTMLElement) {
+      if (!custom.getAttribute(dataAttr)) {
+        custom.setAttribute(dataAttr, dataValueStr);
+      }
+      return custom;
+    }
+  }
+
   const c = instance._state.classes;
   const isFocused = instance._state.focusDate != null && isSameDay(instance._state.focusDate, ts);
   const cellClass =
@@ -96,20 +115,6 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
   const el = createEl('button', cellClass, attrs);
   el.textContent = textContent;
 
-  const out = instance._state.onRenderCell({
-    date: new Date(ts),
-    cellType,
-    datepicker: instance
-  });
-
-  if (out && typeof out === 'object') {
-    applyRenderCellPatch(el, out);
-  }
-
-  if (!el.getAttribute(dataAttr)) {
-    el.setAttribute(dataAttr, dataValueStr);
-  }
-
   return el;
 }
 
@@ -121,22 +126,38 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
  * @param {boolean} canGoUp
  * @param {string} gridExtraClass
  * @param {string} ariaLabel
+ * @param {number} cellCount
+ * @param {number} cols
+ * @param {number} rows
  * @param {(cellIndex: number) => HTMLElement} buildCell
  * @returns {void}
  */
-function _renderThreeColumnGridView(instance, container, view, canGoUp, gridExtraClass, ariaLabel, buildCell) {
-  const c = instance._state.classes;
-  const header = createEl('div', c.header);
-  header.appendChild(buildDefaultNav(instance, view, canGoUp));
+function _renderMonthYearGridView(instance, container, canGoUp, gridExtraClass, ariaLabel, cellCount, cols, rows, buildCell) {
+  const { header: headerHook } = instance._state.render;
+  const ctx = buildCtx(instance, instance._state.viewDate);
+
+  const header = createEl('div', instance._state.classes.header);
+  const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, instance._state.currentView, canGoUp);
+  if (headerEl) {
+    header.appendChild(headerEl);
+  }
   container.appendChild(header);
 
-  const viewBody = createEl('div', c.viewBody);
-  const grid = createEl('div', c.grid + ' ' + gridExtraClass, { role: 'grid', 'aria-label': ariaLabel });
+  const viewBody = createEl('div', instance._state.classes.viewBody);
+  const grid = createEl('div', instance._state.classes.grid + ' ' + gridExtraClass, { role: 'grid', 'aria-label': ariaLabel });
+  const cssVarName = instance._state.currentView === 'month' ? instance._state.properties.monthViewCols : instance._state.properties.yearViewCols;
+  grid.style.setProperty(cssVarName, String(cols));
 
   let index = 0;
-  for (let r = 0; r < THREE_COL_GRID_ROWS; r++) {
-    const rowEl = createEl('div', c.gridRow + ' ' + c.gridRow + '--contents', { role: 'row' });
-    for (let col = 0; col < THREE_COL_GRID_COLS; col++) {
+  for (let r = 0; r < rows; r++) {
+    if (index >= cellCount) {
+      break;
+    }
+    const rowEl = createEl('div', instance._state.classes.gridRow + ' ' + instance._state.classes.gridRow + '--contents', { role: 'row' });
+    for (let col = 0; col < cols; col++) {
+      if (index >= cellCount) {
+        break;
+      }
       rowEl.appendChild(buildCell(index++));
     }
     grid.appendChild(rowEl);
@@ -145,4 +166,3 @@ function _renderThreeColumnGridView(instance, container, view, canGoUp, gridExtr
   viewBody.appendChild(grid);
   container.appendChild(viewBody);
 }
-

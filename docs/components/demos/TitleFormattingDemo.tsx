@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect, useRef} from 'react';
+import {demoFieldWrapClassName, demoInputClassName, loadLightpickr} from '@/lib/lightpickr_demo';
 
 export function TitleFormattingDemo() {
   const refA = useRef<HTMLInputElement>(null);
@@ -10,8 +11,7 @@ export function TitleFormattingDemo() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const {default: Lightpickr} = await import('lightpickr');
-      await import('lightpickr/lightpickr.css');
+      const {default: Lightpickr} = await loadLightpickr();
       if (cancelled) return;
       const out: Array<{destroy: () => void}> = [];
       if (refA.current) {
@@ -20,8 +20,8 @@ export function TitleFormattingDemo() {
             navTitles: {
               day: '<b>MMMM</b> yyyy',
               month: 'Pick month — yyyy',
-              year: 'yyyy1 – yyyy2'
-            }
+              year: 'yyyy1 – yyyy2',
+            },
           })
         );
       }
@@ -37,8 +37,8 @@ export function TitleFormattingDemo() {
                   '-' +
                   String(d.getMonth() + 1).padStart(2, '0')
                 );
-              }
-            }
+              },
+            },
           })
         );
       }
@@ -52,7 +52,7 @@ export function TitleFormattingDemo() {
   }, []);
 
   return (
-    <div className="my-4 max-w-xs space-y-4">
+    <div className={`${demoFieldWrapClassName} space-y-4`}>
       <div>
         <span className="mb-1 block text-xs font-semibold uppercase text-fd-muted-foreground">
           Static templates
@@ -61,7 +61,7 @@ export function TitleFormattingDemo() {
           ref={refA}
           type="text"
           readOnly
-          className="w-full rounded-md border border-fd-border bg-fd-background px-2 py-1.5 text-sm"
+          className={demoInputClassName}
         />
       </div>
       <div>
@@ -72,7 +72,7 @@ export function TitleFormattingDemo() {
           ref={refB}
           type="text"
           readOnly
-          className="w-full rounded-md border border-fd-border bg-fd-background px-2 py-1.5 text-sm"
+          className={demoInputClassName}
         />
       </div>
     </div>

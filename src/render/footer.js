@@ -1,6 +1,6 @@
 import { getTranslations } from '../utils/locale.js';
-import { createEl } from './dom.js';
-import { buildDayCtx } from './context.js';
+import { createEl } from '../utils/common.js';
+import { buildCtx } from './context.js';
 
 /**
  * @param {object} instance
@@ -8,24 +8,21 @@ import { buildDayCtx } from './context.js';
  * @returns {void}
  */
 export function renderFooter(instance, container) {
-  const s = instance._state;
-
-  const ctx = buildDayCtx(instance, s.viewDate, false);
-  const custom = s.render.footer?.(ctx);
+  const ctx = buildCtx(instance, instance._state.viewDate);
+  const custom = instance._state.render.footer?.(ctx);
   if (custom) {
-    const wrap = createEl('div', s.classes.footer);
+    const wrap = createEl('div', instance._state.classes.footer);
     wrap.appendChild(custom);
     container.appendChild(wrap);
     return;
   }
 
-  const buttons = s.buttons;
-  if (!buttons) {
+  if (!instance._state.buttons) {
     return;
   }
 
-  const arr = Array.isArray(buttons) ? buttons : [buttons];
-  const wrap = createEl('div', s.classes.footer + ' ' + s.classes.footer + '--actions');
+  const arr = Array.isArray(instance._state.buttons) ? instance._state.buttons : [instance._state.buttons];
+  const wrap = createEl('div', instance._state.classes.footer + ' ' + instance._state.classes.footer + '--actions');
 
   for (let i = 0; i < arr.length; i++) {
     let def = arr[i];
@@ -41,15 +38,15 @@ export function renderFooter(instance, container) {
 
     if (def.preset === 'today' || def.preset === 'clear') {
       const action = def.preset;
-      const ui = getTranslations(s);
-      el = createEl('button', s.classes.footerBtn, {
+      const ui = getTranslations(instance._state.locale);
+      el = createEl('button', instance._state.classes.footerBtn, {
         type: 'button',
-        [s.attributes.footerAction]: action
+        [instance._state.attributes.footerAction]: action
       });
       el.textContent = action === 'today' ? ui.btnToday : ui.btnClear;
     } else {
       const tag = def.tagName || 'button';
-      const cls = s.classes.footerBtn + (def.className ? ' ' + def.className : '');
+      const cls = instance._state.classes.footerBtn + (def.className ? ' ' + def.className : '');
 
       el = createEl(tag, cls, tag === 'button' ? { type: 'button' } : {});
 

@@ -1,13 +1,5 @@
 import lightpickrDefaults from '../core/defaults.js';
 
-/** @type {Map<string, 'day'|'month'|'year'>} */
-const VIEW_INPUT_ALIASES = new Map();
-for (let i = 0; i < lightpickrDefaults.viewOrder.length; i++) {
-  const id = lightpickrDefaults.viewOrder[i];
-  VIEW_INPUT_ALIASES.set(id, id);
-  VIEW_INPUT_ALIASES.set(id + 's', id);
-}
-
 /** @type {readonly string[]} */
 const DEFAULT_SHOW_EVENTS = [lightpickrDefaults.showEvent];
 
@@ -64,10 +56,8 @@ export function normalizeWeekendIndexes(weekends) {
  * @returns {'day'|'month'|'year'}
  */
 export function normalizeView(view) {
-  if (typeof view !== 'string') {
-    return 'day';
-  }
-  return VIEW_INPUT_ALIASES.get(view) ?? 'day';
+  const t = typeof view === 'string' ? view.trim() : '';
+  return t && lightpickrDefaults.viewOrder.includes(t) ? t : lightpickrDefaults.view;
 }
 
 /**
@@ -79,7 +69,7 @@ export function normalizeAllowedViews(views) {
   const seen = new Set();
   const add = function (raw) {
     const trimmed = typeof raw === 'string' ? raw.trim() : '';
-    if (trimmed && !seen.has(trimmed) && VIEW_INPUT_ALIASES.get(trimmed) !== undefined) {
+    if (trimmed && lightpickrDefaults.viewOrder.includes(trimmed) && !seen.has(trimmed)) {
       seen.add(trimmed);
       out.push(trimmed);
     }
@@ -103,7 +93,7 @@ export function normalizeAllowedViews(views) {
  */
 export function normalizeFirstDay(firstDay) {
   if (typeof firstDay !== 'number' || !Number.isFinite(firstDay)) {
-      return null;
+    return null;
   }
   return ((Math.floor(firstDay) % 7) + 7) % 7;
 }

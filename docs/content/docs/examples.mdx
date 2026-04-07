@@ -50,7 +50,7 @@ new Lightpickr('#my-input', {
 
 ### Month selection
 
-For choosing only month without any certain date you could use combination of using an **inline** calendar and limit which views appear: **<purple>allowedViews</purple>** <code><gray>[</gray><green>"month"</green><gray>,</gray> <green>"year"</green><gray>]</gray></code> hides the day grid. Start on the month grid with **<purple>view</purple>** <code><green>"month"</green></code> or <code><green>"months"</green></code>; click the title to open the year grid, then return to months.
+For choosing only month without any certain date you could use combination of using an **inline** calendar and limit which views appear: **<purple>allowedViews</purple>** <code><gray>[</gray><green>"month"</green><gray>,</gray> <green>"year"</green><gray>]</gray></code> hides the day grid. Start on the month grid with **<purple>view</purple>** <code><green>"month"</green></code>; click the title to open the year grid, then return to the month grid.
 
 Because there is no day step, Lightpickr does not fill the selection from the day grid. The example below listens to **<purple>onChangeViewDate</purple>** and calls **<code><purple>selectDate</purple></code>** with the **first day of the month** you are viewing, so the chosen month still becomes a real date value. Details: [Options — allowedViews](/docs/documentation/options#allowedviews).
 
@@ -71,6 +71,36 @@ new Lightpickr('#inline-root', {
   onChangeViewDate({ month, year, datepicker }) {
     datepicker.selectDate(new Date(year, month, 1));
   }
+});
+```
+
+### Custom month/year grid shape
+
+You can change how many cells are shown and column/row layout. See [Options — monthViewCount](/docs/documentation/options#monthviewcount) through **yearViewRows**.
+
+<CustomGridShapeDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#inline-grid', {
+  inline: true,
+  view: 'month',
+  allowedViews: ['month', 'year'],
+  autoClose: false,
+
+  // Month view: 8 months (Jan–Aug of the view year) in a 4×2 grid.
+  monthViewCount: 8,
+  monthViewRadius: 1,
+  monthViewCols: 4,
+  monthViewRows: 2,
+
+  // Year view: 15 years in a 5x3 grid, centered with radius 7.
+  yearViewCount: 15,
+  yearViewRadius: 7,
+  yearViewCols: 5,
+  yearViewRows: 3
 });
 ```
 
@@ -291,7 +321,7 @@ new Lightpickr('#dt', {
 
 ### Cell render
 
-<code><purple>onRenderCell</purple></code> runs for day, month, and year cells. Return an object with any of <code><purple>html</purple></code>, <code><purple>classes</purple></code>, <code><purple>attrs</purple></code>, or <code>disabled<brown>:</brown> <red>true</red></code> to patch the cell element after it is created.
+<code><purple>render.cell</purple></code> runs for day, month, and year cells. Return an <code><purple>HTMLElement</purple></code> to replace that cell (you set classes, <code><purple>data-lp-*</purple></code>, ARIA, and <code><purple>disabled</purple></code>), or return <code><purple>undefined</purple></code> for the default cell. Use <code><purple>ctx.state.currentView</purple></code> (<code><green>day</green></code> / <code><green>time</green></code> / <code><green>month</green></code> / <code><green>year</green></code>) to branch. See [Options — render](/docs/documentation/options#render).
 
 <CellRenderDemo />
 
@@ -313,17 +343,36 @@ const DAY_MARKERS = [
 ];
 
 new Lightpickr('#input', {
-  onRenderCell({date, cellType}) {
-    if (cellType !== 'day') {
-      return;
-    }
-    const dayOfMonth = date.getDate();
-    const marker = DAY_MARKERS.find((d) => d.day === dayOfMonth);
-    if (!marker) {
-      return;
-    }
-    return {
-      html:
+  render: {
+    cell(ctx) {
+      const view = ctx.state.currentView;
+      if (view !== 'day' && view !== 'time') {
+        return;
+      }
+      const dayOfMonth = new Date(ctx.date).getDate();
+      const marker = DAY_MARKERS.find((d) => d.day === dayOfMonth);
+      if (!marker) {
+        return;
+      }
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = [
+        'lp-cell',
+        ctx.isSelected && 'lp-cell--selected',
+        ctx.isDisabled && 'lp-cell--disabled',
+        ctx.isToday && 'lp-cell--today',
+        ctx.isOutside && 'lp-cell--outside',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      b.setAttribute('data-lp-day', String(ctx.date));
+      b.setAttribute('role', 'gridcell');
+      b.setAttribute('tabindex', ctx.isFocused ? '0' : '-1');
+      b.setAttribute('aria-selected', ctx.isSelected ? 'true' : 'false');
+      const ariaDis =
+        ctx.isDisabled || (ctx.isOutside && !ctx.state.selectOtherMonths) ? 'true' : 'false';
+      b.setAttribute('aria-disabled', ariaDis);
+      b.innerHTML =
         '<span style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05">' +
         '<span style="font-size:1.05em" aria-hidden="true">' +
         marker.emoji +
@@ -331,9 +380,13 @@ new Lightpickr('#input', {
         '<span style="font-size:0.8em;opacity:0.92">' +
         dayOfMonth +
         '</span>' +
-        '</span>',
-      attrs: {title: marker.title},
-    };
+        '</span>';
+      b.title = marker.title;
+      if (ctx.isDisabled || (ctx.isOutside && !ctx.state.selectOtherMonths)) {
+        b.disabled = true;
+      }
+      return b;
+    },
   },
 });
 ```

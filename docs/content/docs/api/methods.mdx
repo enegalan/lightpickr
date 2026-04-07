@@ -7,130 +7,183 @@ All methods live on the **`Lightpickr`** instance from `new Lightpickr(...)`.
 
 ---
 
-## show()
+<heading>
+### show
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Opens the popover. **No-op** if destroyed or **`inline`**.
-
----
-
-## hide()
-
-Closes the popover. **No-op** if destroyed or **inline**.
+Opens the popover. **No-op** if destroyed or **<code><purple>inline</purple></code>**.
 
 ---
 
-## next()
+<heading>
+### hide
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Step forward: next month (day/time view), next year (month), or next decade block (year). Blocked when **`disableNavWhenOutOfRange`** and already at **`maxDate`**.
-
----
-
-## prev()
-
-Step backward (mirror of **`next()`**). Blocked at **`minDate`** with **`disableNavWhenOutOfRange`**.
+Closes the popover. **No-op** if destroyed or **<code><purple>inline</purple></code>**.
 
 ---
 
-## up()
+<heading>
+### next
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Wider view (day → month → year per **`allowedViews`**). From **time** (unless **`onlyTime`**) returns to the day grid.
-
----
-
-## down()
-
-Narrower view (year → month → day), respecting **`allowedViews`**.
+Step forward: next month (day/time view), next year (month), or next decade block (year). Blocked when **<code><purple>disableNavWhenOutOfRange</purple></code> and already at **<code><purple>maxDate</purple></code>**.
 
 ---
 
-## selectDate `(date, opts?) => void`
+<heading>
+### prev
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-**Single / multiple:** one value or array; each day runs **`onBeforeSelect`**.
-
-**Range:** **`[[start, end], ...]`** replaces all ranges.
-
-**`opts`:** `{ close?: boolean }` — after a programmatic range set, `close: true` may trigger **`hide()`** with **`closeOnSelect`**.
+Step backward. Blocked at **<code><purple>minDate</purple></code>** with **<code><purple>disableNavWhenOutOfRange</purple></code>**.
 
 ---
 
-## unselectDate `(date) => void`
+<heading>
+### up
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
+
+Wider view (day → month → year per **<code><purple>allowedViews</purple></code>**).
+
+---
+
+<heading>
+### down
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
+
+Narrower view (year → month → day), respecting **<code><purple>allowedViews</purple></code>**.
+
+---
+
+<heading>
+### selectDate
+<definition><param-type><gray>(</gray>date, opts?<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
+
+**Single / multiple:** one value or array; each day runs **<code><purple>onBeforeSelect</purple></code>**.
+
+**Range:** **<code><gray>[[</gray>start<gray>,</gray> end<gray>],</gray> ...<gray>]</gray></code>** replaces all ranges.
+
+**`opts`:** <code>&#123; close?<brown>:</brown> <red>boolean</red> &#125;</code> — after a programmatic range set, <code>close<brown>:</brown> <red>true</red></code> may trigger **<code><purple>hide</purple><gray>()</gray></code>** with **<code><purple>closeOnSelect</purple></code>**.
+
+---
+
+<heading>
+### unselectDate
+<definition><param-type><gray>(</gray>date<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Drops the matching day or range endpoint.
 
 ---
 
-## clear()
+<heading>
+### clear
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Empty selection.
 
 ---
 
-## formatDate `(date, formatOverride?) => string`
+<heading>
+### formatDate
+<definition><param-type><gray>(</gray>date, format?<gray>)</gray> <brown>=></brown> <green>string</green></param-type></definition>
+</heading>
 
-Uses **`formatOverride`** when it is a **string** (full token set in [Options — format](/docs/documentation/options#format)); otherwise the instance **`format`**. If that option is a **function**, it is invoked with a single **`Date`** derived from **`date`** and current time state. **`''`** if **`date`** is invalid.
+Formats date in passed format.
+
+Uses **<code><purple>format</purple></code>** when it is a **<code><green>string</green></code>** (full token set in [Options — format](/docs/documentation/options#format)). If that option is a **<code><purple>function</purple></code>**, it is invoked with a single **<code><blue>Date</blue></code>** derived from **<code><purple>date</purple></code>** and current time state.
 
 ---
 
-## update `(newOpts) => void`
+<heading>
+### update
+<definition><param-type><gray>(</gray>newOpts<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Update options, rebind listeners and re-render.
 
 ---
 
-## setCurrentView `(view, params?) => void`
+<heading>
+### setCurrentView
+<definition><param-type><gray>(</gray>view, params?<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Set the current view.
+Sets the new value of the calendar view.
 
-**`view`:** `"day" | "month" | "year"`
+**<code>view</code>:** <code><green>"day"</green> <brown>|</brown> <green>"month"</green> <brown>|</brown> <green>"year"</green></code>
 
-**`params`:** `{ date?: number|Date|string }` sets **`viewDate`** (start of day).
+**<code>params</code>:** <code>&#123; date?<brown>:</brown> <red>number</red><brown>|</brown><blue>Date</blue><brown>|</brown><green>string</green> &#125;</code> sets **<code><purple>viewDate</purple></code>** (start of day).
 
 ---
 
-## setViewDate `(date) => void`
+<heading>
+### setViewDate
+<definition><param-type><gray>(</gray>date<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Sets the visible month/year. Does not select.
 
 ---
 
-## setFocusDate `(date) => void`
+<heading>
+### setFocusDate
+<definition><param-type><gray>(</gray>date<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Keyboard focus; **`null`** clears.
+Keyboard focus; **<code><gray>null</gray></code>** clears.
 
 ---
 
-## getViewDates `(view?) => number[]`
+<heading>
+### getViewDates
+<definition><param-type><gray>(</gray>view?<gray>)</gray> <brown>=></brown> <red>number</red><gray>[</gray><gray>]</gray></param-type></definition>
+</heading>
 
 Start-of-day timestamps for cells.
 
-**`view`:** `"day" | "month" | "year"`
+**<code><purple>view</purple></code>:** <code><green>"day"</green> <brown>|</brown> <green>"month"</green> <brown>|</brown> <green>"year"</green></code>
 
 ---
 
-## disableDate `(date) => void`
+<heading>
+### disableDate
+<definition><param-type><gray>(</gray>date<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Disables that calendar day. **No-op** if **`date`** is invalid.
-
----
-
-## enableDate `(date) => void`
-
-Re-enables that day if it was disabled. Still subject to **`minDate`** / **`maxDate`**. **No-op** if invalid.
+Disables that calendar day. **No-op** if **<code><purple>date</purple></code>** is invalid.
 
 ---
 
-## getSelectedPayload `() => number[] | number[][]`
+<heading>
+### enableDate
+<definition><param-type><gray>(</gray>date<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Copy of the selection: flat **`number[]`** or, in range mode, **`[start, end]`** pairs (timestamps).
+Re-enables that day if it was disabled. Still subject to **<code><purple>minDate</purple></code>** / **<code><purple>maxDate</purple></code>**. **No-op** if invalid.
 
 ---
 
-## use `(pluginFn) => void`
+<heading>
+### use
+<definition><param-type><gray>(</gray>pluginFn<gray>)</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
 Register a plugin. [Plugins](/docs/documentation/plugins).
 
 ---
 
-## destroy()
+<heading>
+### destroy
+<definition><param-type><gray>()</gray> <brown>=></brown> <blue>void</blue></param-type></definition>
+</heading>
 
-Tear down DOM and listeners; **`onDestroy`** and plugin teardown. Idempotent (**`isDestroyed`**).
+Tear down DOM and listeners; **<code><purple>onDestroy</purple></code>** and plugin teardown. Idempotent (**<code><purple>isDestroyed</purple></code>**).

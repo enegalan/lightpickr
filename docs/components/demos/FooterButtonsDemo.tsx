@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect, useRef} from 'react';
+import {demoFieldWrapClassName, demoInputClassName, loadLightpickr} from '@/lib/lightpickr_demo';
 
 export function FooterButtonsDemo() {
   const refA = useRef<HTMLInputElement>(null);
@@ -10,8 +11,7 @@ export function FooterButtonsDemo() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const {default: Lightpickr} = await import('lightpickr');
-      await import('lightpickr/lightpickr.css');
+      const {default: Lightpickr} = await loadLightpickr();
       if (cancelled) return;
       const out: Array<{destroy: () => void}> = [];
       if (refA.current) {
@@ -30,9 +30,9 @@ export function FooterButtonsDemo() {
                   const add = (8 - day) % 7 || 7;
                   d.setDate(d.getDate() + add);
                   picker.selectDate(d);
-                }
-              }
-            ]
+                },
+              },
+            ],
           })
         );
       }
@@ -46,7 +46,7 @@ export function FooterButtonsDemo() {
   }, []);
 
   return (
-    <div className="my-4 max-w-xs space-y-4">
+    <div className={`${demoFieldWrapClassName} space-y-4`}>
       <div>
         <span className="mb-1 block text-xs font-semibold uppercase text-fd-muted-foreground">
           Today + clear
@@ -55,7 +55,7 @@ export function FooterButtonsDemo() {
           ref={refA}
           type="text"
           readOnly
-          className="w-full rounded-md border border-fd-border bg-fd-background px-2 py-1.5 text-sm"
+          className={demoInputClassName}
         />
       </div>
       <div>
@@ -66,7 +66,7 @@ export function FooterButtonsDemo() {
           ref={refB}
           type="text"
           readOnly
-          className="w-full rounded-md border border-fd-border bg-fd-background px-2 py-1.5 text-sm"
+          className={demoInputClassName}
         />
       </div>
     </div>

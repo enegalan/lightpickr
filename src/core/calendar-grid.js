@@ -1,27 +1,32 @@
-import { daysInMonth, firstWeekdayOfMonth, ymdToTsStartOfDay } from '../utils/time.js';
-
-/** @type {number} */
-export const YEAR_GRID_RADIUS = 5;
-
-/** @type {number} */
-export const YEAR_GRID_COUNT = 12;
+import { clampInt } from '../utils/common.js';
+import { daysInMonth, firstWeekdayOfMonth, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /**
- * @param {number} centerYear
- * @returns {number}
+ * @param {number} viewYear
+ * @param {number} viewMonth
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @returns {number[]}
  */
-export function yearBlockStartYear(centerYear) {
-  return centerYear - YEAR_GRID_RADIUS;
+export function buildMonthViewTimestamps(state) {
+  const { y } = tsToYmd(state.viewDate);
+  const out = [];
+  const n = clampInt(state.monthViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
+  for (let mm = 0; mm < n; mm++) {
+    out.push(ymdToTsStartOfDay(y, mm, 1));
+  }
+  return out;
 }
 
 /**
- * @param {number} centerYear
+ * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]}
  */
-export function yearGridYearValues(centerYear) {
-  const start = yearBlockStartYear(centerYear);
+export function buildYearViewYears(state) {
+  const n = clampInt(state.yearViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
+  const y = tsToYmd(state.viewDate).y;
+  const start = n === 12 ? Math.floor(y / 12) * 12 : y - state.yearViewRadius;
   const out = [];
-  for (let i = 0; i < YEAR_GRID_COUNT; i++) {
+  for (let i = 0; i < n; i++) {
     out.push(start + i);
   }
   return out;
@@ -29,13 +34,14 @@ export function yearGridYearValues(centerYear) {
 
 /**
  * @param {number} y
- * @param {number} m 0-11
- * @param {number} firstDay
+ * @param {number} m
+ * @param {import('./state.js').LightpickrInternalState} state
  * @returns {{ ts: number, outside: boolean }[]}
  */
-export function buildDayMonthCells(y, m, firstDay) {
+export function buildDayMonthCells(state) {
+  const { y, m } = tsToYmd(state.viewDate);
   const dim = daysInMonth(y, m);
-  const leading = (firstWeekdayOfMonth(y, m) - (firstDay % 7) + 7) % 7;
+  const leading = (firstWeekdayOfMonth(y, m) - (state.firstDay % 7) + 7) % 7;
 
   const prevY = m - 1 < 0 ? y - 1 : y;
   const prevM = m - 1 < 0 ? 11 : m - 1;
@@ -47,21 +53,24 @@ export function buildDayMonthCells(y, m, firstDay) {
 
   const out = [];
   for (let cell = 0; cell < totalCells; cell++) {
-    let ts;
     let outside = false;
+    let year, month, day;
     if (cell < leading) {
-      const d = prevDim - (leading - cell - 1);
-      ts = ymdToTsStartOfDay(prevY, prevM, d);
       outside = true;
+      year = prevY;
+      month = prevM;
+      day = prevDim - (leading - cell - 1);
     } else if (dayNum <= dim) {
-      ts = ymdToTsStartOfDay(y, m, dayNum++);
+      year = y;
+      month = m;
+      day = dayNum++;
     } else {
-      const nm = m + 1 > 11 ? 0 : m + 1;
-      const ny = m + 1 > 11 ? y + 1 : y;
-      ts = ymdToTsStartOfDay(ny, nm, nextMonthDay++);
       outside = true;
+      year = m + 1 > 11 ? y + 1 : y;
+      month = m + 1 > 11 ? 0 : m + 1;
+      day = nextMonthDay++;
     }
-    out.push({ ts, outside });
+    out.push({ ts: ymdToTsStartOfDay(year, month, day), outside });
   }
   return out;
 }

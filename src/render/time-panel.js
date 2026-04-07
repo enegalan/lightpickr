@@ -1,7 +1,6 @@
 import { getTranslations } from '../utils/locale.js';
-import { pad2 } from '../utils/common.js';
-import { createEl } from './dom.js';
-import { buildDayCtx } from './context.js';
+import { clampInt, createEl, pad2 } from '../utils/common.js';
+import { buildCtx } from './context.js';
 
 /**
  * @param {object} instance
@@ -12,7 +11,7 @@ export function renderTimePanel(instance, container) {
   const s = instance._state;
   const wrap = createEl('div', s.classes.timePanel);
 
-  const timeCtx = buildDayCtx(instance, s.viewDate, false);
+  const timeCtx = buildCtx(instance, s.viewDate, false);
   const hookEl = s.render.time?.(timeCtx);
   if (hookEl) {
     wrap.appendChild(hookEl);
@@ -21,7 +20,7 @@ export function renderTimePanel(instance, container) {
   }
 
   const { hours: h, minutes: m } = s.timePart;
-  const ui = getTranslations(s);
+  const ui = getTranslations(s.locale);
   const clock = _formatClock12Parts(h, m, ui.am, ui.pm);
 
   const layout = createEl('div', s.classes.timeLayout);
@@ -93,7 +92,7 @@ export function syncTimePanelDom(instance) {
     return;
   }
 
-  const ui = getTranslations(instance._state);
+  const ui = getTranslations(instance._state.locale);
   const { hours, minutes } = instance._state.timePart;
   const { hourStr, minuteStr, ampm, fullLabel } = _formatClock12Parts(hours, minutes, ui.am, ui.pm);
 
@@ -132,8 +131,8 @@ export function syncTimePanelDom(instance) {
  * @returns {{ hourStr: string, minuteStr: string, ampm: string, fullLabel: string }}
  */
 function _formatClock12Parts(hours24, minutes, amStr, pmStr) {
-  const h = Math.max(0, Math.min(23, Math.floor(hours24)));
-  const m = Math.max(0, Math.min(59, Math.floor(minutes)));
+  const h = clampInt(hours24, 0, 23, 0);
+  const m = clampInt(minutes, 0, 59, 0);
   const h12 = h % 12 === 0 ? 12 : h % 12;
   const ampm = h < 12 ? amStr : pmStr;
   const hourStr = pad2(h12);

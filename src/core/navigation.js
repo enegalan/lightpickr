@@ -1,4 +1,4 @@
-import { YEAR_GRID_COUNT, YEAR_GRID_RADIUS } from './calendar-grid.js';
+import { clampInt } from '../utils/common.js';
 import { clampView } from '../utils/view.js';
 import { addMonths, addYears, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 import lightpickrDefaults from './defaults.js';
@@ -22,7 +22,7 @@ export function navigateNextPrev(state, dir) {
     next.viewDate = ts;
   } else if (v === 'year') {
     const { y, m } = tsToYmd(state.viewDate);
-    next.viewDate = ymdToTsStartOfDay(y + dir * 12, m, 1);
+    next.viewDate = ymdToTsStartOfDay(y + dir * state.yearViewCount, m, 1);
   } else if (v === 'time') {
     const { ts } = addMonths(state.viewDate, dir);
     next.viewDate = ts;
@@ -56,31 +56,27 @@ export function navigateMonthKeepFocusDay(state, dir) {
  * @returns {import('./state.js').LightpickrInternalState}
  */
 export function navigateYearKeepFocusDay(state, dir) {
+  const next = Object.assign({}, state);
+  let viewDate, focusDate;
   if (state.currentView === 'year') {
-    const next = Object.assign({}, state);
-    const base = state.focusDate != null ? state.focusDate : state.viewDate;
-    const ny = tsToYmd(base).y + dir;
-    next.viewDate = ymdToTsStartOfDay(ny, 0, 1);
-    next.focusDate = ymdToTsStartOfDay(ny, 0, 1);
-    return next;
-  }
-  if (state.currentView === 'month') {
-    const next = Object.assign({}, state);
-    const { ts } = addYears(state.viewDate, dir);
+    const ny = tsToYmd(state.focusDate ?? state.viewDate).y + dir;
+    viewDate = ymdToTsStartOfDay(ny, 0, 1);
+    focusDate = ymdToTsStartOfDay(ny, 0, 1);
+  } else if (state.currentView === 'month') {
+    const { ts } = addYears(state.focusDate ?? state.viewDate, dir);
     const { y, m } = tsToYmd(ts);
-    next.viewDate = ymdToTsStartOfDay(y, m, 1);
-    next.focusDate = ymdToTsStartOfDay(y, m, 1);
-    return next;
-  }
-  if (state.currentView !== 'day' && state.currentView !== 'time') {
+    viewDate = ymdToTsStartOfDay(y, m, 1);
+    focusDate = ymdToTsStartOfDay(y, m, 1);
+  } else if (state.currentView === 'day' || state.currentView === 'time') {
+    const { ts } = addYears(state.focusDate ?? state.viewDate, dir);
+    const { y, m } = tsToYmd(ts);
+    viewDate = ymdToTsStartOfDay(y, m, 1);
+    focusDate = startOfDayTs(ts);
+  } else {
     return state;
   }
-  const next = Object.assign({}, state);
-  const base = state.focusDate != null ? state.focusDate : state.viewDate;
-  const { ts } = addYears(base, dir);
-  const { y, m } = tsToYmd(ts);
-  next.viewDate = ymdToTsStartOfDay(y, m, 1);
-  next.focusDate = startOfDayTs(ts);
+  next.viewDate = viewDate;
+  next.focusDate = focusDate;
   return next;
 }
 
@@ -146,19 +142,10 @@ export function navigateDown(state) {
  * @returns {import('./state.js').LightpickrInternalState}
  */
 export function setCurrentViewState(state, view, params) {
-  const next = Object.assign({}, state);
-  if (state.onlyTime) {
-    next.currentView = 'time';
-  } else if (view === 'time') {
-    next.currentView = state.enableTime ? 'time' : clampView(state.allowedViews, 'day');
-  } else {
-    next.currentView = clampView(state.allowedViews, view);
-  }
-  if (params && params.date != null) {
-    const raw = toTimestamp(params.date);
-    if (raw != null) {
-      next.viewDate = startOfDayTs(raw);
-    }
+  let next = Object.assign({}, state);
+  next.currentView = state.onlyTime || (state.enableTime || view === 'time') ? 'time' : clampView(state.allowedViews, 'day');
+  if (params?.date != null) {
+    next = setViewDateState(next, params.date);
   }
   return next;
 }
@@ -196,6 +183,24 @@ export function setFocusDateState(state, date) {
 }
 
 /**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir
+ * @returns {boolean}
+ */
+export function isNavOutOfRange(state, dir) {
+  if (!state.disableNavWhenOutOfRange || (state.minDate == null && state.maxDate == null)) {
+    return false;
+  }
+  const period = _navTargetPeriodYmd(state, dir);
+  if (period == null) {
+    return false;
+  }
+  const periodStart = ymdToTsStartOfDay(period.startYear, period.startMonth, period.startDay);
+  const periodEnd = ymdToTsStartOfDay(period.endYear, period.endMonth, period.endDay);
+  return periodEnd < state.minDate || periodStart > state.maxDate;
+}
+
+/**
  * @private
  * @param {import('./state.js').LightpickrInternalState} state
  * @param {number} dir
@@ -229,10 +234,12 @@ function _navTargetPeriodYmd(state, dir) {
     }
     case 'year': {
       const { y } = tsToYmd(state.viewDate);
-      const startYearOfBlock = y + dir * YEAR_GRID_COUNT - YEAR_GRID_RADIUS;
+      const n = clampInt(state.yearViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
+      const yTarget = y + dir * n;
+      const startYearOfBlock = n === 12 ? Math.floor(yTarget / 12) * 12 : yTarget - state.yearViewRadius;
       return {
         startYear: startYearOfBlock,
-        endYear: startYearOfBlock + YEAR_GRID_COUNT - 1,
+        endYear: startYearOfBlock + n - 1,
         startMonth: 0,
         endMonth: 11,
         startDay: 1,
@@ -242,22 +249,4 @@ function _navTargetPeriodYmd(state, dir) {
     default:
       return null;
   }
-}
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @param {number} dir
- * @returns {boolean}
- */
-export function isNavOutOfRange(state, dir) {
-  if (!state.disableNavWhenOutOfRange || (state.minDate == null && state.maxDate == null)) {
-    return false;
-  }
-  const period = _navTargetPeriodYmd(state, dir);
-  if (period == null) {
-    return false;
-  }
-  const periodStart = ymdToTsStartOfDay(period.startYear, period.startMonth, period.startDay);
-  const periodEnd = ymdToTsStartOfDay(period.endYear, period.endMonth, period.endDay);
-  return periodEnd < state.minDate || periodStart > state.maxDate;
 }
