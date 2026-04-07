@@ -22,11 +22,9 @@ function Lightpickr(target, options) {
   }
   /** @type {HTMLElement} */
   this.$el = el;
-  /** @type {import('./core/state.js').LightpickrOptions} */
-  this._options = Object.assign({}, options || {});
   /** @type {import('./core/state.js').LightpickrInternalState} */
-  this._state = createStateFromOptions(this._options);
-  if (this._options.inline == null) {
+  this._state = createStateFromOptions(options);
+  if (options?.inline == null) {
     // When isMobile is enabled, default to a modal popover even when the target
     // is a wrapper element.
     /** @type {boolean} */
@@ -36,8 +34,6 @@ function Lightpickr(target, options) {
   this.$datepicker = createEl('div', this._state.classes.container);
   /** @type {boolean} */
   this.isDestroyed = false;
-  /** @type {boolean} */
-  this.visible = this._state.inline;
   this._state.visible = this._state.inline;
   /** @type {{ onInit?: () => void, onRender?: () => void, onSelect?: () => void, onDestroy?: () => void }[]} */
   this._plugins = [];
@@ -123,16 +119,14 @@ Lightpickr.prototype.hide = function () {
  * @returns {void}
  */
 Lightpickr.prototype.next = function () {
-  const next = navigateNextPrev(this._state, 1);
-  this._commit(next, { emitSelect: false });
+  this._commit(navigateNextPrev(this._state, 1), { emitSelect: false });
 };
 
 /**
  * @returns {void}
  */
 Lightpickr.prototype.prev = function () {
-  const next = navigateNextPrev(this._state, -1);
-  this._commit(next, { emitSelect: false });
+  this._commit(navigateNextPrev(this._state, -1), { emitSelect: false });
 };
 
 /**
@@ -343,6 +337,22 @@ Lightpickr.prototype.getViewDates = function (view) {
  * @param {number|Date|string} date
  * @returns {void}
  */
+Lightpickr.prototype.enableDate = function (date) {
+  const ts = startOfDayTs(toTimestamp(date));
+  if (ts == null || !Number.isFinite(ts)) {
+    return;
+  }
+  const next = Object.assign({}, this._state);
+  next.disabledDatesSorted = next.disabledDatesSorted.filter(function (x) {
+    return x !== ts;
+  });
+  this._commit(next, { emitSelect: false });
+};
+
+/**
+ * @param {number|Date|string} date
+ * @returns {void}
+ */
 Lightpickr.prototype.disableDate = function (date) {
   const ts = startOfDayTs(toTimestamp(date));
   if (ts == null || !Number.isFinite(ts)) {
@@ -357,22 +367,6 @@ Lightpickr.prototype.disableDate = function (date) {
     });
   }
   next.disabledDatesSorted = arr;
-  this._commit(next, { emitSelect: false });
-};
-
-/**
- * @param {number|Date|string} date
- * @returns {void}
- */
-Lightpickr.prototype.enableDate = function (date) {
-  const ts = startOfDayTs(toTimestamp(date));
-  if (ts == null || !Number.isFinite(ts)) {
-    return;
-  }
-  const next = Object.assign({}, this._state);
-  next.disabledDatesSorted = next.disabledDatesSorted.filter(function (x) {
-    return x !== ts;
-  });
   this._commit(next, { emitSelect: false });
 };
 
@@ -555,7 +549,6 @@ Lightpickr.prototype._unbindCalendarKeyboard = function () {
 Lightpickr.prototype._commit = function (next, opts) {
   const prevState = this._state;
   this._state = next;
-  this.visible = next.visible;
   if (next.pendingRangeStart == null) {
     this._pendingRangeHoverTs = null;
   }
@@ -600,6 +593,11 @@ Lightpickr.prototype._pluginOnSelect = function () {
 };
 
 Object.defineProperties(Lightpickr.prototype, {
+  visible: {
+    get: function () {
+      return this._state.visible;
+    }
+  },
   viewDate: {
     get: function () {
       return this._state.viewDate;

@@ -2,8 +2,6 @@ import { clampInt } from '../utils/common.js';
 import { daysInMonth, firstWeekdayOfMonth, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /**
- * @param {number} viewYear
- * @param {number} viewMonth
  * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]}
  */
