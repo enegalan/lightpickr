@@ -55,11 +55,14 @@ function Lightpickr(target, options) {
   this._docKeydownEsc = null;
   /** @type {((ev: KeyboardEvent) => void)|null} */
   this._datepickerKeydown = null;
+  /** @type {MutationObserver|null} */
+  this._themeMutationObserver = null;
   /** @type {HTMLElement} */
   this.$pointer = createEl('i', this._state.classes.popoverPointer, { 'aria-hidden': 'true' });
 
   this._mount();
   renderContainer(this);
+  this._bindThemeSync();
   this._bindTarget();
 }
 
@@ -238,6 +241,7 @@ Lightpickr.prototype.destroy = function () {
   this._positionHideCleanup = null;
   this._detachListeners();
   this._unbindCalendarKeyboard();
+  this._unbindThemeSync();
   this._delegateOffs.forEach(function (fn) {
     fn();
   });
@@ -558,6 +562,63 @@ Lightpickr.prototype._commit = function (next, opts) {
   if (!this._state.inline && !this._state.isMobile && this._state.visible) {
     this._positionPopover(!(opts && opts.popoverInitialOpen));
   }
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._bindThemeSync = function () {
+  const self = this;
+  this._syncThemeMode();
+  this._themeMutationObserver = new MutationObserver(function () {
+    self._syncThemeMode();
+  });
+  this._themeMutationObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  });
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._unbindThemeSync = function () {
+  if (!this._themeMutationObserver) {
+    return;
+  }
+  this._themeMutationObserver.disconnect();
+  this._themeMutationObserver = null;
+};
+
+/**
+ * @private
+ * @returns {void}
+ */
+Lightpickr.prototype._syncThemeMode = function () {
+  const root = this.$datepicker;
+  if (!(root instanceof HTMLElement)) {
+    return;
+  }
+  let shouldUseDark = false;
+
+  // Use color-scheme from source/document first, then OS preference as fallback.
+  const sourceColorScheme = window.getComputedStyle(this._getPositionReference()).colorScheme;
+  const documentColorScheme = window.getComputedStyle(document.documentElement).colorScheme;
+  const isLight = sourceColorScheme.indexOf('light') >= 0 || documentColorScheme.indexOf('light') >= 0;
+  const isDark = sourceColorScheme.indexOf('dark') >= 0 || documentColorScheme.indexOf('dark') >= 0;
+
+  if (isLight) {
+    shouldUseDark = false;
+  } else if (isDark) {
+    shouldUseDark = true;
+  } else if (typeof window.matchMedia === 'function') {
+    shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  shouldUseDark ? root.classList.add('lp--dark') : root.classList.remove('lp--dark');
+  shouldUseDark ? root.classList.remove('lp--light') : root.classList.add('lp--light');
 };
 
 /**
