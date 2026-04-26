@@ -87,7 +87,7 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-fd-border bg-fd-card/90 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-fd-foreground shadow-sm backdrop-blur-md dark:bg-fd-card/50">
                   <Layers className="size-3.5 shrink-0 text-fd-primary" aria-hidden />
-                  ~15 kB gzipped
+                  ~16 kB gzipped
                 </span>
                 <span className="h-1 w-1 rounded-full bg-fd-border" aria-hidden />
                 <span className="text-xs font-medium text-fd-muted-foreground">npm · ESM &amp; UMD</span>
