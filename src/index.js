@@ -571,7 +571,10 @@ Lightpickr.prototype._commit = function (next, opts) {
 Lightpickr.prototype._bindThemeSync = function () {
   const self = this;
   this._syncThemeMode();
-  this._themeMutationObserver = new MutationObserver(function () {
+  if (!window.MutationObserver) {
+    return;
+  }
+  this._themeMutationObserver = new window.MutationObserver(function () {
     self._syncThemeMode();
   });
   this._themeMutationObserver.observe(document.documentElement, {
