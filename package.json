@@ -1,6 +1,6 @@
 {
   "name": "lightpickr",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "Lightweight dependency-free JavaScript datepicker",
   "type": "module",
   "main": "dist/lightpickr.js",
