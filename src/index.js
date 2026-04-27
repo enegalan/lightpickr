@@ -577,11 +577,14 @@ Lightpickr.prototype._bindThemeSync = function () {
   this._themeMutationObserver = new window.MutationObserver(function () {
     self._syncThemeMode();
   });
-  this._themeMutationObserver.observe(document.documentElement, {
+  const attrs = {
     attributes: true,
     attributeFilter: ['class', 'style'],
-    subtree: true,
-  });
+  };
+  this._themeMutationObserver.observe(document.documentElement, attrs);
+  if (document.body) {
+    this._themeMutationObserver.observe(document.body, attrs);
+  }
 };
 
 /**
