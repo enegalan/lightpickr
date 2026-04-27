@@ -604,17 +604,19 @@ Lightpickr.prototype._syncThemeMode = function () {
   if (!(root instanceof HTMLElement)) {
     return;
   }
+  const darkClass = document.documentElement.classList.contains('dark') || document.body && document.body.classList.contains('dark');
+
+  const documentColorScheme = window.getComputedStyle(document.documentElement).colorScheme || '';
+  const hasLightKeyword = documentColorScheme.indexOf('light') >= 0;
+  const hasDarkKeyword = documentColorScheme.indexOf('dark') >= 0;
+
   let shouldUseDark = false;
 
-  // Use color-scheme from source/document first, then OS preference as fallback.
-  const sourceColorScheme = window.getComputedStyle(this._getPositionReference()).colorScheme;
-  const documentColorScheme = window.getComputedStyle(document.documentElement).colorScheme;
-  const isLight = sourceColorScheme.indexOf('light') >= 0 || documentColorScheme.indexOf('light') >= 0;
-  const isDark = sourceColorScheme.indexOf('dark') >= 0 || documentColorScheme.indexOf('dark') >= 0;
-
-  if (isLight) {
+  if (hasLightKeyword && !hasDarkKeyword) {
     shouldUseDark = false;
-  } else if (isDark) {
+  } else if (hasDarkKeyword && !hasLightKeyword) {
+    shouldUseDark = true;
+  } else if (darkClass) {
     shouldUseDark = true;
   } else if (typeof window.matchMedia === 'function') {
     shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
