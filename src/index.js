@@ -579,7 +579,8 @@ Lightpickr.prototype._bindThemeSync = function () {
   });
   this._themeMutationObserver.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ['class', 'style']
+    attributeFilter: ['class', 'style'],
+    subtree: true,
   });
 };
 
