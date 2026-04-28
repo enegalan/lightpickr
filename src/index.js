@@ -557,6 +557,7 @@ Lightpickr.prototype._commit = function (next, opts) {
     this._pendingRangeHoverTs = null;
   }
   renderContainer(this);
+  this._syncThemeMode();
   syncInstanceClasses(this);
   emitEvents(this, prevState, next, opts);
   if (!this._state.inline && !this._state.isMobile && this._state.visible) {
