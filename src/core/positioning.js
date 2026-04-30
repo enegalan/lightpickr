@@ -19,8 +19,14 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
   let { top, left } = _computePopoverCoords(r, w, h, main, sec, gx, gy);
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  left = Math.min(Math.max(margin, left), Math.max(margin, vw - w - margin));
-  top = Math.min(Math.max(margin, top), Math.max(margin, vh - h - margin));
+  left = Math.min(
+    Math.max(window.scrollX + margin, left + window.scrollX),
+    Math.max(window.scrollX + margin, window.scrollX + vw - w - margin)
+  );
+  top = Math.min(
+    Math.max(window.scrollY + margin, top + window.scrollY),
+    Math.max(window.scrollY + margin, window.scrollY + vh - h - margin)
+  );
   popover.style.top = top + 'px';
   popover.style.left = left + 'px';
   popover.style.transform = '';

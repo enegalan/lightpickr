@@ -105,7 +105,7 @@
   --lp-popover-gap-y: 4px;
   --lp-popover-viewport-margin: 8px;
   --lp-z-popover: 10000;
-  --lp-popover-position: fixed;
+  --lp-popover-position: absolute;
   --lp-pointer-visible: 0;
   --lp-pointer-size: 10px;
   --lp-pointer-border-radius: 2px;
