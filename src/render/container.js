@@ -39,7 +39,7 @@ export function renderContainer(instance) {
   }
   renderFooter(instance, container);
 
-  if (!s.inline && instance.$pointer) {
+  if (!s.inline && !s.isMobile && instance.$pointer) {
     instance.$datepicker.appendChild(instance.$pointer);
   }
 
