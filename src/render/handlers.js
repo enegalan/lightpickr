@@ -464,6 +464,8 @@ function _syncPendingRangeHoverClasses(instance) {
     if (atLo) {
       if (!atAnchor) {
         el.classList.add(rangePreview, rangePreviewStartCap);
+      } else if (lo !== hi) {
+        el.classList.add(rangePreviewStartCap);
       }
       continue;
     }
