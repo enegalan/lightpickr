@@ -42,14 +42,18 @@ export function AnimePopperDemo() {
             onFirstUpdate() {
               if (!isViewChange) {
                 anime.remove($datepicker);
-              }
-              $datepicker.style.transformOrigin = 'center top';
-              if (!isViewChange) {
+                $datepicker.style.transformOrigin = '50% 0%';
+                $datepicker.style.opacity = '0';
+                $datepicker.style.willChange = 'opacity, transform';
                 anime({
                   targets: $datepicker,
                   opacity: [0, 1],
-                  rotateX: [-90, 0],
-                  easing: 'spring(1.3, 80, 5, 0)',
+                  translateY: [-14, 0],
+                  scale: [0.94, 1],
+                  easing: 'spring(1, 88, 12, 0)',
+                  complete() {
+                    $datepicker.style.willChange = '';
+                  },
                 });
               }
             },
@@ -82,12 +86,18 @@ export function AnimePopperDemo() {
               hideDone();
               return;
             }
+            anime.remove($datepicker);
+            $datepicker.style.willChange = 'opacity, transform';
             const anim = anime({
               targets: $datepicker,
               opacity: 0,
-              rotateX: -90,
-              duration: 300,
-              easing: 'easeOutCubic',
+              translateY: -10,
+              scale: 0.94,
+              duration: 240,
+              easing: 'easeInCubic',
+              complete() {
+                $datepicker.style.willChange = '';
+              },
             });
             const finish = () => {
               current.destroy();
