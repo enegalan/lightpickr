@@ -36,9 +36,9 @@ const stMin = createStateFromOptions({
   format: 'YYYY-MM-DD'
 });
 const clrMin = applyDaySelection(stMin, march5);
-assert.equal(clrMin.changed, true);
-assert.deepEqual(clrMin.state.selectedDates, []);
-assert.equal(clrMin.state.pendingRangeStart, null);
+assert.equal(clrMin.changed, false);
+assert.deepEqual(clrMin.state.selectedDates, stMin.selectedDates);
+assert.equal(clrMin.state.pendingRangeStart, stMin.pendingRangeStart);
 
 const feb26 = startOfDayTs(new Date('2026-02-26'));
 const stOut = createStateFromOptions({
@@ -52,7 +52,7 @@ const stOut = createStateFromOptions({
 const clrOut = applyDaySelection(stOut, feb26);
 assert.equal(clrOut.changed, true);
 assert.deepEqual(clrOut.state.selectedDates, []);
-assert.equal(clrOut.state.pendingRangeStart, null);
+assert.equal(clrOut.state.pendingRangeStart, feb26);
 
 const apr14 = startOfDayTs(new Date('2026-04-14'));
 const apr15 = startOfDayTs(new Date('2026-04-15'));

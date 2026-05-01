@@ -104,6 +104,17 @@
   --lp-popover-gap-x: 0px;
   --lp-popover-gap-y: 4px;
   --lp-popover-viewport-margin: 8px;
+  --lp-popover-open-duration: 200ms;
+  --lp-popover-close-duration: 160ms;
+  --lp-popover-open-timing: cubic-bezier(0.16, 1, 0.3, 1);
+  --lp-popover-close-timing: cubic-bezier(0.4, 0, 1, 1);
+  --lp-popover-rest-opacity: 0;
+  --lp-popover-rest-translate-y: -6px;
+  --lp-popover-rest-scale: 0.98;
+  --lp-mobile-backdrop-open-duration: 200ms;
+  --lp-mobile-backdrop-close-duration: 160ms;
+  --lp-mobile-backdrop-open-timing: cubic-bezier(0.16, 1, 0.3, 1);
+  --lp-mobile-backdrop-close-timing: cubic-bezier(0.4, 0, 1, 1);
   --lp-z-popover: 10000;
   --lp-popover-position: absolute;
   --lp-pointer-visible: 0;
@@ -198,15 +209,65 @@
   min-height: var(--lp-calendar-shell-min-height);
 }
 
+.lp--popover.lp--popover-anim:not(.lp--popover-open) {
+  display: none;
+  opacity: var(--lp-popover-rest-opacity);
+  transform: translateY(var(--lp-popover-rest-translate-y)) scale(var(--lp-popover-rest-scale));
+  pointer-events: none;
+  transition:
+    opacity var(--lp-popover-close-duration) var(--lp-popover-close-timing),
+    transform var(--lp-popover-close-duration) var(--lp-popover-close-timing),
+    display var(--lp-popover-close-duration) allow-discrete;
+}
+
+.lp--popover.lp--popover-anim.lp--popover-open {
+  display: block;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition:
+    opacity var(--lp-popover-open-duration) var(--lp-popover-open-timing),
+    transform var(--lp-popover-open-duration) var(--lp-popover-open-timing),
+    display var(--lp-popover-open-duration) allow-discrete;
+}
+
+@starting-style {
+  .lp--popover.lp--popover-anim.lp--popover-open {
+    opacity: var(--lp-popover-rest-opacity);
+    transform: translateY(var(--lp-popover-rest-translate-y)) scale(var(--lp-popover-rest-scale));
+  }
+
+  .lp-mobile-backdrop.lp-mobile-backdrop--open {
+    opacity: 0;
+  }
+}
+
 .lp-mobile-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(17, 24, 39, 0.45);
   z-index: var(--lp-z-popover);
-  display: none;
   align-items: center;
   justify-content: center;
   padding: var(--lp-space-lg);
+}
+
+.lp-mobile-backdrop:not(.lp-mobile-backdrop--open) {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--lp-mobile-backdrop-close-duration) var(--lp-mobile-backdrop-close-timing),
+    display var(--lp-mobile-backdrop-close-duration) allow-discrete;
+}
+
+.lp-mobile-backdrop.lp-mobile-backdrop--open {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity var(--lp-mobile-backdrop-open-duration) var(--lp-mobile-backdrop-open-timing),
+    display var(--lp-mobile-backdrop-open-duration) allow-discrete;
 }
 
 .lp-mobile-backdrop .lp.lp--popover {
@@ -838,4 +899,18 @@
 .lp-month-view .lp-cell {
   width: auto;
   height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp--popover.lp--popover-anim {
+    --lp-popover-open-duration: 1ms;
+    --lp-popover-close-duration: 1ms;
+    --lp-popover-rest-translate-y: 0;
+    --lp-popover-rest-scale: 1;
+  }
+
+  .lp-mobile-backdrop {
+    --lp-mobile-backdrop-open-duration: 1ms;
+    --lp-mobile-backdrop-close-duration: 1ms;
+  }
 }

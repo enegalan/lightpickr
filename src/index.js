@@ -80,9 +80,18 @@ Lightpickr.prototype.show = function () {
     next = reseedKeyboardFocusForView(next);
   }
   if (this.$backdrop) {
-    this.$backdrop.style.display = 'flex';
+    if (typeof this._state.position === 'function') {
+      this.$backdrop.style.display = 'flex';
+    } else {
+      this.$backdrop.classList.add(this._state.classes.mobileBackdropOpen);
+      this.$backdrop.style.removeProperty('display');
+    }
   }
-  this.$datepicker.style.display = '';
+  if (typeof this._state.position === 'function') {
+    this.$datepicker.style.display = '';
+  } else {
+    this.$datepicker.style.removeProperty('display');
+  }
   bindDocListeners(this);
   this._commit(next, { emitSelect: false, popoverInitialOpen: true });
   this._state.onShow(true, { datepicker: this });
@@ -102,9 +111,18 @@ Lightpickr.prototype.hide = function () {
     const next = Object.assign({}, self._state);
     next.visible = false;
     if (self.$backdrop) {
-      self.$backdrop.style.display = 'none';
+      if (typeof self._state.position === 'function') {
+        self.$backdrop.style.display = 'none';
+      } else {
+        self.$backdrop.classList.remove(self._state.classes.mobileBackdropOpen);
+        self.$backdrop.style.removeProperty('display');
+      }
     }
-    self.$datepicker.style.display = 'none';
+    if (typeof self._state.position === 'function') {
+      self.$datepicker.style.display = 'none';
+    } else {
+      self.$datepicker.style.removeProperty('display');
+    }
     self._detachListeners();
     self._commit(next, { emitSelect: false });
     self._state.onHide(true, { datepicker: self });
@@ -283,7 +301,15 @@ Lightpickr.prototype.update = function (newOpts) {
         document.body.appendChild(this.$backdrop);
       }
       this.$datepicker.classList.add(this._state.classes.mobile);
-      this.$backdrop.style.display = this._state.visible ? 'flex' : 'none';
+      if (typeof next.position === 'function') {
+        this.$backdrop.style.display = next.visible ? 'flex' : 'none';
+      } else if (next.visible) {
+        this.$backdrop.classList.add(next.classes.mobileBackdropOpen);
+        this.$backdrop.style.removeProperty('display');
+      } else {
+        this.$backdrop.classList.remove(next.classes.mobileBackdropOpen);
+        this.$backdrop.style.removeProperty('display');
+      }
     } else if (this.$backdrop) {
       if (this.$datepicker.parentNode) {
         this.$datepicker.parentNode.removeChild(this.$datepicker);
@@ -400,7 +426,8 @@ Lightpickr.prototype._mount = function () {
     this.$datepicker.classList.add(this._state.classes.inline);
   } else {
     if (this._state.isMobile) {
-      this.$backdrop = createEl('div', this._state.classes.mobileBackdrop, {}, { display: 'none' });
+      const backdropStyles = typeof this._state.position === 'function' ? { display: 'none' } : {};
+      this.$backdrop = createEl('div', this._state.classes.mobileBackdrop, {}, backdropStyles);
       this.$backdrop.appendChild(this.$datepicker);
       document.body.appendChild(this.$backdrop);
       this.$datepicker.classList.add(this._state.classes.mobile);
@@ -411,7 +438,11 @@ Lightpickr.prototype._mount = function () {
     this.$datepicker.classList.add(this._state.classes.popover);
     this.$datepicker.setAttribute('role', 'dialog');
     this.$datepicker.setAttribute('aria-modal', 'true');
-    this.$datepicker.style.display = 'none';
+    if (typeof this._state.position === 'function') {
+      this.$datepicker.style.display = 'none';
+    } else {
+      this.$datepicker.style.removeProperty('display');
+    }
   }
 };
 

@@ -13,7 +13,25 @@ export function renderContainer(instance) {
   const s = instance._state;
   const hooks = s.render;
   instance.$datepicker.innerHTML = '';
-  instance.$datepicker.className = s.classes.container + ' ' + (s.inline ? s.classes.inline : s.classes.popover) + ' ' + (s.onlyTime ? s.classes.container + '--only-time' : '');
+  let cn =
+    s.classes.container +
+    ' ' +
+    (s.inline ? s.classes.inline : s.classes.popover) +
+    (s.onlyTime ? ' ' + s.classes.container + '--only-time' : '');
+  if (!s.inline && typeof s.position !== 'function') {
+    cn += ' ' + s.classes.popoverAnim;
+  }
+  if (!s.inline && s.visible && typeof s.position !== 'function') {
+    cn += ' ' + s.classes.popoverOpen;
+  }
+  instance.$datepicker.className = cn.trim();
+  if (!s.inline) {
+    if (typeof s.position === 'function') {
+      instance.$datepicker.style.display = s.visible ? '' : 'none';
+    } else {
+      instance.$datepicker.style.removeProperty('display');
+    }
+  }
 
   let container = instance.$datepicker;
   if (hooks.container) {

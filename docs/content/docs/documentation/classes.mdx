@@ -28,6 +28,9 @@ Each value is a **class name string**.
 | `popover`                  | `lp--popover`                      | Root modifier when floating           |
 | `mobile`                   | `lp--mobile`                       | Root modifier in mobile backdrop mode |
 | `mobileBackdrop`           | `lp-mobile-backdrop`               | Full-screen wrapper for mobile        |
+| `mobileBackdropOpen`       | `lp-mobile-backdrop--open`        | Mobile backdrop after fade-in         |
+| `popoverAnim`              | `lp--popover-anim`                 | Enables default open/close CSS motion (string `position` only) |
+| `popoverOpen`              | `lp--popover-open`                 | Open / visible popover (during display) |
 | `headCell`                 | `lp-head-cell`                     | Weekday header cells                  |
 | `row`                      | `lp-row`                           | Day row                               |
 | `yearView`                 | `lp-year-view`                     | Year view grid container              |
@@ -108,38 +111,38 @@ Defined in the shipped stylesheet. Override on a container that wraps the picker
 `lp--dark` applies a set of CSS variable overrides on the root `.lp` element.  
 `lp--light` keeps the base values from `:root`.
 
-| Variable                           | Light (base)                      | Dark (`.lp.lp--dark`)                                          |
-|------------------------------------|-----------------------------------|-----------------------------------------------------------------|
-| `--lp-bg`                          | `#ffffff`                         | `#191919`                                                       |
-| `--lp-color`                       | `#1f2937`                         | `#e5e7eb`                                                       |
-| `--lp-accent`                      | `#2563eb`                         | `#60a5fa`                                                       |
-| `--lp-accent-contrast`             | `#ffffff`                         | `#0f172a`                                                       |
-| `--lp-accent-hover`                | `#1d4ed8`                         | `#3b82f6`                                                       |
-| `--lp-muted`                       | `#6b7280`                         | `#9ca3af`                                                       |
-| `--lp-border`                      | `#e5e7eb`                         | `#333`                                                          |
-| `--lp-shadow`                      | `0 10px 25px rgba(0,0,0,0.12)`    | `0 14px 28px rgba(0,0,0,0.45)`                                 |
-| `--lp-nav-button-bg-hover`         | `rgba(0, 0, 0, 0.04)`             | `rgba(255, 255, 255, 0.08)`                                    |
-| `--lp-nav-button-bg-active`        | `rgba(0, 0, 0, 0.08)`             | `rgba(255, 255, 255, 0.14)`                                    |
-| `--lp-nav-button-color`            | `var(--lp-color)`                 | `var(--lp-color)`                                               |
-| `--lp-title-button-color`          | `var(--lp-color)`                 | `var(--lp-color)`                                               |
-| `--lp-title-button-bg-hover`       | `rgba(0, 0, 0, 0.04)`             | `rgba(255, 255, 255, 0.08)`                                    |
-| `--lp-title-button-bg-active`      | `rgba(0, 0, 0, 0.08)`             | `rgba(255, 255, 255, 0.14)`                                    |
-| `--lp-cell-bg-hover`               | `rgba(0, 0, 0, 0.04)`             | `rgba(255, 255, 255, 0.08)`                                    |
-| `--lp-cell-bg-active`              | `rgba(0, 0, 0, 0.08)`             | `rgba(255, 255, 255, 0.14)`                                    |
-| `--lp-cell-bg-active-selected`     | `rgb(25, 67, 185)`                | `#2563eb`                                                       |
-| `--lp-cell-color`                  | `var(--lp-color)`                 | `var(--lp-color)`                                               |
-| `--lp-cell-today-bg`               | `rgba(37, 99, 235, 0.1)`          | `rgba(96, 165, 250, 0.22)`                                     |
-| `--lp-cell-today-border`           | `1px solid rgba(37, 99, 235, 0.25)` | `1px solid rgba(96, 165, 250, 0.4)`                          |
-| `--lp-cell-range-bg`               | `rgba(37, 99, 235, 0.12)`         | `rgba(96, 165, 250, 0.2)`                                      |
-| `--lp-cell-range-preview-bg`       | `rgba(37, 99, 235, 0.14)`         | `rgba(96, 165, 250, 0.24)`                                     |
-| `--lp-cell-range-preview-bg-hover` | `rgba(37, 99, 235, 0.22)`         | `rgba(96, 165, 250, 0.32)`                                     |
-| `--lp-cell-weekend-color`          | `#b45309`                         | `#f59e0b`                                                       |
-| `--lp-time-slider-track-bg`        | `var(--lp-border)`                | `#4b5563`                                                       |
-| `--lp-time-slider-track-bg-active` | `rgba(37, 99, 235, 0.22)`         | `rgba(96, 165, 250, 0.34)`                                     |
-| `--lp-time-slider-thumb-border`    | `2px solid var(--lp-bg)`          | `2px solid #111827`                                             |
-| `--lp-time-slider-thumb-shadow`    | `0 1px 4px rgba(0, 0, 0, 0.18)`   | `0 1px 5px rgba(0, 0, 0, 0.5)`                                 |
+| Variable                              | Light                                                                  | Dark                                                                    |
+|---------------------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `--lp-bg`                             | `#ffffff`                                                              | `#191919`                                                               |
+| `--lp-color`                          | `#1f2937`                                                              | `#e5e7eb`                                                               |
+| `--lp-accent`                         | `#2563eb`                                                              | `#60a5fa`                                                               |
+| `--lp-accent-contrast`                | `#ffffff`                                                              | `#0f172a`                                                               |
+| `--lp-accent-hover`                   | `#1d4ed8`                                                              | `#3b82f6`                                                               |
+| `--lp-muted`                          | `#6b7280`                                                              | `#9ca3af`                                                               |
+| `--lp-border`                         | `#e5e7eb`                                                              | `#333`                                                                  |
+| `--lp-shadow`                         | `0 10px 25px rgba(0,0,0,0.12)`                                       | `0 14px 28px rgba(0,0,0,0.45)`                                        |
+| `--lp-nav-button-bg-hover`            | `rgba(0, 0, 0, 0.04)`                                                | `rgba(255, 255, 255, 0.08)`                                           |
+| `--lp-nav-button-bg-active`           | `rgba(0, 0, 0, 0.08)`                                                | `rgba(255, 255, 255, 0.14)`                                           |
+| `--lp-nav-button-color`               | `var(--lp-color)`                                                      | `var(--lp-color)`                                                       |
+| `--lp-title-button-color`             | `var(--lp-color)`                                                      | `var(--lp-color)`                                                       |
+| `--lp-title-button-bg-hover`          | `rgba(0, 0, 0, 0.04)`                                                | `rgba(255, 255, 255, 0.08)`                                           |
+| `--lp-title-button-bg-active`         | `rgba(0, 0, 0, 0.08)`                                                | `rgba(255, 255, 255, 0.14)`                                           |
+| `--lp-cell-bg-hover`                  | `rgba(0, 0, 0, 0.04)`                                                | `rgba(255, 255, 255, 0.08)`                                           |
+| `--lp-cell-bg-active`                 | `rgba(0, 0, 0, 0.08)`                                                | `rgba(255, 255, 255, 0.14)`                                           |
+| `--lp-cell-bg-active-selected`        | `rgb(25, 67, 185)`                                                   | `#2563eb`                                                               |
+| `--lp-cell-color`                     | `var(--lp-color)`                                                      | `var(--lp-color)`                                                       |
+| `--lp-cell-today-bg`                  | `rgba(37, 99, 235, 0.1)`                                             | `rgba(96, 165, 250, 0.22)`                                            |
+| `--lp-cell-today-border`              | `1px solid rgba(37, 99, 235, 0.25)`                                  | `1px solid rgba(96, 165, 250, 0.4)`                                   |
+| `--lp-cell-range-bg`                  | `rgba(37, 99, 235, 0.12)`                                            | `rgba(96, 165, 250, 0.2)`                                             |
+| `--lp-cell-range-preview-bg`          | `rgba(37, 99, 235, 0.14)`                                            | `rgba(96, 165, 250, 0.24)`                                            |
+| `--lp-cell-range-preview-bg-hover`    | `rgba(37, 99, 235, 0.22)`                                            | `rgba(96, 165, 250, 0.32)`                                            |
+| `--lp-cell-weekend-color`             | `#b45309`                                                              | `#f59e0b`                                                               |
+| `--lp-time-slider-track-bg`           | `var(--lp-border)`                                                     | `#4b5563`                                                               |
+| `--lp-time-slider-track-bg-active`    | `rgba(37, 99, 235, 0.22)`                                            | `rgba(96, 165, 250, 0.34)`                                            |
+| `--lp-time-slider-thumb-border`       | `2px solid var(--lp-bg)`                                               | `2px solid #111827`                                                   |
+| `--lp-time-slider-thumb-shadow`       | `0 1px 4px rgba(0, 0, 0, 0.18)`                                      | `0 1px 5px rgba(0, 0, 0, 0.5)`                                        |
 | `--lp-time-slider-thumb-shadow-hover` | `0 0 0 3px rgba(37, 99, 235, 0.28), 0 2px 6px rgba(0, 0, 0, 0.15)` | `0 0 0 3px rgba(96, 165, 250, 0.36), 0 2px 8px rgba(0, 0, 0, 0.38)` |
-| `--lp-time-slider-focus-ring`      | `0 0 0 2px var(--lp-bg), 0 0 0 4px rgba(37, 99, 235, 0.45)` | `0 0 0 2px #111827, 0 0 0 4px rgba(96, 165, 250, 0.55)` |
+| `--lp-time-slider-focus-ring`         | `0 0 0 2px var(--lp-bg), 0 0 0 4px rgba(37, 99, 235, 0.45)`          | `0 0 0 2px #111827, 0 0 0 4px rgba(96, 165, 250, 0.55)`             |
 
 Dark mode also sets `color-scheme: dark` on `.lp.lp--dark`.
 
@@ -268,3 +271,29 @@ Dark mode also sets `color-scheme: dark` on `.lp.lp--dark`.
 | `--lp-pointer-border-radius`   | `2px`                              | Arrow border radius     |
 | `--lp-pointer-offset`          | `14px`                             | Arrow offset            |
 | `--lp-pointer-half-size`       | `calc(var(--lp-pointer-size) / 2)` | Arrow half size         |
+
+### Popover motion
+
+When `options.position` is a **string** (built-in placement), the root gets `lp--popover-anim`. The visible state adds `lp--popover-open` on re-render; **motion is entirely CSS** (`@starting-style` for the opening frame, `transition` + `display` with `allow-discrete` so `display: none` does not cut transitions short). If you pass a **`position` function**, those classes are omitted and the library keeps the previous inline `display` toggles so your code can drive transforms.
+
+On **mobile** (`isMobile`), the backdrop uses `lp-mobile-backdrop--open` the same way (CSS-only when `position` is a string).
+
+Requires a recent browser that supports **`@starting-style`** and **`transition-behavior: allow-discrete`** on `display` (e.g. current Chromium, Safari 17.4+). Older engines may snap without a smooth exit.
+
+Override timing and easing with:
+
+| Variable                              | Default                         | Notes                                     |
+|---------------------------------------|---------------------------------|-------------------------------------------|
+| `--lp-popover-open-duration`          | `200ms`                         | Fade/slide in                             |
+| `--lp-popover-close-duration`         | `160ms`                         | Fade/slide out                            |
+| `--lp-popover-open-timing`            | `cubic-bezier(0.16, 1, 0.3, 1)` | Easing in                                 |
+| `--lp-popover-close-timing`           | `cubic-bezier(0.4, 0, 1, 1)`    | Easing out                                |
+| `--lp-popover-rest-opacity`           | `0`                             | Opacity before open / after close         |
+| `--lp-popover-rest-translate-y`       | `-6px`                          | Vertical offset before open / after close |
+| `--lp-popover-rest-scale`             | `0.98`                          | Scale before open / after close           |
+| `--lp-mobile-backdrop-open-duration`  | `200ms`                         | Backdrop fade in                          |
+| `--lp-mobile-backdrop-close-duration` | `160ms`                         | Backdrop fade out                         |
+| `--lp-mobile-backdrop-open-timing`    | `cubic-bezier(0.16, 1, 0.3, 1)` | Backdrop easing in                        |
+| `--lp-mobile-backdrop-close-timing`   | `cubic-bezier(0.4, 0, 1, 1)`    | Backdrop easing out                       |
+
+`prefers-reduced-motion: reduce` shortens durations and removes motion offset/scale on the popover, and shortens backdrop fades.

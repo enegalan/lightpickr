@@ -73,6 +73,13 @@ import lightpickrDefaults from './defaults.js';
  * @property {string} [footer]
  * @property {string} [popoverPointer]
  * @property {string} [viewBody]
+ * @property {string} [inline]
+ * @property {string} [popover]
+ * @property {string} [mobile]
+ * @property {string} [mobileBackdrop]
+ * @property {string} [mobileBackdropOpen]
+ * @property {string} [popoverAnim]
+ * @property {string} [popoverOpen]
  */
 
 /**
