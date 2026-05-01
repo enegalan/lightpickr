@@ -49,6 +49,9 @@ export function applyDaySelection(state, dayTs) {
   if (state.range) {
     const maxR = state.multipleLimit;
     if (state.pendingRangeStart == null) {
+      if (Array.isArray(next.selectedDates[0])) {
+        next.selectedDates = [];
+      }
       next.pendingRangeStart = d;
       next.focusDate = d;
       return { state: next, changed: true };

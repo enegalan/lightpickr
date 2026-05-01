@@ -566,6 +566,15 @@
   border-radius: 0 var(--lp-cell-radius) var(--lp-cell-radius) 0;
 }
 
+.lp-cell--range-start.lp-cell--range-end {
+  border-radius: var(--lp-cell-radius);
+}
+
+.lp-cell--range-start:not(.lp-cell--range):not(.lp-cell--range-end):not(.lp-cell--range-preview-start-cap):not(.lp-cell--range-preview-end-cap),
+.lp-cell--range-end:not(.lp-cell--range):not(.lp-cell--range-start):not(.lp-cell--range-preview-end-cap):not(.lp-cell--range-preview-start-cap) {
+  border-radius: var(--lp-cell-radius);
+}
+
 .lp-cell--range-preview {
   background: var(--lp-cell-range-preview-bg);
   color: var(--lp-cell-range-preview-color);
