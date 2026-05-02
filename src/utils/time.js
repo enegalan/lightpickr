@@ -54,6 +54,37 @@ export function timestampToPickerDate(ts, state) {
 }
 
 /**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dayTs
+ * @returns {boolean}
+ */
+export function isDayDisabled(state, dayTs) {
+    const d = startOfDayTs(dayTs);
+    if (state.minDate != null && d < state.minDate) {
+        return true;
+    }
+    if (state.maxDate != null && d > state.maxDate) {
+        return true;
+    }
+    const arr = state.disabledDatesSorted;
+    let lo = 0;
+    let hi = arr.length - 1;
+    while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        const v = arr[mid];
+        if (v === d) {
+            return true;
+        }
+        if (v < d) {
+            lo = mid + 1;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    return false;
+}
+
+/**
  * @param {number} ts
  * @param {number} start
  * @param {number} end

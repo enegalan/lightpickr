@@ -1,36 +1,5 @@
-import { cloneSelectedDates, findDayIndex, isInClosedRangeDay, isSameDay, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { cloneSelectedDates, findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, toTimestamp } from '../utils/time.js';
 import { trimFifo } from '../utils/common.js';
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @param {number} dayTs
- * @returns {boolean}
- */
-export function isDateDisabled(state, dayTs) {
-  const d = startOfDayTs(dayTs);
-  if (state.minDate != null && d < state.minDate) {
-    return true;
-  }
-  if (state.maxDate != null && d > state.maxDate) {
-    return true;
-  }
-  const arr = state.disabledDatesSorted;
-  let lo = 0;
-  let hi = arr.length - 1;
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
-    const v = arr[mid];
-    if (v === d) {
-      return true;
-    }
-    if (v < d) {
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
-  }
-  return false;
-}
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -39,7 +8,7 @@ export function isDateDisabled(state, dayTs) {
  */
 export function applyDaySelection(state, dayTs) {
   const d = startOfDayTs(dayTs);
-  if (isDateDisabled(state, d)) {
+  if (isDayDisabled(state, d)) {
     return { state: state, changed: false };
   }
 
@@ -158,7 +127,7 @@ export function applyRangeEndpointDrag(state, rangeIndex, edge, dayTs) {
     return { state, changed: false };
   }
   const d = startOfDayTs(dayTs);
-  if (isDateDisabled(state, d)) {
+  if (isDayDisabled(state, d)) {
     return { state, changed: false };
   }
   const pair = ranges[rangeIndex];
@@ -174,7 +143,7 @@ export function applyRangeEndpointDrag(state, rangeIndex, edge, dayTs) {
     start = end;
     end = tmp;
   }
-  if (isDateDisabled(state, start) || isDateDisabled(state, end)) {
+  if (isDayDisabled(state, start) || isDayDisabled(state, end)) {
     return { state, changed: false };
   }
   if (pair[0] === start && pair[1] === end) {

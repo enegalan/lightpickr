@@ -1,5 +1,4 @@
-import { isInClosedRangeDay, isSameDay, startOfDayTs, cloneSelectedDates } from '../utils/time.js';
-import { isDateDisabled } from '../core/selection.js';
+import { isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, cloneSelectedDates } from '../utils/time.js';
 
 /**
  * @typedef {Object} RenderCtx
@@ -103,7 +102,7 @@ function _dayFlags(s, d) {
   }
   return {
     isSelected,
-    isDisabled: isDateDisabled(s, d),
+    isDisabled: isDayDisabled(s, d),
     isToday: isSameDay(d, startOfDayTs(Date.now())),
     isInRange,
     isRangeStart,
