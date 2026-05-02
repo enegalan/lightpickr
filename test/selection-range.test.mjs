@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { applyDaySelection } from '../src/core/selection.js';
+import { selectDate } from '../src/core/selection.js';
 import { createStateFromOptions } from '../src/core/state.js';
 import { startOfDayTs } from '../src/utils/time.js';
 
@@ -13,12 +13,12 @@ const base = createStateFromOptions({
   format: 'YYYY-MM-DD'
 });
 
-const first = applyDaySelection(base, c);
+const first = selectDate(base, c);
 assert.equal(first.changed, true);
 assert.deepEqual(first.state.selectedDates, []);
 assert.equal(first.state.pendingRangeStart, c);
 
-const second = applyDaySelection(first.state, b);
+const second = selectDate(first.state, b);
 assert.equal(second.changed, true);
 assert.deepEqual(second.state.selectedDates, [[b, c]]);
 assert.equal(second.state.pendingRangeStart, null);
@@ -35,7 +35,7 @@ const stMin = createStateFromOptions({
   viewDate: '2026-03-01',
   format: 'YYYY-MM-DD'
 });
-const clrMin = applyDaySelection(stMin, march5);
+const clrMin = selectDate(stMin, march5);
 assert.equal(clrMin.changed, false);
 assert.deepEqual(clrMin.state.selectedDates, stMin.selectedDates);
 assert.equal(clrMin.state.pendingRangeStart, stMin.pendingRangeStart);
@@ -49,7 +49,7 @@ const stOut = createStateFromOptions({
   viewDate: '2026-03-01',
   format: 'YYYY-MM-DD'
 });
-const clrOut = applyDaySelection(stOut, feb26);
+const clrOut = selectDate(stOut, feb26);
 assert.equal(clrOut.changed, true);
 assert.deepEqual(clrOut.state.selectedDates, []);
 assert.equal(clrOut.state.pendingRangeStart, feb26);
@@ -63,7 +63,7 @@ const stSimple = createStateFromOptions({
   viewDate: '2026-04-01',
   format: 'YYYY-MM-DD'
 });
-const resetSimple = applyDaySelection(stSimple, apr14);
+const resetSimple = selectDate(stSimple, apr14);
 assert.equal(resetSimple.changed, true);
 assert.deepEqual(resetSimple.state.selectedDates, []);
 assert.equal(resetSimple.state.pendingRangeStart, apr14);

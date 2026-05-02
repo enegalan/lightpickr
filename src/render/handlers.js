@@ -1,5 +1,5 @@
 import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
-import { applyDaySelection, applyRangeEndpointDrag } from '../core/selection.js';
+import { selectDate, applyRangeEndpointDrag } from '../core/selection.js';
 import { isTextInputLike } from '../utils/common.js';
 import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 import { syncTimePanelDom } from './time-panel.js';
@@ -660,7 +660,7 @@ function _onDayClick(instance, ts) {
   if (allowSelect === false) {
     return;
   }
-  const r = applyDaySelection(instance._state, ts);
+  const r = selectDate(instance._state, ts);
   if (!r.changed) {
     return;
   }

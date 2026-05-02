@@ -1,13 +1,16 @@
-import { cloneSelectedDates, findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { cloneSelectedDates, findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
 import { trimFifo } from '../utils/common.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
- * @param {number} dayTs
+ * @param {number} timestamp
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */
-export function applyDaySelection(state, dayTs) {
-  const d = startOfDayTs(dayTs);
+export function selectDate(state, timestamp) {
+  if (timestamp == null) {
+    return { state: state, changed: false };
+  }
+  const d = startOfDayTs(timestamp);
   if (isDayDisabled(state, d)) {
     return { state: state, changed: false };
   }
@@ -16,7 +19,6 @@ export function applyDaySelection(state, dayTs) {
   next.selectedDates = cloneSelectedDates(state.selectedDates);
 
   if (state.range) {
-    const maxR = state.multipleLimit;
     if (state.pendingRangeStart == null) {
       if (Array.isArray(next.selectedDates[0])) {
         next.selectedDates = [];
@@ -27,15 +29,13 @@ export function applyDaySelection(state, dayTs) {
     }
     const pair = [Math.min(state.pendingRangeStart, d), Math.max(state.pendingRangeStart, d)];
     const list = Array.isArray(next.selectedDates[0]) ? /** @type {number[][]} */ (next.selectedDates) : [];
-    const merged = trimFifo(list.concat([pair]), maxR);
-    next.selectedDates = merged;
+    next.selectedDates = trimFifo(list.concat([pair]), state.multipleLimit);
     next.pendingRangeStart = null;
     next.focusDate = d;
     return { state: next, changed: true };
   }
 
   if (state.multipleEnabled) {
-    const maxD = state.multipleLimit;
     let dates = /** @type {number[]} */ (next.selectedDates);
     if (!Array.isArray(dates) || (dates.length && Array.isArray(dates[0]))) {
       dates = [];
@@ -46,7 +46,7 @@ export function applyDaySelection(state, dayTs) {
       dates.splice(idx, 1);
     } else {
       dates = dates.concat([d]);
-      dates = trimFifo(dates, maxD);
+      dates = trimFifo(dates, state.multipleLimit);
     }
     next.selectedDates = dates;
     next.focusDate = d;
@@ -60,28 +60,14 @@ export function applyDaySelection(state, dayTs) {
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
- * @param {number|Date|string} date
+ * @param {number} timestamp
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */
-export function selectDateExplicit(state, date) {
-  const ts = toTimestamp(date);
-  if (ts == null) {
+export function unselectDate(state, timestamp) {
+  if (timestamp == null) {
     return { state: state, changed: false };
   }
-  return applyDaySelection(state, ts);
-}
-
-/**
- * @param {import('./state.js').LightpickrInternalState} state
- * @param {number|Date|string} date
- * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
- */
-export function unselectDate(state, date) {
-  const ts = toTimestamp(date);
-  if (ts == null) {
-    return { state: state, changed: false };
-  }
-  const d = startOfDayTs(ts);
+  const d = startOfDayTs(timestamp);
   const next = Object.assign({}, state);
   const sel = cloneSelectedDates(state.selectedDates);
   if (state.range) {
@@ -103,7 +89,7 @@ export function unselectDate(state, date) {
  * @param {import('./state.js').LightpickrInternalState} state
  * @returns {import('./state.js').LightpickrInternalState}
  */
-export function clearSelectionState(state) {
+export function clearSelection(state) {
   const next = Object.assign({}, state);
   next.selectedDates = [];
   next.pendingRangeStart = null;
@@ -115,10 +101,10 @@ export function clearSelectionState(state) {
  * @param {import('./state.js').LightpickrInternalState} state
  * @param {number} rangeIndex
  * @param {'start'|'end'} edge
- * @param {number} dayTs
+ * @param {number} timestamp
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */
-export function applyRangeEndpointDrag(state, rangeIndex, edge, dayTs) {
+export function applyRangeEndpointDrag(state, rangeIndex, edge, timestamp) {
   if (!state.range || !Array.isArray(state.selectedDates[0])) {
     return { state, changed: false };
   }
@@ -126,7 +112,7 @@ export function applyRangeEndpointDrag(state, rangeIndex, edge, dayTs) {
   if (rangeIndex < 0 || rangeIndex >= ranges.length) {
     return { state, changed: false };
   }
-  const d = startOfDayTs(dayTs);
+  const d = startOfDayTs(timestamp);
   if (isDayDisabled(state, d)) {
     return { state, changed: false };
   }

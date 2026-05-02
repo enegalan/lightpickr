@@ -1,6 +1,6 @@
 import { createStateFromOptions, mergeOptionsIntoState } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
-import { clearSelectionState, selectDateExplicit, unselectDate } from './core/selection.js';
+import { clearSelection, selectDate, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
 import { bindDocListeners, syncInstanceClasses, scheduleFocusActiveKeyboardCell, emitEvents } from './render/handlers.js';
 import { renderContainer } from './render/container.js';
@@ -199,7 +199,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
       if (!canSelect(date[i])) {
         continue;
       }
-      const r = selectDateExplicit(cur, date[i]);
+      const r = selectDate(cur, toTimestamp(date[i]));
       cur = r.state;
     }
     this._commit(cur, { emitSelect: true, selectTrigger: 'select' });
@@ -207,7 +207,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
     if (!canSelect(date)) {
       return;
     }
-    const r = selectDateExplicit(this._state, date);
+    const r = selectDate(this._state, toTimestamp(date));
     this._commit(r.state, { emitSelect: r.changed, selectTrigger: 'select' });
   }
   if (this._shouldCloseAfterSelect()) {
@@ -220,7 +220,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
  * @returns {void}
  */
 Lightpickr.prototype.unselectDate = function (date) {
-  const r = unselectDate(this._state, date);
+  const r = unselectDate(this._state, toTimestamp(date));
   this._commit(r.state, { emitSelect: r.changed, selectTrigger: 'unselect' });
 };
 
@@ -228,7 +228,7 @@ Lightpickr.prototype.unselectDate = function (date) {
  * @returns {void}
  */
 Lightpickr.prototype.clear = function () {
-  this._commit(clearSelectionState(this._state), { emitSelect: true, selectTrigger: 'clear' });
+  this._commit(clearSelection(this._state), { emitSelect: true, selectTrigger: 'clear' });
 };
 
 /**
