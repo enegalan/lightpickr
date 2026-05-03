@@ -1,6 +1,6 @@
 import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
 import { selectDate, applyRangeEndpointDrag } from '../core/selection.js';
-import { isTextInputLike } from '../utils/common.js';
+import { createEl, isTextInputLike } from '../utils/common.js';
 import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 import { syncTimePanelDom } from './time-panel.js';
 
@@ -15,18 +15,31 @@ export function focusCell(instance) {
   const sel = '[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]';
   const el = instance.$datepicker.querySelector(sel);
   if (el instanceof HTMLElement) {
-    el.focus();
+    el.focus({ preventScroll: true });
   }
 }
 
 /**
  * @param {object} instance
+ * @param {import('./core/state.js').LightpickrInternalState|null} [prevState]
  * @returns {void}
  */
-export function syncInstanceClasses(instance) {
+export function syncInstanceClasses(instance, prevState = null) {
   _syncPendingRangeHoverClasses(instance);
   _syncFooterHandlers(instance);
   _syncInput(instance);
+  _syncTheme(instance);
+  if (!prevState || instance._state.isMobile !== prevState.isMobile) {
+    _syncPopoverMobile(instance);
+  } else if (
+    instance._state.isMobile &&
+    !instance._state.inline &&
+    prevState &&
+    prevState.visible !== instance._state.visible
+  ) {
+    _syncMobileBackdropDisplay(instance);
+  }
+  _syncDatepickerDisplay(instance);
 }
 
 /**
@@ -36,11 +49,27 @@ export function syncInstanceClasses(instance) {
  * @returns {void}
  */
 export function emitEvents(instance, prevState, next, options = {}) {
-  _onViewEvents(prevState, next, instance);
-  _onFocus(prevState, next, instance);
-  const changed = (options && options.emitSelect) && _selectionChanged(prevState, next);
-  if (changed) {
-    _onSelect(instance, options && options.selectTrigger || 'select');
+  if (prevState.viewDate !== next.viewDate) {
+    const parts = tsToYmd(next.viewDate);
+    const decadeStart = Math.floor(parts.y / 10) * 10;
+    next.onChangeViewDate({
+      month: parts.m,
+      year: parts.y,
+      decade: [decadeStart, decadeStart + 9],
+      datepicker: instance
+    });
+  }
+  if (prevState.currentView !== next.currentView) {
+    next.onChangeView(next.currentView);
+  }
+  if (next.focusDate != null && prevState.focusDate !== next.focusDate) {
+    next.onFocus({
+      date: timestampToPickerDate(next.focusDate, next),
+      datepicker: instance
+    });
+  }
+  if (options && options.emitSelect && _selectionChanged(prevState, next)) {
+    _onSelect(instance, options.selectTrigger || 'select');
     instance._pluginOnSelect();
   }
 }
@@ -132,7 +161,11 @@ function _bindCalendarKeyboard(instance) {
     }
     if (result.type === 'altView') {
       ev.preventDefault();
-      if (_keyboardStateMeaningfullyChanged(result.prev, result.next)) {
+      if (
+        result.prev.currentView !== result.next.currentView ||
+        result.prev.viewDate !== result.next.viewDate ||
+        result.prev.focusDate !== result.next.focusDate
+      ) {
         instance._commit(result.next, { emitSelect: false });
         focusCell(instance);
       }
@@ -149,25 +182,6 @@ function _bindCalendarKeyboard(instance) {
   };
   instance.$datepicker.addEventListener('keydown', instance._datepickerKeydown, true);
 };
-
-/**
- * @private
- * @param {import('./core/state.js').LightpickrInternalState} prev
- * @param {import('./core/state.js').LightpickrInternalState} next
- * @returns {boolean}
- */
-function _keyboardStateMeaningfullyChanged(prev, next) {
-  if (prev.currentView !== next.currentView) {
-    return true;
-  }
-  if (prev.viewDate !== next.viewDate) {
-    return true;
-  }
-  if (prev.focusDate !== next.focusDate) {
-    return true;
-  }
-  return false;
-}
 
 /**
  * @private
@@ -223,7 +237,7 @@ function _bindDelegatedHandlers(instance) {
     if (ts == null) {
       return;
     }
-    _onDayClick(instance, ts);
+    _onDayPick(instance, ts);
   });
 
   const off2 = _delegate(root, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
@@ -562,6 +576,104 @@ function _syncInput(instance) {
 /**
  * @private
  * @param {object} instance
+ * @returns {void}
+ */
+function _syncTheme(instance) {
+  if (!(instance.$datepicker instanceof HTMLElement)) {
+    return;
+  }
+  const darkClass = document.documentElement.classList.contains('dark') || document.body && document.body.classList.contains('dark');
+
+  const documentColorScheme = window.getComputedStyle(document.documentElement).colorScheme || '';
+  const hasLightKeyword = documentColorScheme.indexOf('light') >= 0;
+  const hasDarkKeyword = documentColorScheme.indexOf('dark') >= 0;
+
+  let shouldUseDark = false;
+
+  if (hasLightKeyword && !hasDarkKeyword) {
+    shouldUseDark = false;
+  } else if (hasDarkKeyword && !hasLightKeyword) {
+    shouldUseDark = true;
+  } else if (darkClass) {
+    shouldUseDark = true;
+  } else if (typeof window.matchMedia === 'function') {
+    shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  shouldUseDark ? instance.$datepicker.classList.add('lp--dark') : instance.$datepicker.classList.remove('lp--dark');
+  shouldUseDark ? instance.$datepicker.classList.remove('lp--light') : instance.$datepicker.classList.add('lp--light');
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {void}
+ */
+function _syncPopoverMobile(instance) {
+  if (instance._state.inline) {
+    return;
+  }
+  if (instance._state.isMobile) {
+    if (!instance.$backdrop) {
+      const backdropStyles = typeof instance._state.position === 'function' ? { display: 'none' } : {};
+      instance.$backdrop = createEl('div', instance._state.classes.mobileBackdrop, {}, backdropStyles);
+    }
+    instance.$backdrop.appendChild(instance.$datepicker);
+    if (!instance.$backdrop.parentNode) {
+      document.body.appendChild(instance.$backdrop);
+    }
+    _syncMobileBackdropDisplay(instance);
+    instance.$datepicker.classList.add(instance._state.classes.mobile);
+  } else {
+    instance._detachDatepicker();
+    instance.$datepicker.classList.remove(instance._state.classes.mobile);
+    document.body.appendChild(instance.$datepicker);
+  }
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {void}
+ */
+function _syncMobileBackdropDisplay(instance) {
+  if (!instance.$backdrop) {
+    return;
+  }
+  if (typeof instance._state.position === 'function') {
+    instance.$backdrop.style.display = instance._state.visible ? 'flex' : 'none';
+  } else if (instance._state.visible) {
+    instance.$backdrop.classList.add(instance._state.classes.mobileBackdropOpen);
+    instance.$backdrop.style.removeProperty('display');
+  } else {
+    instance.$backdrop.classList.remove(instance._state.classes.mobileBackdropOpen);
+    instance.$backdrop.style.removeProperty('display');
+  }
+}
+
+/**
+ * @private
+ * @param {object} instance
+ * @returns {void}
+ */
+function _syncDatepickerDisplay(instance) {
+  if (instance._state.inline) {
+    return;
+  }
+  if (typeof instance._state.position === 'function') {
+    if (instance._state.visible) {
+      instance.$datepicker.style.removeProperty('display');
+    } else {
+      instance.$datepicker.style.display = 'none';
+    }
+    return;
+  }
+  instance.$datepicker.style.removeProperty('display');
+}
+
+/**
+ * @private
+ * @param {object} instance
  * @returns {{ dates: Date[], formattedDates: string[] }}
  */
 function _buildSelectedParts(instance) {
@@ -635,7 +747,7 @@ function _buildSelectedParts(instance) {
  * @param {number} ts
  * @returns {void}
  */
-function _onDayClick(instance, ts) {
+function _onDayPick(instance, ts) {
   const allowSelect = instance._state.onBeforeSelect({
     date: timestampToPickerDate(ts, instance._state),
     datepicker: instance
@@ -800,44 +912,6 @@ function _selectionChanged(prev, next) {
     }
   }
   return false;
-}
-
-/**
- * @private
- * @param {import('./core/state.js').LightpickrInternalState} prev
- * @param {import('./core/state.js').LightpickrInternalState} next
- * @returns {void}
- */
-function _onViewEvents(prev, next, instance) {
-  if (prev.viewDate !== next.viewDate) {
-    const parts = tsToYmd(next.viewDate);
-    const decadeStart = Math.floor(parts.y / 10) * 10;
-    next.onChangeViewDate({
-      month: parts.m,
-      year: parts.y,
-      decade: [decadeStart, decadeStart + 9],
-      datepicker: instance
-    });
-  }
-  if (prev.currentView !== next.currentView) {
-    next.onChangeView(next.currentView);
-  }
-}
-
-/**
- * @private
- * @param {import('./core/state.js').LightpickrInternalState} prev
- * @param {import('./core/state.js').LightpickrInternalState} next
- * @returns {void}
- */
-function _onFocus(prev, next, instance) {
-  if (prev.focusDate === next.focusDate || next.focusDate == null) {
-    return;
-  }
-  next.onFocus({
-    date: timestampToPickerDate(next.focusDate, next),
-    datepicker: instance
-  });
 }
 
 /**

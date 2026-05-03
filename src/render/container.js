@@ -11,7 +11,6 @@ import { bindHandlers } from './handlers.js';
  */
 export function renderContainer(instance) {
   const s = instance._state;
-  const hooks = s.render;
   instance.$datepicker.innerHTML = '';
   let cn =
     s.classes.container +
@@ -25,18 +24,11 @@ export function renderContainer(instance) {
     cn += ' ' + s.classes.popoverOpen;
   }
   instance.$datepicker.className = cn.trim();
-  if (!s.inline) {
-    if (typeof s.position === 'function') {
-      instance.$datepicker.style.display = s.visible ? '' : 'none';
-    } else {
-      instance.$datepicker.style.removeProperty('display');
-    }
-  }
 
   let container = instance.$datepicker;
-  if (hooks.container) {
+  if (s.render.container) {
     const ctx = buildCtx(instance, s.viewDate);
-    const custom = hooks.container(ctx);
+    const custom = s.render.container(ctx);
     if (custom) {
       instance.$datepicker.appendChild(custom);
       container = custom;
