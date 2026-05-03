@@ -198,6 +198,7 @@
 
 .lp--popover {
   --lp-pointer-visible: 1;
+  display: block;
   position: var(--lp-popover-position);
   z-index: var(--lp-z-popover);
   top: 0;
