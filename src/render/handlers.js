@@ -8,15 +8,14 @@ import { syncTimePanelDom } from './time-panel.js';
  * @param {object} instance
  * @returns {void}
 */
-export function scheduleFocusActiveKeyboardCell(instance) {
-  if (typeof globalThis.requestAnimationFrame === 'function') {
-    globalThis.requestAnimationFrame(function () {
-      _focusActiveKeyboardCell(instance);
-    });
-  } else {
-    setTimeout(function () {
-      _focusActiveKeyboardCell(instance);
-    }, 0);
+export function focusCell(instance) {
+  if (instance.isDestroyed) {
+    return;
+  }
+  const sel = '[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]';
+  const el = instance.$datepicker.querySelector(sel);
+  if (el instanceof HTMLElement) {
+    el.focus();
   }
 }
 
@@ -135,7 +134,7 @@ function _bindCalendarKeyboard(instance) {
       ev.preventDefault();
       if (_keyboardStateMeaningfullyChanged(result.prev, result.next)) {
         instance._commit(result.next, { emitSelect: false });
-        scheduleFocusActiveKeyboardCell(instance);
+        focusCell(instance);
       }
       return;
     }
@@ -145,7 +144,7 @@ function _bindCalendarKeyboard(instance) {
     }
     if (result.next !== instance._state) {
       instance._commit(result.next, { emitSelect: false });
-      scheduleFocusActiveKeyboardCell(instance);
+      focusCell(instance);
     }
   };
   instance.$datepicker.addEventListener('keydown', instance._datepickerKeydown, true);
@@ -557,22 +556,6 @@ function _syncInput(instance) {
     instance.$el.value = String(fn(rows.map((ts) => timestampToPickerDate(ts, instance._state))));
   } else {
     instance.$el.value = String(fn(timestampToPickerDate(rows[0], instance._state)));
-  }
-}
-
-/**
- * @private
- * @param {object} instance
- * @returns {void}
- */
-function _focusActiveKeyboardCell(instance) {
-  if (instance.isDestroyed) {
-    return;
-  }
-  const sel = '[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]';
-  const el = instance.$datepicker.querySelector(sel);
-  if (el instanceof HTMLElement) {
-    el.focus();
   }
 }
 

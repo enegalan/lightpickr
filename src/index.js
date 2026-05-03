@@ -2,7 +2,7 @@ import { createStateFromOptions, mergeOptionsIntoState } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
 import { clearSelection, selectDate, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
-import { bindDocListeners, syncInstanceClasses, scheduleFocusActiveKeyboardCell, emitEvents } from './render/handlers.js';
+import { bindDocListeners, syncInstanceClasses, focusCell, emitEvents } from './render/handlers.js';
 import { renderContainer } from './render/container.js';
 import { getViewDates } from './utils/view.js';
 import { applyStringPosition } from './core/positioning.js';
@@ -95,7 +95,7 @@ Lightpickr.prototype.show = function () {
   bindDocListeners(this);
   this._commit(next, { emitSelect: false, popoverInitialOpen: true });
   this._state.onShow(true, { datepicker: this });
-  scheduleFocusActiveKeyboardCell(this);
+  focusCell(this);
 };
 
 /**
