@@ -953,7 +953,6 @@ function _parseElementNumber(element, attr) {
   return Number.isFinite(n) ? n : null;
 }
 
-
 /**
   * @private
   * @param {ParentNode} root

@@ -88,10 +88,9 @@ export function renderYearView(instance, container) {
  * @returns {HTMLElement}
  */
 function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, ariaLabel, textContent) {
-  const ctx = buildCtx(instance, ts);
-  const cellFn = instance._state.render.cell;
-  if (typeof cellFn === 'function') {
-    const custom = cellFn(ctx);
+  if (typeof instance._state.render.cell === 'function') {
+    const ctx = buildCtx(instance, ts);
+    const custom = instance._state.render.cell(ctx);
     if (custom instanceof HTMLElement) {
       if (!custom.getAttribute(dataAttr)) {
         custom.setAttribute(dataAttr, dataValueStr);
@@ -100,10 +99,9 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
     }
   }
 
-  const c = instance._state.classes;
   const isFocused = instance._state.focusDate != null && isSameDay(instance._state.focusDate, ts);
   const cellClass =
-    c.cell + (selected ? ' ' + c.cellSelected : '') + (isFocused ? ' ' + c.cellFocused : '');
+    instance._state.classes.cell + (selected ? ' ' + instance._state.classes.cellSelected : '') + (isFocused ? ' ' + instance._state.classes.cellFocused : '');
   const attrs = {
     type: 'button',
     [dataAttr]: dataValueStr,

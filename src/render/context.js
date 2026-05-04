@@ -24,10 +24,10 @@ import { isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, cloneSelect
  * @returns {RenderCtx}
  */
 export function buildCtx(instance, dayTs, outside = false) {
-  const d = startOfDayTs(dayTs);
-  const flags = _dayFlags(instance._state, d);
+  const date = startOfDayTs(dayTs);
+  const flags = _dayFlags(instance._state, date);
   return {
-    date: d,
+    date,
     viewDate: instance._state.viewDate,
     isSelected: flags.isSelected,
     isDisabled: flags.isDisabled,
@@ -35,9 +35,9 @@ export function buildCtx(instance, dayTs, outside = false) {
     isInRange: flags.isInRange,
     isRangeStart: flags.isRangeStart,
     isRangeEnd: flags.isRangeEnd,
-    isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, d),
+    isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, date),
     isOutside: outside,
-    isWeekend: instance._state.weekends.indexOf(new Date(d).getDay()) >= 0,
+    isWeekend: instance._state.weekends.indexOf(new Date(date).getDay()) >= 0,
     state: {
       inline: instance._state.inline,
       range: instance._state.range,
@@ -66,44 +66,44 @@ export function buildCtx(instance, dayTs, outside = false) {
 
 /**
  * @private
- * @param {import('../core/state.js').LightpickrInternalState} s
- * @param {number} d
+ * @param {import('../core/state.js').LightpickrInternalState} state
+ * @param {number} date
  * @returns {object}
  */
-function _dayFlags(s, d) {
+function _dayFlags(state, date) {
   let isSelected = false;
   let isInRange = false;
   let isRangeStart = false;
   let isRangeEnd = false;
-  if (s.range) {
-    const ranges = /** @type {number[][]} */ (s.selectedDates);
+  if (state.range) {
+    const ranges = /** @type {number[][]} */ (state.selectedDates);
     for (let i = 0; i < ranges.length; i++) {
       const pair = ranges[i];
-      if (isSameDay(d, pair[0])) {
+      if (isSameDay(date, pair[0])) {
         isRangeStart = true;
       }
-      if (isSameDay(d, pair[1])) {
+      if (isSameDay(date, pair[1])) {
         isRangeEnd = true;
       }
-      if (isInClosedRangeDay(d, pair[0], pair[1])) {
+      if (isInClosedRangeDay(date, pair[0], pair[1])) {
         isInRange = true;
       }
-      if (isSameDay(d, pair[0]) || isSameDay(d, pair[1])) {
+      if (isSameDay(date, pair[0]) || isSameDay(date, pair[1])) {
         isSelected = true;
       }
     }
-    if (s.pendingRangeStart != null && isSameDay(s.pendingRangeStart, d)) {
+    if (state.pendingRangeStart != null && isSameDay(state.pendingRangeStart, date)) {
       isSelected = true;
       isRangeStart = true;
     }
   } else {
-    const dates = /** @type {number[]} */ (s.selectedDates);
-    isSelected = dates.some((x) => isSameDay(x, d));
+    const dates = /** @type {number[]} */ (state.selectedDates);
+    isSelected = dates.some((x) => isSameDay(x, date));
   }
   return {
     isSelected,
-    isDisabled: isDayDisabled(s, d),
-    isToday: isSameDay(d, startOfDayTs(Date.now())),
+    isDisabled: isDayDisabled(state, date),
+    isToday: isSameDay(date, startOfDayTs(Date.now())),
     isInRange,
     isRangeStart,
     isRangeEnd

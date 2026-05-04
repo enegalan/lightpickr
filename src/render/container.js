@@ -10,46 +10,45 @@ import { bindHandlers } from './handlers.js';
  * @returns {void}
  */
 export function renderContainer(instance) {
-  const s = instance._state;
   instance.$datepicker.innerHTML = '';
   let cn =
-    s.classes.container +
+    instance._state.classes.container +
     ' ' +
-    (s.inline ? s.classes.inline : s.classes.popover) +
-    (s.onlyTime ? ' ' + s.classes.container + '--only-time' : '');
-  if (!s.inline && typeof s.position !== 'function') {
-    cn += ' ' + s.classes.popoverAnim;
+    (instance._state.inline ? instance._state.classes.inline : instance._state.classes.popover) +
+    (instance._state.onlyTime ? ' ' + instance._state.classes.container + '--only-time' : '');
+  if (!instance._state.inline && typeof instance._state.position !== 'function') {
+    cn += ' ' + instance._state.classes.popoverAnim;
   }
-  if (!s.inline && s.visible && typeof s.position !== 'function') {
-    cn += ' ' + s.classes.popoverOpen;
+  if (!instance._state.inline && instance._state.visible && typeof instance._state.position !== 'function') {
+    cn += ' ' + instance._state.classes.popoverOpen;
   }
   instance.$datepicker.className = cn.trim();
 
   let container = instance.$datepicker;
-  if (s.render.container) {
-    const ctx = buildCtx(instance, s.viewDate);
-    const custom = s.render.container(ctx);
+  if (instance._state.render.container) {
+    const ctx = buildCtx(instance, instance._state.viewDate);
+    const custom = instance._state.render.container(ctx);
     if (custom) {
       instance.$datepicker.appendChild(custom);
       container = custom;
     }
   }
 
-  if (s.onlyTime) {
+  if (instance._state.onlyTime) {
     renderTimePanel(instance, container);
-  } else if (s.currentView === 'day') {
+  } else if (instance._state.currentView === 'day') {
     renderDayView(instance, container);
-  } else if (s.currentView === 'month') {
+  } else if (instance._state.currentView === 'month') {
     renderMonthView(instance, container);
-  } else if (s.currentView === 'year') {
+  } else if (instance._state.currentView === 'year') {
     renderYearView(instance, container);
-  } else if (s.currentView === 'time') {
+  } else if (instance._state.currentView === 'time') {
     renderDayView(instance, container);
     renderTimePanel(instance, container);
   }
   renderFooter(instance, container);
 
-  if (!s.inline && !s.isMobile && instance.$pointer) {
+  if (!instance._state.inline && !instance._state.isMobile && instance.$pointer) {
     instance.$datepicker.appendChild(instance.$pointer);
   }
 

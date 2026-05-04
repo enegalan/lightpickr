@@ -8,45 +8,44 @@ import { buildCtx } from './context.js';
  * @returns {void}
  */
 export function renderTimePanel(instance, container) {
-  const s = instance._state;
-  const wrap = createEl('div', s.classes.timePanel);
+  const wrap = createEl('div', instance._state.classes.timePanel);
 
-  const timeCtx = buildCtx(instance, s.viewDate, false);
-  const hookEl = s.render.time?.(timeCtx);
+  const timeCtx = buildCtx(instance, instance._state.viewDate, false);
+  const hookEl = instance._state.render.time?.(timeCtx);
   if (hookEl) {
     wrap.appendChild(hookEl);
     container.appendChild(wrap);
     return;
   }
 
-  const { hours: h, minutes: m } = s.timePart;
-  const ui = getTranslations(s.locale);
+  const { hours: h, minutes: m } = instance._state.timePart;
+  const ui = getTranslations(instance._state.locale);
   const clock = _formatClock12Parts(h, m, ui.am, ui.pm);
 
-  const layout = createEl('div', s.classes.timeLayout);
+  const layout = createEl('div', instance._state.classes.timeLayout);
 
-  const display = createEl('div', s.classes.timeDisplayBlock);
+  const display = createEl('div', instance._state.classes.timeDisplayBlock);
   const makeSpan = (cls, text) => {
     const el = createEl('span', cls);
     el.textContent = text;
     return el;
   };
 
-  display.appendChild(makeSpan(s.classes.timeDisplayHours, clock.hourStr));
-  display.appendChild(makeSpan(s.classes.timeDisplaySep, ':'));
-  display.appendChild(makeSpan(s.classes.timeDisplayMinutes, clock.minuteStr));
+  display.appendChild(makeSpan(instance._state.classes.timeDisplayHours, clock.hourStr));
+  display.appendChild(makeSpan(instance._state.classes.timeDisplaySep, ':'));
+  display.appendChild(makeSpan(instance._state.classes.timeDisplayMinutes, clock.minuteStr));
   display.appendChild(document.createTextNode(' '));
-  display.appendChild(makeSpan(s.classes.timeDisplayAmpm, clock.ampm));
+  display.appendChild(makeSpan(instance._state.classes.timeDisplayAmpm, clock.ampm));
 
-  const slidersCol = createEl('div', s.classes.timeSlidersCol);
+  const slidersCol = createEl('div', instance._state.classes.timeSlidersCol);
 
   const makeSlider = (type, value, min, max, step) => {
-    const el = createEl('input', s.classes.timeSlider + ' ' + s.classes.timeSlider + '--' + type, {
+    const el = createEl('input', instance._state.classes.timeSlider + ' ' + instance._state.classes.timeSlider + '--' + type, {
       type: 'range',
       min: String(min),
       max: String(max),
       step: String(step),
-      [s.attributes.time]: type,
+      [instance._state.attributes.time]: type,
       'aria-label': type === 'hours' ? ui.ariaTimeHours : ui.ariaTimeMinutes,
       'aria-valuemin': String(min),
       'aria-valuemax': String(max)
@@ -58,11 +57,11 @@ export function renderTimePanel(instance, container) {
     return el;
   };
 
-  const rowHours = createEl('div', s.classes.timeSliderRow + ' ' + s.classes.timeSliderRow + '--hours');
-  rowHours.appendChild(makeSlider('hours', h, s.minHours, s.maxHours, s.hoursStep));
+  const rowHours = createEl('div', instance._state.classes.timeSliderRow + ' ' + instance._state.classes.timeSliderRow + '--hours');
+  rowHours.appendChild(makeSlider('hours', h, instance._state.minHours, instance._state.maxHours, instance._state.hoursStep));
 
-  const rowMinutes = createEl('div', s.classes.timeSliderRow + ' ' + s.classes.timeSliderRow + '--minutes');
-  rowMinutes.appendChild(makeSlider('minutes', m, s.minMinutes, s.maxMinutes, s.minutesStep));
+  const rowMinutes = createEl('div', instance._state.classes.timeSliderRow + ' ' + instance._state.classes.timeSliderRow + '--minutes');
+  rowMinutes.appendChild(makeSlider('minutes', m, instance._state.minMinutes, instance._state.maxMinutes, instance._state.minutesStep));
 
   slidersCol.appendChild(rowHours);
   slidersCol.appendChild(rowMinutes);
@@ -79,8 +78,7 @@ export function renderTimePanel(instance, container) {
  * @returns {void}
  */
 export function syncTimePanelDom(instance) {
-  const root = instance.$datepicker;
-  const block = root.querySelector('.' + instance._state.classes.timeDisplayBlock);
+  const block = instance.$datepicker.querySelector('.' + instance._state.classes.timeDisplayBlock);
   if (!block) {
     return;
   }
@@ -100,8 +98,8 @@ export function syncTimePanelDom(instance) {
   minutesSpan.textContent = minuteStr;
   ampmSpan.textContent = ampm;
 
-  const hoursRange = root.querySelector('input[' + instance._state.attributes.time + '="hours"]');
-  const minutesRange = root.querySelector('input[' + instance._state.attributes.time + '="minutes"]');
+  const hoursRange = instance.$datepicker.querySelector('input[' + instance._state.attributes.time + '="hours"]');
+  const minutesRange = instance.$datepicker.querySelector('input[' + instance._state.attributes.time + '="minutes"]');
 
   const hv = String(hours);
   const mv = String(minutes);

@@ -13,12 +13,11 @@ import lightpickrDefaults from '../../core/defaults.js';
  * @returns {void}
  */
 export function renderDayView(instance, container) {
-  const c = instance._state.classes;
   const { header: headerHook } = instance._state.render;
 
   const ctx = buildCtx(instance, instance._state.viewDate);
 
-  const header = createEl('div', c.header);
+  const header = createEl('div', instance._state.classes.header);
   const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, 'day', instance._state.allowedViews.indexOf('month') >= 0);
 
   if (headerEl) {
@@ -26,10 +25,11 @@ export function renderDayView(instance, container) {
   }
   container.appendChild(header);
 
-  const viewBody = createEl('div', c.viewBody);
-  const monthsWrap = createEl('div', c.grid + ' ' + c.months);
-  const block = createEl('div', c.monthBlock);
-  const grid = createEl('div', c.grid, { role: 'grid', 'aria-label': getTranslations(instance._state.locale).ariaDayGrid });
+  const viewBody = createEl('div', instance._state.classes.viewBody);
+  const monthsWrap = createEl('div', instance._state.classes.grid + ' ' + instance._state.classes.months);
+  const block = createEl('div', instance._state.classes.monthBlock);
+  const grid = createEl('div', instance._state.classes.grid, { role: 'grid', 'aria-label': getTranslations(instance._state.locale).ariaDayGrid });
+
   _buildDayGridHeadRow(instance, grid);
   _buildDayGridBodyRows(instance, grid);
 

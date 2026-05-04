@@ -9,15 +9,13 @@ import { isNavOutOfRange } from '../core/navigation.js';
  * @returns {HTMLElement}
  */
 export function buildDefaultHeader(instance, view, canGoUp) {
-    const c = instance._state.classes;
+    const nav = createEl('div', instance._state.classes.nav);
 
-    const nav = createEl('div', c.nav);
-
-    const prev = createEl('button', c.navButton, { type: 'button', [instance._state.attributes.nav]: 'prev' });
+    const prev = createEl('button', instance._state.classes.navButton, { type: 'button', [instance._state.attributes.nav]: 'prev' });
     prev.innerHTML = instance._state.prevHtml;
     const prevDisabled = isNavOutOfRange(instance._state, -1);
 
-    const next = createEl('button', c.navButton, { type: 'button', [instance._state.attributes.nav]: 'next' });
+    const next = createEl('button', instance._state.classes.navButton, { type: 'button', [instance._state.attributes.nav]: 'next' });
     next.innerHTML = instance._state.nextHtml;
     const nextDisabled = isNavOutOfRange(instance._state, 1);
 
@@ -31,7 +29,7 @@ export function buildDefaultHeader(instance, view, canGoUp) {
     }
 
     const titleTag = canGoUp ? 'button' : 'span';
-    const title = createEl(titleTag, c.titleButton + (canGoUp ? '' : ' ' + c.titleButton + '--disabled'), canGoUp ? { type: 'button', [instance._state.attributes.nav]: 'title' } : {});
+    const title = createEl(titleTag, instance._state.classes.titleButton + (canGoUp ? '' : ' ' + instance._state.classes.titleButton + '--disabled'), canGoUp ? { type: 'button', [instance._state.attributes.nav]: 'title' } : {});
     title.innerHTML = _formatHeaderTitle(instance, view);
 
     nav.appendChild(prev);
@@ -47,13 +45,11 @@ export function buildDefaultHeader(instance, view, canGoUp) {
  * @returns {string}
  */
 function _formatHeaderTitle(instance, view) {
-    const s = instance._state;
-    const titles = s.navTitles || {};
-    const resolver = titles[view];
+    const resolver = (instance._state.navTitles || {})[view];
     if (typeof resolver === 'function') {
         return String(resolver(instance));
     }
 
     const rawTemplate = typeof resolver === 'string' ? resolver : '';
-    return formatDate(rawTemplate, s.viewDate, null, s);
+    return formatDate(rawTemplate, instance._state.viewDate, null, instance._state);
 }

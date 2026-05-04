@@ -61,7 +61,6 @@ export function applyEventKey(state, evLike) {
 
   if (state.currentView === 'month' || state.currentView === 'year') {
     let s = state;
-    /** @type {import('./state.js').LightpickrInternalState | null} */
     let seed = null;
     if (s.focusDate == null) {
       const seeded = reseedKeyboardFocusForView(s);
@@ -85,7 +84,6 @@ export function applyEventKey(state, evLike) {
   }
 
   let s = state;
-  /** @type {import('./state.js').LightpickrInternalState | null} */
   let seed = null;
   if (s.focusDate == null) {
     const seeded = reseedKeyboardFocusForView(s);
