@@ -1,7 +1,7 @@
 import { clampView } from '../utils/view.js';
 import { parseSelectedDates, startOfDayTs, toTimestamp } from '../utils/time.js';
 import { normalizeShowEvents, normalizeWeekendIndexes, normalizeAllowedViews, normalizeFirstDay } from '../utils/normalize.js';
-import { clampInt, noop, toInt, truthy } from '../utils/common.js';
+import { clampInt, isTextInputLike, noop, toInt, truthy } from '../utils/common.js';
 import lightpickrDefaults from './defaults.js';
 
 /**
@@ -217,6 +217,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {number} viewDate
  * @property {number|null} focusDate
  * @property {boolean} visible
+ * @property {boolean} popoverAlreadyOpened
  * @property {number[]|number[][]} selectedDates
  * @property {number|null} rangeAnchor
  * @property {{ hours: number, minutes: number }} timePart
@@ -235,18 +236,38 @@ import lightpickrDefaults from './defaults.js';
 
 /**
  * @param {Partial<LightpickrOptions>} incomingRaw
+ * @param {HTMLElement|null} [targetEl]
  * @returns {LightpickrInternalState}
  */
-export function createStateFromOptions(incomingRaw) {
+export function createStateFromOptions(incomingRaw, targetEl) {
   const incoming = incomingRaw ?? {};
 
-  const raw = { ...lightpickrDefaults, ...incoming };
-
-  raw.classes = { ...lightpickrDefaults.classes, ...(incoming.classes) };
-  raw.render = { ...lightpickrDefaults.render, ...(incoming.render) };
-  raw.navTitles = { ...lightpickrDefaults.navTitles, ...(incoming.navTitles) };
-  raw.attributes = { ...lightpickrDefaults.attributes, ...(incoming.attributes) };
-  raw.properties = { ...lightpickrDefaults.properties, ...(incoming.properties) };
+  const raw = {
+    ...lightpickrDefaults,
+    ...incoming,
+    classes: {
+      ...lightpickrDefaults.classes,
+      ...incoming.classes
+    },
+    render: {
+      ...lightpickrDefaults.render,
+      ...incoming.render
+    },
+    navTitles: {
+      ...lightpickrDefaults.navTitles,
+      ...incoming.navTitles
+    },
+    attributes: {
+      ...lightpickrDefaults.attributes,
+      ...incoming.attributes
+    },
+    properties: {
+      ...lightpickrDefaults.properties,
+      ...incoming.properties
+    }
+  };
+  const isMobile = Boolean(raw.isMobile);
+  const inline = incoming.inline != null ? Boolean(incoming.inline) : (isMobile ? false : (typeof HTMLElement !== 'undefined' && targetEl instanceof HTMLElement ? !isTextInputLike(targetEl) : Boolean(raw.inline)));
   const onlyTime = Boolean(raw.onlyTime);
   const enableTime = onlyTime || Boolean(raw.enableTime);
   const range = onlyTime ? false : Boolean(raw.range);
@@ -320,7 +341,7 @@ export function createStateFromOptions(incomingRaw) {
   }
 
   const nextState = {
-    inline: Boolean(raw.inline),
+    inline,
     range,
     multipleEnabled,
     multipleLimit: range ? multipleLimit : multipleEnabled ? multipleLimit : 1,
@@ -333,7 +354,7 @@ export function createStateFromOptions(incomingRaw) {
     locale: raw.locale,
     firstDay: normalizeFirstDay(raw.firstDay) ?? 1,
     weekends: normalizeWeekendIndexes(raw.weekends),
-    isMobile: Boolean(raw.isMobile),
+    isMobile,
     monthsField: raw.monthsField.trim(),
     allowedViews,
     showOtherMonths: raw.showOtherMonths !== false,
@@ -372,7 +393,8 @@ export function createStateFromOptions(incomingRaw) {
     currentView: onlyTime || enableTime ? 'time' : clampView(allowedViews, raw.view),
     viewDate,
     focusDate: null,
-    visible: false,
+    visible: inline,
+    popoverAlreadyOpened: inline || typeof raw.position === 'function',
     selectedDates: [],
     rangeAnchor: null,
     timePart: { hours: new Date().getHours(), minutes: new Date().getMinutes() },
@@ -393,17 +415,39 @@ export function createStateFromOptions(incomingRaw) {
 }
 
 /**
- * @param {LightpickrInternalState} state
+ * @param {object} instance
  * @param {Partial<LightpickrOptions>} patch
  * @returns {LightpickrInternalState}
  */
-export function mergeOptionsIntoState(state, patch) {
-  const raw = Object.assign(_extractRawOptions(state), patch);
-  raw.render = Object.assign({}, state.render, patch.render);
-  raw.classes = Object.assign({}, state.classes, patch.classes);
-  raw.attributes = Object.assign({}, state.attributes, patch.attributes);
-  raw.properties = Object.assign({}, state.properties, patch.properties);
-  return createStateFromOptions(raw);
+export function mergeOptions(instance, patch) {
+  const state = instance._state;
+  const p = patch ?? {};
+  const raw = {
+    ..._extractRawOptions(state),
+    ...p,
+    render: {
+      ...state.render,
+      ...p.render
+    },
+    classes: {
+      ...state.classes,
+      ...p.classes
+    },
+    attributes: {
+      ...state.attributes,
+      ...p.attributes
+    },
+    properties: {
+      ...state.properties,
+      ...p.properties
+    }
+  };
+  const next = createStateFromOptions(raw, instance.$el);
+  const wasStringPopover = !state.inline && typeof state.position !== 'function';
+  const isStringPopover = !next.inline && typeof next.position !== 'function';
+  next.popoverAlreadyOpened =
+    !isStringPopover || (wasStringPopover && state.popoverAlreadyOpened);
+  return next;
 }
 /**
  * @private

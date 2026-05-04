@@ -1,4 +1,4 @@
-import { createStateFromOptions, mergeOptionsIntoState } from './core/state.js';
+import { createStateFromOptions, mergeOptions } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
 import { clearSelection, selectDate, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
@@ -23,18 +23,11 @@ function Lightpickr(target, options) {
   /** @type {HTMLElement} */
   this.$el = el;
   /** @type {import('./core/state.js').LightpickrInternalState} */
-  this._state = createStateFromOptions(options);
-  if (options?.inline == null) {
-    // When isMobile is enabled, default to a modal popover even when the target
-    // is a wrapper element.
-    /** @type {boolean} */
-    this._state.inline = this._state.isMobile ? false : !isTextInputLike(this.$el);
-  }
+  this._state = createStateFromOptions(options, this.$el);
   /** @type {HTMLElement} */
   this.$datepicker = createEl('div', this._state.classes.container);
   /** @type {boolean} */
   this.isDestroyed = false;
-  this._state.visible = this._state.inline;
   /** @type {{ onInit?: () => void, onRender?: () => void, onSelect?: () => void, onDestroy?: () => void }[]} */
   this._plugins = [];
   /** @type {(() => void)[]} */
@@ -270,7 +263,7 @@ Lightpickr.prototype._detachDatepicker = function () {
  * @returns {void}
  */
 Lightpickr.prototype.update = function (newOpts) {
-  const next = mergeOptionsIntoState(this._state, newOpts || {});
+  const next = mergeOptions(this, newOpts || {});
   if (next.showEvents.join('::') !== this._state.showEvents.join('::')) {
     this._unbindTargetEvents();
     this._state = next;

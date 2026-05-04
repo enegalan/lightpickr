@@ -668,6 +668,15 @@ function _syncDatepickerDisplay(instance) {
     }
     return;
   }
+  if (instance._state.visible) {
+    instance.$datepicker.style.removeProperty('display');
+    instance._state.popoverAlreadyOpened = true;
+    return;
+  }
+  if (!instance._state.popoverAlreadyOpened) {
+    instance.$datepicker.style.display = 'none';
+    return;
+  }
   instance.$datepicker.style.removeProperty('display');
 }
 
