@@ -6,7 +6,7 @@ import { buildCtx } from '../context.js';
 import { buildDefaultHeader } from '../header.js';
 
 /**
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
  * @returns {void}
  */
@@ -42,7 +42,7 @@ export function renderMonthView(instance, container) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
  * @returns {void}
  */
@@ -78,7 +78,7 @@ export function renderYearView(instance, container) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {string} dataAttr
  * @param {string} dataValueStr
  * @param {boolean} selected
@@ -118,7 +118,7 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
  * @param {'month'|'year'} view
  * @param {boolean} canGoUp

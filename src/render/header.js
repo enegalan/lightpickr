@@ -3,7 +3,7 @@ import { createEl } from '../utils/common.js';
 import { isNavOutOfRange } from '../core/navigation.js';
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {'day'|'month'|'year'} view
  * @param {boolean} canGoUp
  * @returns {HTMLElement}
@@ -40,7 +40,7 @@ export function buildDefaultHeader(instance, view, canGoUp) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {'day'|'month'|'year'} view
  * @returns {string}
  */

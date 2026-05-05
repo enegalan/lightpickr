@@ -6,7 +6,7 @@ import { renderFooter } from './footer.js';
 import { bindHandlers } from './handlers.js';
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 export function renderContainer(instance) {

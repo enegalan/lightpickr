@@ -3,7 +3,7 @@ import { clampInt, createEl, pad2 } from '../utils/common.js';
 import { buildCtx } from './context.js';
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
  * @returns {void}
  */
@@ -74,7 +74,7 @@ export function renderTimePanel(instance, container) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 export function syncTimePanelDom(instance) {

@@ -41,7 +41,7 @@ export function reseedKeyboardFocusForView(state) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('./state.js').LightpickrInstance} instance
  * @param {{ key: string, shiftKey: boolean, altKey: boolean }} evLike
  * @returns {{ type: 'noop' } | { type: 'altView', prev: import('./state.js').LightpickrInternalState, next: import('./state.js').LightpickrInternalState } | { type: 'grid', seed: import('./state.js').LightpickrInternalState | null, next: import('./state.js').LightpickrInternalState }}
  */

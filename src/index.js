@@ -38,7 +38,7 @@ function Lightpickr(target, options) {
   this._positionHideCleanup = null;
   /** @type {number|null} */
   this._pendingRangeHoverTs = null;
-  /** @type {RangeDrag|null} */
+  /** @type {import('./core/state.js').LightpickrRangeDrag|null} */
   this._rangeDrag = null;
   /** @type {HTMLElement|null} */
   this.$backdrop = null;

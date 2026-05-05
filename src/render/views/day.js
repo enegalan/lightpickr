@@ -8,7 +8,7 @@ import { renderTimePanel } from '../time-panel.js';
 import lightpickrDefaults from '../../core/defaults.js';
 
 /**
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
  * @returns {void}
  */
@@ -45,7 +45,7 @@ export function renderDayView(instance, container) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} grid
  * @returns {void}
  */
@@ -76,7 +76,7 @@ function _buildDayGridHeadRow(instance, grid) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} grid
  * @returns {void}
  */

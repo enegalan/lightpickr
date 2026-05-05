@@ -235,6 +235,55 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
+ * @typedef {Object} LightpickrRangeDrag
+ * @property {number} rangeIndex
+ * @property {'start'|'end'} edge
+ */
+
+/**
+ * @typedef {Object} LightpickrPluginEntry
+ * @property {() => void} [onInit]
+ * @property {() => void} [onRender]
+ * @property {() => void} [onSelect]
+ * @property {() => void} [onDestroy]
+ */
+
+/**
+ * @typedef {Object} LightpickrInstance
+ * @property {HTMLElement} $el
+ * @property {HTMLElement} $datepicker
+ * @property {HTMLElement} $pointer
+ * @property {HTMLElement|null} $backdrop
+ * @property {LightpickrInternalState} _state
+ * @property {boolean} isDestroyed
+ * @property {LightpickrPluginEntry[]} _plugins
+ * @property {(() => void)[]} _delegateOffs
+ * @property {((ev: MouseEvent) => void)|null} [_docDown]
+ * @property {((done: () => void) => void)|null} [_positionHideCleanup]
+ * @property {number|null} [_pendingRangeHoverTs]
+ * @property {LightpickrRangeDrag|null} [_rangeDrag]
+ * @property {Array<{ el: HTMLElement, eventName: string, listener: (ev: Event) => void, capture?: boolean }>} [_boundShowTargets]
+ * @property {((ev: KeyboardEvent) => void)|null} [_docKeydownEsc]
+ * @property {((ev: KeyboardEvent) => void)|null} [_datepickerKeydown]
+ * @property {MutationObserver|null} [_windowMutationObserver]
+ * @property {HTMLElement|null|undefined} [_pressedCellEl]
+ * @property {boolean} visible
+ * @property {number[]|number[][]} selectedDates
+ * @property {() => void} show
+ * @property {() => void} hide
+ * @property {() => void} prev
+ * @property {() => void} next
+ * @property {() => void} up
+ * @property {() => void} clear
+ * @property {(next: LightpickrInternalState, opts?: { emitSelect?: boolean, selectTrigger?: string, popoverInitialOpen?: boolean }) => void} _commit
+ * @property {() => HTMLElement} _getPositionReference
+ * @property {() => void} _detachDatepicker
+ * @property {() => void} _pluginOnRender
+ * @property {() => void} _pluginOnSelect
+ * @property {() => boolean} _shouldCloseAfterSelect
+ */
+
+/**
  * @param {Partial<LightpickrOptions>} incomingRaw
  * @param {HTMLElement|null} [targetEl]
  * @returns {LightpickrInternalState}
@@ -415,7 +464,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
 }
 
 /**
- * @param {object} instance
+ * @param {LightpickrInstance} instance
  * @param {Partial<LightpickrOptions>} patch
  * @returns {LightpickrInternalState}
  */

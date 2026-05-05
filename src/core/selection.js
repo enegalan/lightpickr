@@ -97,7 +97,7 @@ export function clearSelection(state) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('./state.js').LightpickrInstance} instance
  * @param {number} timestamp
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */

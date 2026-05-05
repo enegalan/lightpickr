@@ -18,7 +18,7 @@ import { isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../u
  */
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {number} dayTs
  * @param {boolean} outside
  * @returns {RenderCtx}

@@ -5,7 +5,7 @@ import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, 
 import { syncTimePanelDom } from './time-panel.js';
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
 */
 export function focusCell(instance) {
@@ -20,7 +20,7 @@ export function focusCell(instance) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {import('./core/state.js').LightpickrInternalState|null} [prevState]
  * @returns {void}
  */
@@ -43,7 +43,7 @@ export function syncInstanceClasses(instance, prevState = null) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {import('./core/state.js').LightpickrInternalState} next
  * @param {object} options
  * @returns {void}
@@ -75,7 +75,7 @@ export function emitEvents(instance, prevState, next, options = {}) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 export function bindHandlers(instance) {
@@ -85,7 +85,7 @@ export function bindHandlers(instance) {
 }
 
 /**
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 export function bindDocListeners(instance) {
@@ -95,7 +95,7 @@ export function bindDocListeners(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _bindDocListener(instance) {
@@ -122,7 +122,7 @@ function _bindDocListener(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _bindEscapeListener(instance) {
@@ -140,7 +140,7 @@ function _bindEscapeListener(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _bindCalendarKeyboard(instance) {
@@ -185,7 +185,7 @@ function _bindCalendarKeyboard(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _bindDelegatedHandlers(instance) {
@@ -331,7 +331,7 @@ function _bindDelegatedHandlers(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _bindRangeDragHandlers(instance) {
@@ -416,7 +416,7 @@ function _bindRangeDragHandlers(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncPendingRangeHoverClasses(instance) {
@@ -487,7 +487,7 @@ function _syncPendingRangeHoverClasses(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncFooterHandlers(instance) {
@@ -517,7 +517,7 @@ function _syncFooterHandlers(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncInput(instance) {
@@ -572,7 +572,7 @@ function _syncInput(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncTheme(instance) {
@@ -603,7 +603,7 @@ function _syncTheme(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncPopoverMobile(instance) {
@@ -630,7 +630,7 @@ function _syncPopoverMobile(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncMobileBackdropDisplay(instance) {
@@ -650,7 +650,7 @@ function _syncMobileBackdropDisplay(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _syncDatepickerDisplay(instance) {
@@ -679,7 +679,7 @@ function _syncDatepickerDisplay(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {{ dates: Date[], formattedDates: string[] }}
  */
 function _buildSelectedParts(instance) {
@@ -749,7 +749,7 @@ function _buildSelectedParts(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {number} ts
  * @returns {void}
  */
@@ -780,7 +780,7 @@ function _onDayPick(instance, ts) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {number} monthTs
  * @returns {void}
  */
@@ -794,7 +794,7 @@ function _onMonthPick(instance, monthTs) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {number} year
  * @returns {void}
  */
@@ -808,7 +808,7 @@ function _onYearPick(instance, year) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {Event} ev
  * @returns {void}
  */
@@ -843,7 +843,7 @@ function _onTimeInputChange(instance, ev) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _onTimeChange(instance) {
@@ -875,7 +875,7 @@ function _onTimeChange(instance) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {string} trigger
  * @returns {void}
  */
@@ -922,7 +922,7 @@ function _selectionChanged(prev, next) {
 
 /**
  * @private
- * @param {object} instance
+ * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
 function _clearPressedCellActive(instance) {
