@@ -151,7 +151,7 @@ function _bindCalendarKeyboard(instance) {
     if (instance.isDestroyed || instance._state.onlyTime || !isDayNavigationKey(ev.key)) {
       return;
     }
-    const result = applyEventKey(instance._state, {
+    const result = applyEventKey(instance, {
       key: ev.key,
       shiftKey: ev.shiftKey,
       altKey: ev.altKey

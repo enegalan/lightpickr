@@ -67,8 +67,8 @@ Lightpickr.prototype.show = function () {
   if (this.isDestroyed || this._state.inline) {
     return;
   }
+  this._state.onShow(false, { datepicker: this });
   let next = Object.assign({}, this._state);
-  next.onShow(false, { datepicker: this });
   next.visible = true;
   if (!next.onlyTime) {
     next = reseedKeyboardFocusForView(next);

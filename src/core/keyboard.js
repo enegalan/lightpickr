@@ -41,26 +41,26 @@ export function reseedKeyboardFocusForView(state) {
 }
 
 /**
- * @param {import('./state.js').LightpickrInternalState} state
+ * @param {object} instance
  * @param {{ key: string, shiftKey: boolean, altKey: boolean }} evLike
  * @returns {{ type: 'noop' } | { type: 'altView', prev: import('./state.js').LightpickrInternalState, next: import('./state.js').LightpickrInternalState } | { type: 'grid', seed: import('./state.js').LightpickrInternalState | null, next: import('./state.js').LightpickrInternalState }}
  */
-export function applyEventKey(state, evLike) {
+export function applyEventKey(instance, evLike) {
   const { key, shiftKey, altKey } = evLike;
   const isArrowUp = key === 'ArrowUp';
   const isArrowDown = key === 'ArrowDown';
 
   if (altKey && (isArrowUp || isArrowDown)) {
-    const navigated = isArrowUp ? navigateUp(state) : navigateDown(state);
+    const navigated = isArrowUp ? navigateUp(instance._state) : navigateDown(instance._state);
     return {
       type: 'altView',
-      prev: state,
+      prev: instance._state,
       next: reseedKeyboardFocusForView(navigated)
     };
   }
 
-  if (state.currentView === 'month' || state.currentView === 'year') {
-    let s = state;
+  if (instance._state.currentView === 'month' || instance._state.currentView === 'year') {
+    let s = instance._state;
     let seed = null;
     if (s.focusDate == null) {
       const seeded = reseedKeyboardFocusForView(s);
@@ -79,11 +79,11 @@ export function applyEventKey(state, evLike) {
     return { type: 'grid', seed, next };
   }
 
-  if (state.currentView !== 'day' && state.currentView !== 'time') {
+  if (instance._state.currentView !== 'day' && instance._state.currentView !== 'time') {
     return { type: 'noop' };
   }
 
-  let s = state;
+  let s = instance._state;
   let seed = null;
   if (s.focusDate == null) {
     const seeded = reseedKeyboardFocusForView(s);
