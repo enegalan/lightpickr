@@ -1,4 +1,4 @@
-import { cloneSelectedDates, findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
+import { findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, timestampToPickerDate } from '../utils/time.js';
 import { trimFifo } from '../utils/common.js';
 
 /**
@@ -16,7 +16,6 @@ export function selectDate(state, timestamp) {
   }
 
   const next = Object.assign({}, state);
-  next.selectedDates = cloneSelectedDates(state.selectedDates);
 
   if (state.range) {
     if (state.pendingRangeStart == null) {
@@ -69,7 +68,7 @@ export function unselectDate(state, timestamp) {
   }
   const d = startOfDayTs(timestamp);
   const next = Object.assign({}, state);
-  const sel = cloneSelectedDates(state.selectedDates);
+  const sel = state.selectedDates;
   if (state.range) {
     const list = /** @type {number[][]} */ (sel);
     const filtered = list.filter((pair) => !isInClosedRangeDay(d, pair[0], pair[1]));
@@ -98,28 +97,32 @@ export function clearSelection(state) {
 }
 
 /**
- * @param {import('./state.js').LightpickrInternalState} state
- * @param {number} rangeIndex
- * @param {'start'|'end'} edge
+ * @param {object} instance
  * @param {number} timestamp
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */
-export function applyRangeEndpointDrag(state, rangeIndex, edge, timestamp) {
-  if (!state.range || !Array.isArray(state.selectedDates[0])) {
-    return { state, changed: false };
+export function applyRangeEndpointDrag(instance, timestamp) {
+  if (!instance._state.range || !Array.isArray(instance._state.selectedDates[0]) || !instance._rangeDrag || timestamp == null) {
+    return { state: instance._state, changed: false };
   }
-  const ranges = /** @type {number[][]} */ (cloneSelectedDates(state.selectedDates));
-  if (rangeIndex < 0 || rangeIndex >= ranges.length) {
-    return { state, changed: false };
+  const ranges = instance.selectedDates;
+  if (instance._rangeDrag.rangeIndex < 0 || instance._rangeDrag.rangeIndex >= ranges.length) {
+    return { state: instance._state, changed: false };
   }
   const d = startOfDayTs(timestamp);
-  if (isDayDisabled(state, d)) {
-    return { state, changed: false };
+  if (instance._state.onBeforeSelect({
+    date: timestampToPickerDate(timestamp, instance._state),
+    datepicker: instance
+  }) === false) {
+    return { state: instance._state, changed: false };
   }
-  const pair = ranges[rangeIndex];
+  if (isDayDisabled(instance._state, d)) {
+    return { state: instance._state, changed: false };
+  }
+  const pair = ranges[instance._rangeDrag.rangeIndex];
   let start = pair[0];
   let end = pair[1];
-  if (edge === 'start') {
+  if (instance._rangeDrag.edge === 'start') {
     start = d;
   } else {
     end = d;
@@ -129,14 +132,14 @@ export function applyRangeEndpointDrag(state, rangeIndex, edge, timestamp) {
     start = end;
     end = tmp;
   }
-  if (isDayDisabled(state, start) || isDayDisabled(state, end)) {
-    return { state, changed: false };
+  if (isDayDisabled(instance._state, start) || isDayDisabled(instance._state, end)) {
+    return { state: instance._state, changed: false };
   }
   if (pair[0] === start && pair[1] === end) {
-    return { state, changed: false };
+    return { state: instance._state, changed: false };
   }
-  ranges[rangeIndex] = [start, end];
-  const next = Object.assign({}, state);
+  ranges[instance._rangeDrag.rangeIndex] = [start, end];
+  const next = Object.assign({}, instance._state);
   next.selectedDates = ranges;
   next.focusDate = d;
   return { state: next, changed: true };

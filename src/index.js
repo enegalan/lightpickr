@@ -331,7 +331,7 @@ Lightpickr.prototype.disableDate = function (date) {
     return;
   }
   const next = Object.assign({}, this._state);
-  const arr = next.disabledDatesSorted.slice();
+  const arr = next.disabledDates;
   if (arr.indexOf(ts) < 0) {
     arr.push(ts);
     arr.sort(function (a, b) {
@@ -599,7 +599,7 @@ Object.defineProperties(Lightpickr.prototype, {
   },
   selectedDates: {
     get: function () {
-      return cloneSelectedDates(this._state.selectedDates);
+      return cloneSelectedDates(this._state);
     }
   },
   focusDate: {

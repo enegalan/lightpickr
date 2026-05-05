@@ -390,10 +390,7 @@ function _bindRangeDragHandlers(instance) {
       return;
     }
     const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
-    if (ts == null) {
-      return;
-    }
-    const out = applyRangeEndpointDrag(instance._state, instance._rangeDrag.rangeIndex, instance._rangeDrag.edge, ts);
+    const out = applyRangeEndpointDrag(instance, ts);
     if (!out.changed) {
       return;
     }

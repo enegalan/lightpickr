@@ -258,17 +258,17 @@ export function setTimePart(state, hours, minutes) {
 }
 
 /**
- * @param {number[]|number[][]} selectedDates
+ * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]|number[][]}
  */
-export function cloneSelectedDates(selectedDates) {
-    if (!selectedDates || !selectedDates.length) {
+export function cloneSelectedDates(state) {
+    if (!state.selectedDates || !state.selectedDates.length) {
         return [];
     }
-    if (Array.isArray(selectedDates[0])) {
-      return selectedDates.map((pair) => /** @type {number[]} */ (pair).slice());
+    if (Array.isArray(state.selectedDates[0])) {
+      return state.selectedDates.map((pair) => /** @type {number[]} */ (pair).slice());
     }
-    return /** @type {number[]} */ (selectedDates).slice();
+    return /** @type {number[]} */ (state.selectedDates).slice();
 }
 
 /**

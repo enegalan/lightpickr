@@ -1,4 +1,4 @@
-import { isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, cloneSelectedDates } from '../utils/time.js';
+import { isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
 
 /**
  * @typedef {Object} RenderCtx
@@ -47,7 +47,7 @@ export function buildCtx(instance, dayTs, outside = false) {
       onlyTime: instance._state.onlyTime,
       minDate: instance._state.minDate,
       maxDate: instance._state.maxDate,
-      disabledDates: instance._state.disabledDatesSorted.slice(),
+      disabledDates: instance._state.disabledDates,
       locale: instance._state.locale,
       firstDay: instance._state.firstDay,
       weekends: instance._state.weekends.slice(),
@@ -56,11 +56,11 @@ export function buildCtx(instance, dayTs, outside = false) {
       viewDate: instance._state.viewDate,
       focusDate: instance._state.focusDate,
       visible: instance._state.visible,
-      selectedDates: cloneSelectedDates(instance._state.selectedDates),
+      selectedDates: instance._state.selectedDates,
       timePart: Object.assign({}, instance._state.timePart),
       allowedViews: instance._state.allowedViews.slice()
     },
-    instance: instance
+    instance
   };
 }
 

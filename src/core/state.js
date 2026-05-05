@@ -464,7 +464,7 @@ function _extractRawOptions(state) {
     showEvent: state.showEvents.slice(),
     minDate: state.minDate,
     maxDate: state.maxDate,
-    disabledDates: state.disabledDatesSorted.slice(),
+    disabledDates: state.disabledDates,
     locale: state.locale,
     firstDay: state.firstDay,
     weekends: state.weekends.slice(),
