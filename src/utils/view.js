@@ -1,4 +1,4 @@
-import { normalizeAllowedViews, normalizeView } from './normalize.js';
+import { normalizeAllowedViews } from './normalize.js';
 import { buildDayMonthCells, buildMonthViewTimestamps, buildYearViewYears } from '../core/calendar-grid.js';
 import { ymdToTsStartOfDay } from './time.js';
 import lightpickrDefaults from '../core/defaults.js';
@@ -10,7 +10,8 @@ import lightpickrDefaults from '../core/defaults.js';
  */
 export function clampView(views, requestedView) {
   const allowedViews = normalizeAllowedViews(views);
-  const req = normalizeView(requestedView);
+  const t = typeof requestedView === 'string' ? requestedView.trim() : '';
+  const req = t && lightpickrDefaults.viewOrder.includes(t) ? t : lightpickrDefaults.view;
   if (allowedViews.indexOf(req) >= 0) {
     return req;
   }

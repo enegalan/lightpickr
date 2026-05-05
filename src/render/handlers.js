@@ -21,12 +21,11 @@ export function focusCell(instance) {
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
- * @param {import('./core/state.js').LightpickrInternalState|null} [prevState]
+ * @param {import('../core/state.js').LightpickrInternalState|null} [prevState]
  * @returns {void}
  */
 export function syncInstanceClasses(instance, prevState = null) {
   _syncPendingRangeHoverClasses(instance);
-  _syncFooterHandlers(instance);
   _syncInput(instance);
   _syncTheme(instance);
   if (!prevState || instance._state.isMobile !== prevState.isMobile) {
@@ -44,7 +43,7 @@ export function syncInstanceClasses(instance, prevState = null) {
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
- * @param {import('./core/state.js').LightpickrInternalState} next
+ * @param {import('../core/state.js').LightpickrInternalState} next
  * @param {object} options
  * @returns {void}
  */
@@ -476,36 +475,6 @@ function _syncPendingRangeHoverClasses(instance) {
  * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
  */
-function _syncFooterHandlers(instance) {
-  const actions = instance.$datepicker.querySelectorAll('[' + instance._state.attributes.footerAction + ']');
-  for (let i = 0; i < actions.length; i++) {
-    const el = actions[i];
-    if (!(el instanceof HTMLElement)) {
-      continue;
-    }
-    if (el.getAttribute(instance._state.attributes.footerBound) === '1') {
-      continue;
-    }
-    el.setAttribute(instance._state.attributes.footerBound, '1');
-    el.addEventListener('click', () => {
-      const action = el.getAttribute(instance._state.attributes.footerAction);
-      if (action === 'today') {
-        const next = Object.assign({}, instance._state);
-        const now = new Date();
-        next.viewDate = ymdToTsStartOfDay(now.getFullYear(), now.getMonth(), 1);
-        instance._commit(next, { emitSelect: false });
-      } else if (action === 'clear') {
-        instance.clear();
-      }
-    });
-  }
-}
-
-/**
- * @private
- * @param {import('../core/state.js').LightpickrInstance} instance
- * @returns {void}
- */
 function _syncInput(instance) {
   if (!isTextInputLike(instance.$el)) {
     return;
@@ -872,18 +841,18 @@ function _onSelect(instance, trigger) {
   const multiLike = instance._state.range || instance._state.multipleEnabled;
   instance._state.onSelect({
     date: multiLike ? dates : dates[0] || null,
-    dates: dates,
+    dates,
     formattedDate: multiLike ? formattedDates : formattedDates[0] || '',
-    formattedDates: formattedDates,
-    trigger: trigger,
+    formattedDates,
+    trigger,
     datepicker: instance
   });
 }
 
 /**
  * @private
- * @param {import('./core/state.js').LightpickrInternalState} prev
- * @param {import('./core/state.js').LightpickrInternalState} next
+ * @param {import('../core/state.js').LightpickrInternalState} prev
+ * @param {import('../core/state.js').LightpickrInternalState} next
  * @returns {boolean}
  */
 function _selectionChanged(prev, next) {

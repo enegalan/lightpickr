@@ -15,7 +15,24 @@ export function FooterButtonsDemo() {
       if (cancelled) return;
       const out: Array<{destroy: () => void}> = [];
       if (refA.current) {
-        out.push(new Lightpickr(refA.current, {buttons: ['today', 'clear']}));
+        out.push(
+          new Lightpickr(refA.current, {
+            buttons: [
+              {
+                content: 'Today',
+                onClick: function (picker: {setViewDate: (d: Date) => void}) {
+                  picker.setViewDate(new Date());
+                },
+              },
+              {
+                content: 'Clear',
+                onClick: function (picker: {clear: () => void}) {
+                  picker.clear();
+                },
+              },
+            ],
+          })
+        );
       }
       if (refB.current) {
         out.push(

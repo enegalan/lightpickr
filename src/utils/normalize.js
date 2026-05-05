@@ -52,15 +52,6 @@ export function normalizeWeekendIndexes(weekends) {
 }
 
 /**
- * @param {unknown} view
- * @returns {'day'|'month'|'year'}
- */
-export function normalizeView(view) {
-  const t = typeof view === 'string' ? view.trim() : '';
-  return t && lightpickrDefaults.viewOrder.includes(t) ? t : lightpickrDefaults.view;
-}
-
-/**
  * @param {unknown} views
  * @returns {('day'|'month'|'year')[]}
  */

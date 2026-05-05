@@ -72,8 +72,6 @@ export default {
     time: 'data-lp-time',
     month: 'data-lp-month',
     year: 'data-lp-year',
-    footerAction: 'data-lp-footer-action',
-    footerBound: 'data-lp-footer-bound',
   },
   render: { container: null, header: null, time: null, footer: null, cell: null },
   navTitles: { day: 'MMMM, <i>yyyy</i>', month: 'yyyy', year: 'yyyy1 - yyyy2' },

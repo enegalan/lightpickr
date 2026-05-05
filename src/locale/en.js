@@ -8,8 +8,6 @@ export default {
     ariaYearView: 'Years',
     ariaTimeHours: 'Hours',
     ariaTimeMinutes: 'Minutes',
-    btnToday: 'Today',
-    btnClear: 'Clear',
     am: 'AM',
     pm: 'PM'
 };

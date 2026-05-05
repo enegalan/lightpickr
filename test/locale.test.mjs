@@ -47,15 +47,13 @@ for (const { code, locale } of localeBundles) {
     assert.equal(defaultWeekdayNames(locale, 'weekdaysShort')[6], locale.weekdaysShort[6]);
 
     const ui = getTranslations(locale);
-    assert.equal(ui.btnToday, locale.btnToday);
     assert.equal(ui.ariaDayGrid, locale.ariaDayGrid);
   });
 }
 
 test('getTranslations: default and partial override', () => {
-  assert.equal(getTranslations('default').btnToday, DEFAULT_TRANSLATIONS.btnToday);
-  assert.equal(getTranslations({ btnToday: 'Hoy' }).btnToday, 'Hoy');
-  assert.equal(getTranslations({ btnToday: 'Hoy' }).btnClear, DEFAULT_TRANSLATIONS.btnClear);
+  assert.equal(getTranslations('default').ariaDayGrid, DEFAULT_TRANSLATIONS.ariaDayGrid);
+  assert.equal(getTranslations({ ariaDayGrid: 'X' }).ariaDayGrid, 'X');
 });
 
 test('defaultMonthNames/defaultWeekdayNames: string locale uses built-in bundle', () => {
@@ -95,14 +93,16 @@ for (const { code, locale } of localeBundles) {
   });
 }
 
-test('footer: custom btn labels', () => {
+test('footer: custom buttons', () => {
   const input = document.querySelector('#x');
   const pickerFooter = new Lightpickr(input, {
     inline: true,
-    locale: { btnToday: 'Hoy', btnClear: 'Vac' },
-    buttons: ['today', 'clear']
+    buttons: [
+      { content: 'Hoy', onClick() {} },
+      { content: 'Vac', onClick(picker) { picker.clear(); } }
+    ]
   });
-  const footerBtns = pickerFooter.$datepicker.querySelectorAll('[' + lightpickrDefaults.attributes.footerAction + ']');
+  const footerBtns = pickerFooter.$datepicker.querySelectorAll('.' + lightpickrDefaults.classes.footerBtn);
   assert.equal(footerBtns[0].textContent, 'Hoy');
   assert.equal(footerBtns[1].textContent, 'Vac');
   pickerFooter.destroy();

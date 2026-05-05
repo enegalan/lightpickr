@@ -22,8 +22,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {string} [ariaYearView]
  * @property {string} [ariaTimeHours]
  * @property {string} [ariaTimeMinutes]
- * @property {string} [btnToday]
- * @property {string} [btnClear]
  * @property {string} [am]
  * @property {string} [pm]
  */
@@ -71,6 +69,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {string} [titleButton]
  * @property {string} [timePanel]
  * @property {string} [footer]
+ * @property {string} [footerBtn]
  * @property {string} [popoverPointer]
  * @property {string} [viewBody]
  * @property {string} [inline]

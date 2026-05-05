@@ -442,7 +442,7 @@ new Lightpickr('#b', {
 
 ### Footer buttons
 
-<code><purple>buttons</purple></code> can be <code><red>false</red></code> (default), a single entry, or an array. Use preset strings <code><green>"today"</green></code> and <code><green>"clear"</green></code>, or objects: <code>tagName</code>, <code>className</code>, <code>content</code> (string or <code><gray>(</gray><orange>instance</orange><gray>)</gray> <brown>=></brown> <green>string</green></code>), <code><purple>attrs</purple></code>, <code><purple>onClick</purple><gray>(</gray><orange>instance</orange><gray>)</gray></code>. The custom "Next Monday" control uses <code>className<brown>:</brown> <green>"lp-doc-footer-btn-block"</green></code> so it spans the footer; you can use <code>attrs: &#123; style: &quot;width: 100%&quot; &#125;</code> instead if you prefer inline style.
+<code><purple>buttons</purple></code> can be <code><red>false</red></code> (default), one descriptor, or an array. Each entry is an object: <code>tagName</code>, <code>className</code>, <code>content</code> (string or <code><gray>(</gray><orange>instance</orange><gray>)</gray> <brown>=></brown> <green>string</green></code>), <code><purple>attrs</purple></code>, <code><purple>onClick</purple><gray>(</gray><orange>instance</orange><gray>)</gray></code>. Use <code><purple>instance</purple><brown>.</brown><purple>setViewDate</purple></code> and <code><purple>instance</purple><brown>.</brown><purple>clear</purple></code> inside <code>onClick</code> when you want “today” or “clear” behavior. The "Next Monday" control uses <code>className<brown>:</brown> <green>"lp-doc-footer-btn-block"</green></code> so it spans the footer; you can use <code>attrs: &#123; style: &quot;width: 100%&quot; &#125;</code> instead if you prefer inline style.
 
 <FooterButtonsDemo />
 
@@ -451,7 +451,20 @@ import Lightpickr from 'lightpickr';
 import 'lightpickr/lightpickr.css';
 
 new Lightpickr('#a', {
-  buttons: ['today', 'clear'],
+  buttons: [
+    {
+      content: 'Today',
+      onClick(picker) {
+        picker.setViewDate(new Date());
+      },
+    },
+    {
+      content: 'Clear',
+      onClick(picker) {
+        picker.clear();
+      },
+    },
+  ],
 });
 
 new Lightpickr('#b', {
