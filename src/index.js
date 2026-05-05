@@ -36,8 +36,6 @@ function Lightpickr(target, options) {
   this._docDown = null;
   /** @type {((done: () => void) => void)|null} */
   this._positionHideCleanup = null;
-  /** @type {number|null} */
-  this._pendingRangeHoverTs = null;
   /** @type {import('./core/state.js').LightpickrRangeDrag|null} */
   this._rangeDrag = null;
   /** @type {HTMLElement|null} */
@@ -505,10 +503,10 @@ Lightpickr.prototype._detachListeners = function () {
  */
 Lightpickr.prototype._commit = function (next, opts) {
   const prevState = this._state;
-  this._state = next;
   if (next.pendingRangeStart == null) {
-    this._pendingRangeHoverTs = null;
+    next.pendingRangeHoverTs = null;
   }
+  this._state = next;
   syncInstanceClasses(this, prevState);
   renderContainer(this);
   emitEvents(this, prevState, next, opts);

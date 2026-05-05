@@ -222,6 +222,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {number|null} rangeAnchor
  * @property {{ hours: number, minutes: number }} timePart
  * @property {number|null} pendingRangeStart
+ * @property {number|null} pendingRangeHoverTs
  * @property {string | LightpickrPositionFn} position
  * @property {string | HTMLElement | null} anchor
  * @property {number} yearViewRadius
@@ -260,7 +261,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {(() => void)[]} _delegateOffs
  * @property {((ev: MouseEvent) => void)|null} [_docDown]
  * @property {((done: () => void) => void)|null} [_positionHideCleanup]
- * @property {number|null} [_pendingRangeHoverTs]
  * @property {LightpickrRangeDrag|null} [_rangeDrag]
  * @property {Array<{ el: HTMLElement, eventName: string, listener: (ev: Event) => void, capture?: boolean }>} [_boundShowTargets]
  * @property {((ev: KeyboardEvent) => void)|null} [_docKeydownEsc]
@@ -448,6 +448,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     rangeAnchor: null,
     timePart: { hours: new Date().getHours(), minutes: new Date().getMinutes() },
     pendingRangeStart: null,
+    pendingRangeHoverTs: null,
     position: raw.position,
     anchor: raw.anchor,
     yearViewCount,
@@ -469,33 +470,32 @@ export function createStateFromOptions(incomingRaw, targetEl) {
  * @returns {LightpickrInternalState}
  */
 export function mergeOptions(instance, patch) {
-  const state = instance._state;
   const p = patch ?? {};
   const raw = {
-    ..._extractRawOptions(state),
+    ..._extractRawOptions(instance._state),
     ...p,
     render: {
-      ...state.render,
+      ...instance._state.render,
       ...p.render
     },
     classes: {
-      ...state.classes,
+      ...instance._state.classes,
       ...p.classes
     },
     attributes: {
-      ...state.attributes,
+      ...instance._state.attributes,
       ...p.attributes
     },
     properties: {
-      ...state.properties,
+      ...instance._state.properties,
       ...p.properties
     }
   };
   const next = createStateFromOptions(raw, instance.$el);
-  const wasStringPopover = !state.inline && typeof state.position !== 'function';
+  const wasStringPopover = !instance._state.inline && typeof instance._state.position !== 'function';
   const isStringPopover = !next.inline && typeof next.position !== 'function';
   next.popoverAlreadyOpened =
-    !isStringPopover || (wasStringPopover && state.popoverAlreadyOpened);
+    !isStringPopover || (wasStringPopover && instance._state.popoverAlreadyOpened);
   return next;
 }
 /**

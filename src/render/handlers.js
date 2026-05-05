@@ -189,15 +189,12 @@ function _bindCalendarKeyboard(instance) {
  * @returns {void}
  */
 function _bindDelegatedHandlers(instance) {
-  const root = instance.$datepicker;
-  const offs = instance._delegateOffs || [];
-  offs.forEach((fn) => fn());
+  (instance._delegateOffs || []).forEach((fn) => fn());
   _clearPressedCellActive(instance);
 
-  const s = instance._state;
-  const cellBtnSel = 'button.' + s.classes.cell;
+  const cellBtnSel = 'button.' + instance._state.classes.cell;
 
-  const offCellPointerDown = _delegate(root, cellBtnSel, 'pointerdown', function (ev, el) {
+  const offCellPointerDown = _delegate(instance.$datepicker, cellBtnSel, 'pointerdown', function (ev, el) {
     if (!(el instanceof HTMLButtonElement) || el.disabled) {
       return;
     }
@@ -205,7 +202,7 @@ function _bindDelegatedHandlers(instance) {
       return;
     }
     _clearPressedCellActive(instance);
-    el.classList.add(s.classes.cellActive);
+    el.classList.add(instance._state.classes.cellActive);
     instance._pressedCellEl = el;
   });
 
@@ -223,16 +220,16 @@ function _bindDelegatedHandlers(instance) {
     }
     _clearPressedCellActive(instance);
   };
-  root.addEventListener('pointerout', onCellPointerOut, true);
+  instance.$datepicker.addEventListener('pointerout', onCellPointerOut, true);
 
   const offCellActive = function () {
     document.removeEventListener('pointerup', onDocPointerEnd);
     document.removeEventListener('pointercancel', onDocPointerEnd);
-    root.removeEventListener('pointerout', onCellPointerOut, true);
+    instance.$datepicker.removeEventListener('pointerout', onCellPointerOut, true);
     _clearPressedCellActive(instance);
   };
 
-  const off1 = _delegate(root, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
+  const off1 = _delegate(instance.$datepicker, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
     const ts = _parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       return;
@@ -240,7 +237,7 @@ function _bindDelegatedHandlers(instance) {
     _onDayPick(instance, ts);
   });
 
-  const off2 = _delegate(root, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
+  const off2 = _delegate(instance.$datepicker, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
     if (el instanceof HTMLButtonElement && el.disabled) {
       return;
     }
@@ -254,7 +251,7 @@ function _bindDelegatedHandlers(instance) {
     }
   });
 
-  const off3 = _delegate(root, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
+  const off3 = _delegate(instance.$datepicker, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
     const monthTs = _parseElementNumber(el, instance._state.attributes.month);
     if (typeof monthTs !== 'number' || !Number.isFinite(monthTs)) {
       return;
@@ -262,7 +259,7 @@ function _bindDelegatedHandlers(instance) {
     _onMonthPick(instance, monthTs);
   });
 
-  const off4 = _delegate(root, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
+  const off4 = _delegate(instance.$datepicker, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
     const y = _parseElementNumber(el, instance._state.attributes.year);
     if (y == null) {
       return;
@@ -270,7 +267,7 @@ function _bindDelegatedHandlers(instance) {
     _onYearPick(instance, y);
   });
 
-  const offDayName = _delegate(root, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
+  const offDayName = _delegate(instance.$datepicker, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
     const dayIndex = _parseElementNumber(el, instance._state.attributes.dayName);
     if (dayIndex == null) {
       return;
@@ -281,18 +278,18 @@ function _bindDelegatedHandlers(instance) {
   const timeFn = function (ev) {
     _onTimeInputChange(instance, ev);
   };
-  root.addEventListener('input', timeFn);
-  root.addEventListener('change', timeFn);
+  instance.$datepicker.addEventListener('input', timeFn);
+  instance.$datepicker.addEventListener('change', timeFn);
   const off5 = function () {
-    root.removeEventListener('input', timeFn);
-    root.removeEventListener('change', timeFn);
+    instance.$datepicker.removeEventListener('input', timeFn);
+    instance.$datepicker.removeEventListener('change', timeFn);
   };
 
   const onRangeHoverOver = function (ev) {
     if (!instance._state.range || instance._state.pendingRangeStart == null) {
       return;
     }
-    if (!(ev.target instanceof Node) || !root.contains(ev.target)) {
+    if (!(ev.target instanceof Node) || !instance.$datepicker.contains(ev.target)) {
       return;
     }
     let el = ev.target instanceof Element ? ev.target : ev.target.parentElement;
@@ -305,25 +302,25 @@ function _bindDelegatedHandlers(instance) {
       return;
     }
     const next = startOfDayTs(ts);
-    if (instance._pendingRangeHoverTs === next) {
+    if (instance._state.pendingRangeHoverTs === next) {
       return;
     }
-    instance._pendingRangeHoverTs = next;
+    instance._state.pendingRangeHoverTs = next;
     _syncPendingRangeHoverClasses(instance);
   };
 
   const onRangeHoverLeave = function () {
-    if (instance._pendingRangeHoverTs != null) {
-      instance._pendingRangeHoverTs = null;
+    if (instance._state.pendingRangeHoverTs != null) {
+      instance._state.pendingRangeHoverTs = null;
       _syncPendingRangeHoverClasses(instance);
     }
   };
 
-  root.addEventListener('pointerover', onRangeHoverOver);
-  root.addEventListener('pointerleave', onRangeHoverLeave);
+  instance.$datepicker.addEventListener('pointerover', onRangeHoverOver);
+  instance.$datepicker.addEventListener('pointerleave', onRangeHoverLeave);
   const off6 = function () {
-    root.removeEventListener('pointerover', onRangeHoverOver);
-    root.removeEventListener('pointerleave', onRangeHoverLeave);
+    instance.$datepicker.removeEventListener('pointerover', onRangeHoverOver);
+    instance.$datepicker.removeEventListener('pointerleave', onRangeHoverLeave);
   };
 
   instance._delegateOffs = [offCellPointerDown, offCellActive, off1, off2, off3, off4, offDayName, off5, off6];
@@ -338,13 +335,12 @@ function _bindRangeDragHandlers(instance) {
   if (!instance._state.range || !instance._state.dynamicRange) {
     return;
   }
-  const root = instance.$datepicker;
   const startDrag = (ev) => {
     if (!(ev.target instanceof HTMLElement)) {
       return;
     }
     const dayBtn = ev.target.closest('[' + instance._state.attributes.day + ']');
-    if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
+    if (!(dayBtn instanceof HTMLElement) || !instance.$datepicker.contains(dayBtn)) {
       return;
     }
     if (!(dayBtn.classList.contains(instance._state.classes.cellRangeStart) || dayBtn.classList.contains(instance._state.classes.cellRangeEnd))) {
@@ -386,7 +382,7 @@ function _bindRangeDragHandlers(instance) {
       return;
     }
     const dayBtn = target.closest('[' + instance._state.attributes.day + ']');
-    if (!(dayBtn instanceof HTMLElement) || !root.contains(dayBtn)) {
+    if (!(dayBtn instanceof HTMLElement) || !instance.$datepicker.contains(dayBtn)) {
       return;
     }
     const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
@@ -404,11 +400,11 @@ function _bindRangeDragHandlers(instance) {
     _onSelect(instance, 'range-drag');
     instance._pluginOnSelect();
   };
-  root.addEventListener('pointerdown', startDrag);
+  instance.$datepicker.addEventListener('pointerdown', startDrag);
   document.addEventListener('pointermove', moveDrag);
   document.addEventListener('pointerup', endDrag);
   instance._delegateOffs.push(function () {
-    root.removeEventListener('pointerdown', startDrag);
+    instance.$datepicker.removeEventListener('pointerdown', startDrag);
     document.removeEventListener('pointermove', moveDrag);
     document.removeEventListener('pointerup', endDrag);
   });
@@ -420,28 +416,18 @@ function _bindRangeDragHandlers(instance) {
  * @returns {void}
  */
 function _syncPendingRangeHoverClasses(instance) {
-  const rangePreview = instance._state.classes.cellRangePreview;
-  const rangePreviewMid = instance._state.classes.cellRangePreviewMid;
-  const rangePreviewStartCap = instance._state.classes.cellRangePreviewStartCap;
-  const rangePreviewEndCap = instance._state.classes.cellRangePreviewEndCap;
-
   const buttons = instance.$datepicker.querySelectorAll('[' + instance._state.attributes.day + ']');
   for (let i = 0; i < buttons.length; i++) {
     const el = buttons[i];
-    el.classList.remove(rangePreview, rangePreviewMid, rangePreviewStartCap, rangePreviewEndCap);
+    el.classList.remove(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid, instance._state.classes.cellRangePreviewStartCap, instance._state.classes.cellRangePreviewEndCap);
   }
 
-  if (!instance._state.range || instance._state.pendingRangeStart == null) {
-    return;
-  }
-
-  const hoverRaw = instance._pendingRangeHoverTs;
-  if (hoverRaw == null) {
+  if (!instance._state.range || instance._state.pendingRangeStart == null || instance._state.pendingRangeHoverTs == null) {
     return;
   }
 
   const anchor = startOfDayTs(instance._state.pendingRangeStart);
-  const hover = startOfDayTs(hoverRaw);
+  const hover = startOfDayTs(instance._state.pendingRangeHoverTs);
   if (anchor === hover) {
     return;
   }
@@ -467,20 +453,20 @@ function _syncPendingRangeHoverClasses(instance) {
     const atAnchor = d === anchor;
 
     if (atMid || (atLo && atHi)) {
-      el.classList.add(rangePreview, rangePreviewMid);
+      el.classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid);
       continue;
     }
 
     if (atLo) {
       if (!atAnchor) {
-        el.classList.add(rangePreview, rangePreviewStartCap);
+        el.classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewStartCap);
       } else if (lo !== hi) {
-        el.classList.add(rangePreviewStartCap);
+        el.classList.add(instance._state.classes.cellRangePreviewStartCap);
       }
       continue;
     }
     if (atHi) {
-      el.classList.add(atAnchor ? rangePreviewEndCap : rangePreview, rangePreviewEndCap);
+      el.classList.add(atAnchor ? instance._state.classes.cellRangePreviewEndCap : instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewEndCap);
     }
   }
 }
