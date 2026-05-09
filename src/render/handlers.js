@@ -1,4 +1,5 @@
 import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
+import { invokePluginHook } from '../core/plugins.js';
 import { selectDate, applyRangeEndpointDrag } from '../core/selection.js';
 import { createEl, isTextInputLike } from '../utils/common.js';
 import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
@@ -68,7 +69,7 @@ export function emitEvents(instance, prevState, next, options = {}) {
   }
   if (options && options.emitSelect && _selectionChanged(prevState, next)) {
     _onSelect(instance, options.selectTrigger || 'select');
-    instance._pluginOnSelect();
+    invokePluginHook(instance, 'onSelect');
   }
 }
 
@@ -392,7 +393,7 @@ function _bindRangeDragHandlers(instance) {
     }
     instance._rangeDrag = null;
     _onSelect(instance, 'range-drag');
-    instance._pluginOnSelect();
+    invokePluginHook(instance, 'onSelect');
   };
   instance.$datepicker.addEventListener('pointerdown', startDrag);
   document.addEventListener('pointermove', moveDrag);

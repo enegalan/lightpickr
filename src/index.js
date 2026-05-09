@@ -9,7 +9,7 @@ import { applyStringPosition } from './core/positioning.js';
 import { reseedKeyboardFocusForView } from './core/keyboard.js';
 import { createEl, isTextInputLike, noop } from './utils/common.js';
 import lightpickrDefaults from './core/defaults.js';
-import { invokePluginHook } from './core/plugins.js';
+import { invokePluginHook, registerPlugin } from './core/plugins.js';
 
 /**
  * @param {string|HTMLElement} target
