@@ -230,10 +230,9 @@ function _nextStateAfterDayViewKey(state, key, shiftKey, dayGridDates) {
   }
   let idx = state.focusDate != null ? findDayIndex(state.focusDate, dayGridDates) : 0;
   idx = clampInt(_moveGridIndex(idx, key, GRID_COLS_DAY, dayGridDates.length), 0, dayGridDates.length - 1, 0);
-  const picked = dayGridDates[idx];
-  let next = setFocusDateState(state, picked);
+  let next = setFocusDateState(state, dayGridDates[idx]);
   const { y, m } = tsToYmd(next.viewDate);
-  const cell = tsToYmd(picked);
+  const cell = tsToYmd(dayGridDates[idx]);
   if (cell.m !== m || cell.y !== y) {
     if (next.moveToOtherMonthsOnSelect) {
       next.viewDate = ymdToTsStartOfDay(cell.y, cell.m, 1);

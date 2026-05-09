@@ -78,17 +78,16 @@ function _dayFlags(state, date) {
   if (state.range) {
     const ranges = /** @type {number[][]} */ (state.selectedDates);
     for (let i = 0; i < ranges.length; i++) {
-      const pair = ranges[i];
-      if (isSameDay(date, pair[0])) {
+      if (isSameDay(date, ranges[i][0])) {
         isRangeStart = true;
       }
-      if (isSameDay(date, pair[1])) {
+      if (isSameDay(date, ranges[i][1])) {
         isRangeEnd = true;
       }
-      if (isInClosedRangeDay(date, pair[0], pair[1])) {
+      if (isInClosedRangeDay(date, ranges[i][0], ranges[i][1])) {
         isInRange = true;
       }
-      if (isSameDay(date, pair[0]) || isSameDay(date, pair[1])) {
+      if (isSameDay(date, ranges[i][0]) || isSameDay(date, ranges[i][1])) {
         isSelected = true;
       }
     }
@@ -97,8 +96,7 @@ function _dayFlags(state, date) {
       isRangeStart = true;
     }
   } else {
-    const dates = /** @type {number[]} */ (state.selectedDates);
-    isSelected = dates.some((x) => isSameDay(x, date));
+    isSelected = /** @type {number[]} */ (state.selectedDates).some((x) => isSameDay(x, date));
   }
   return {
     isSelected,

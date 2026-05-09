@@ -277,8 +277,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {(next: LightpickrInternalState, opts?: { emitSelect?: boolean, selectTrigger?: string, popoverInitialOpen?: boolean }) => void} _commit
  * @property {() => HTMLElement} _getPositionReference
  * @property {() => void} _detachDatepicker
- * @property {() => void} _pluginOnRender
- * @property {() => void} _pluginOnSelect
  * @property {() => boolean} _shouldCloseAfterSelect
  */
 

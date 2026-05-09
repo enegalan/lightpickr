@@ -4,6 +4,7 @@ import { renderDayView } from './views/day.js';
 import { renderMonthView, renderYearView } from './views/month-year.js';
 import { renderFooter } from './footer.js';
 import { bindHandlers } from './handlers.js';
+import { invokePluginHook } from '../core/plugins.js';
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
@@ -52,7 +53,7 @@ export function renderContainer(instance) {
     instance.$datepicker.appendChild(instance.$pointer);
   }
 
-  instance._pluginOnRender();
+  invokePluginHook(instance, 'onRender');
 
   bindHandlers(instance);
 }

@@ -14,18 +14,22 @@ export function navigateNextPrev(state, dir) {
   }
   const next = Object.assign({}, state);
   const v = state.currentView;
+  let timestamp = null;
   if (v === 'day') {
     const { ts } = addMonths(state.viewDate, dir);
-    next.viewDate = ts;
+    timestamp = ts;
   } else if (v === 'month') {
     const { ts } = addYears(state.viewDate, dir);
-    next.viewDate = ts;
+    timestamp = ts;
   } else if (v === 'year') {
     const { y, m } = tsToYmd(state.viewDate);
-    next.viewDate = ymdToTsStartOfDay(y + dir * state.yearViewCount, m, 1);
+    timestamp = ymdToTsStartOfDay(y + dir * state.yearViewCount, m, 1);
   } else if (v === 'time') {
     const { ts } = addMonths(state.viewDate, dir);
-    next.viewDate = ts;
+    timestamp = ts;
+  }
+  if (timestamp != null) {
+    next.viewDate = timestamp;
   }
   return next;
 }

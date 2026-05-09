@@ -13,19 +13,14 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
   const gx = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverGapX)) || 0;
   const gy = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverGapY)) || 0;
   const margin = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverViewportMargin)) || 8;
-  const r = target.getBoundingClientRect();
-  const w = popover.offsetWidth;
-  const h = popover.offsetHeight;
-  let { top, left } = _computePopoverCoords(r, w, h, main, sec, gx, gy);
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  let { top, left } = _computePopoverCoords(target.getBoundingClientRect, popover.offsetWidth, popover.offsetHeight, main, sec, gx, gy);
   left = Math.min(
     Math.max(window.scrollX + margin, left + window.scrollX),
-    Math.max(window.scrollX + margin, window.scrollX + vw - w - margin)
+    Math.max(window.scrollX + margin, window.scrollX + window.innerWidth - popover.offsetWidth - margin)
   );
   top = Math.min(
     Math.max(window.scrollY + margin, top + window.scrollY),
-    Math.max(window.scrollY + margin, window.scrollY + vh - h - margin)
+    Math.max(window.scrollY + margin, window.scrollY + window.innerHeight - popover.offsetHeight - margin)
   );
   popover.style.top = top + 'px';
   popover.style.left = left + 'px';

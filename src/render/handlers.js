@@ -12,8 +12,7 @@ export function focusCell(instance) {
   if (instance.isDestroyed) {
     return;
   }
-  const sel = '[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]';
-  const el = instance.$datepicker.querySelector(sel);
+  const el = instance.$datepicker.querySelector('[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]');
   if (el instanceof HTMLElement) {
     el.focus({ preventScroll: true });
   }
@@ -102,16 +101,14 @@ function _bindDocListener(instance) {
     return;
   }
   instance._docDown = function (ev) {
-    const t = ev.target;
-    if (!(t instanceof Node) || instance.$datepicker.contains(t) || instance.$el.contains(t)) {
+    if (!(ev.target instanceof Node) || instance.$datepicker.contains(ev.target) || instance.$el.contains(ev.target)) {
       return;
     }
-    if (instance.$backdrop && instance.$backdrop === t) {
+    if (instance.$backdrop && instance.$backdrop === ev.target) {
       instance.hide();
       return;
     }
-    const ref = instance._getPositionReference();
-    if (ref && ref.contains(t)) {
+    if (instance._getPositionReference()?.contains(ev.target)) {
       return;
     }
     instance.hide();
@@ -191,9 +188,7 @@ function _bindDelegatedHandlers(instance) {
   (instance._delegateOffs || []).forEach((fn) => fn());
   _clearPressedCellActive(instance);
 
-  const cellBtnSel = 'button.' + instance._state.classes.cell;
-
-  const offCellPointerDown = _delegate(instance.$datepicker, cellBtnSel, 'pointerdown', function (ev, el) {
+  const offCellPointerDown = _delegate(instance.$datepicker, 'button.' + instance._state.classes.cell, 'pointerdown', function (ev, el) {
     if (!(el instanceof HTMLButtonElement) || el.disabled) {
       return;
     }

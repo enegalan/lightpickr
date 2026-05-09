@@ -24,29 +24,28 @@ export function renderFooter(instance, container) {
   const wrap = createEl('div', instance._state.classes.footer + ' ' + instance._state.classes.footer + '--actions');
 
   for (let i = 0; i < buttons.length; i++) {
-    const def = buttons[i];
-    if (!def || typeof def !== 'object') {
+    if (!buttons[i] || typeof buttons[i] !== 'object') {
       continue;
     }
 
-    const tag = def.tagName || 'button';
-    const cls = instance._state.classes.footerBtn + (def.className ? ' ' + def.className : '');
+    const tag = buttons[i].tagName || 'button';
+    const cls = instance._state.classes.footerBtn + (buttons[i].className ? ' ' + buttons[i].className : '');
 
     const el = createEl(tag, cls, tag === 'button' ? { type: 'button' } : {});
 
-    const content = typeof def.content === 'function' ? def.content(instance) : def.content;
+    const content = typeof buttons[i].content === 'function' ? buttons[i].content(instance) : buttons[i].content;
     if (content != null) {
       el.innerHTML = String(content);
     }
 
-    if (def.attrs) {
-      for (const k in def.attrs) {
-        el.setAttribute(k, String(def.attrs[k]));
+    if (buttons[i].attrs) {
+      for (const k in buttons[i].attrs) {
+        el.setAttribute(k, String(buttons[i].attrs[k]));
       }
     }
 
-    if (typeof def.onClick === 'function') {
-      el.addEventListener('click', () => def.onClick(instance));
+    if (typeof buttons[i].onClick === 'function') {
+      el.addEventListener('click', () => buttons[i].onClick(instance));
     }
 
     wrap.appendChild(el);

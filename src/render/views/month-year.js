@@ -3,7 +3,7 @@ import { isSameDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
 import { buildCtx } from '../context.js';
-import { buildDefaultHeader } from '../header.js';
+import { mountViewHeader } from '../header.js';
 
 /**
  * @param {import('../../core/state.js').LightpickrInstance} instance
@@ -131,15 +131,8 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
  * @returns {void}
  */
 function _renderMonthYearGridView(instance, container, canGoUp, gridExtraClass, ariaLabel, cellCount, cols, rows, buildCell) {
-  const { header: headerHook } = instance._state.render;
   const ctx = buildCtx(instance, instance._state.viewDate);
-
-  const header = createEl('div', instance._state.classes.header);
-  const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, instance._state.currentView, canGoUp);
-  if (headerEl) {
-    header.appendChild(headerEl);
-  }
-  container.appendChild(header);
+  mountViewHeader(instance, container, ctx, instance._state.currentView, canGoUp);
 
   const viewBody = createEl('div', instance._state.classes.viewBody);
   const grid = createEl('div', instance._state.classes.grid + ' ' + gridExtraClass, { role: 'grid', 'aria-label': ariaLabel });

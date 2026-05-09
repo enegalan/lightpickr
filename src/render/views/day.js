@@ -3,7 +3,7 @@ import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
 import { formatDate, tsToYmd } from '../../utils/time.js';
 import { createEl } from '../../utils/common.js';
 import { buildCtx } from '../context.js';
-import { buildDefaultHeader } from '../header.js';
+import { mountViewHeader } from '../header.js';
 import { renderTimePanel } from '../time-panel.js';
 import lightpickrDefaults from '../../core/defaults.js';
 
@@ -13,17 +13,8 @@ import lightpickrDefaults from '../../core/defaults.js';
  * @returns {void}
  */
 export function renderDayView(instance, container) {
-  const { header: headerHook } = instance._state.render;
-
   const ctx = buildCtx(instance, instance._state.viewDate);
-
-  const header = createEl('div', instance._state.classes.header);
-  const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, 'day', instance._state.allowedViews.indexOf('month') >= 0);
-
-  if (headerEl) {
-    header.appendChild(headerEl);
-  }
-  container.appendChild(header);
+  mountViewHeader(instance, container, ctx, 'day', instance._state.allowedViews.indexOf('month') >= 0);
 
   const viewBody = createEl('div', instance._state.classes.viewBody);
   const monthsWrap = createEl('div', instance._state.classes.grid + ' ' + instance._state.classes.months);

@@ -9,6 +9,7 @@ import { applyStringPosition } from './core/positioning.js';
 import { reseedKeyboardFocusForView } from './core/keyboard.js';
 import { createEl, isTextInputLike, noop } from './utils/common.js';
 import lightpickrDefaults from './core/defaults.js';
+import { invokePluginHook } from './core/plugins.js';
 
 /**
  * @param {string|HTMLElement} target
@@ -231,12 +232,7 @@ Lightpickr.prototype.destroy = function () {
   });
   this._delegateOffs = [];
   this._state.onDestroy();
-  for (let i = 0; i < this._plugins.length; i++) {
-    const p = this._plugins[i];
-    if (p.onDestroy) {
-      p.onDestroy();
-    }
-  }
+  invokePluginHook(this, 'onDestroy');
   this.isDestroyed = true;
 };
 
@@ -345,14 +341,7 @@ Lightpickr.prototype.disableDate = function (date) {
  * @returns {void}
  */
 Lightpickr.prototype.use = function (plugin) {
-  if (typeof plugin !== 'function') {
-    return;
-  }
-  const api = plugin(this) || {};
-  this._plugins.push(api);
-  if (api.onInit) {
-    api.onInit();
-  }
+  registerPlugin(this, plugin);
 };
 
 /**
@@ -562,23 +551,6 @@ Lightpickr.prototype._shouldCloseAfterSelect = function () {
   return this._state.range && !this._state.pendingRangeStart;
 };
 
-
-/**
- * @private
- * @returns {void}
- */
-Lightpickr.prototype._pluginOnRender = function () {
-  _invokePluginHook(this._plugins, 'onRender');
-};
-
-/**
- * @private
- * @returns {void}
- */
-Lightpickr.prototype._pluginOnSelect = function () {
-  _invokePluginHook(this._plugins, 'onSelect');
-};
-
 Object.defineProperties(Lightpickr.prototype, {
   visible: {
     get: function () {
@@ -611,20 +583,5 @@ Object.defineProperties(Lightpickr.prototype, {
     }
   }
 });
-
-/**
- * @private
- * @param {{ onRender?: () => void, onSelect?: () => void }[]} plugins
- * @param {'onRender'|'onSelect'} methodName
- * @returns {void}
- */
-function _invokePluginHook(plugins, methodName) {
-  for (let i = 0; i < plugins.length; i++) {
-    const fn = plugins[i][methodName];
-    if (typeof fn === 'function') {
-      fn();
-    }
-  }
-}
 
 export default Lightpickr;
