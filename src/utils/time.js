@@ -185,39 +185,55 @@ export function formatDate(format, ts, timePart, state) {
     const blockStart = n === 12 ? Math.floor(y / 12) * 12 : y - toInt(state?.yearViewRadius, 5);
     const blockEnd = blockStart + n - 1;
 
-    /** @type {{ p: string, v: () => string }[]} */
-    const tokens = [
-        { p: 'yyyy1', v: () => String(blockStart) },
-        { p: 'yyyy2', v: () => String(blockEnd) },
-        { p: 'MMMM', v: () => monthLong[m] || '' },
-        { p: 'EEEE', v: () => dayLong[dow] || '' },
-        { p: 'yyyy', v: () => String(y) },
-        { p: 'YYYY', v: () => String(y) },
-        { p: 'MMM', v: () => monthShort[m] || '' },
-        { p: 'yy', v: () => yy },
-        { p: 'MM', v: () => pad2(m + 1) },
-        { p: 'dd', v: () => pad2(d) },
-        { p: 'DD', v: () => pad2(d) },
-        { p: 'HH', v: () => pad2(hours) },
-        { p: 'mm', v: () => pad2(minutes) },
-        { p: 'M', v: () => String(m + 1) },
-        { p: 'd', v: () => String(d) },
-        { p: 'E', v: () => dayShort[dow] || '' },
-        { p: 'T', v: () => String(ts) }
-    ];
-
     let out = '';
     let i = 0;
     while (i < format.length) {
-        let k = 0;
-        for (; k < tokens.length; k++) {
-            if (format.startsWith(tokens[k].p, i)) {
-                out += tokens[k].v();
-                i += tokens[k].p.length;
-                break;
-            }
-        }
-        if (k === tokens.length) {
+        if (format.startsWith('yyyy1', i)) {
+            out += String(blockStart);
+            i += 5;
+        } else if (format.startsWith('yyyy2', i)) {
+            out += String(blockEnd);
+            i += 5;
+        } else if (format.startsWith('MMMM', i)) {
+            out += monthLong[m] || '';
+            i += 4;
+        } else if (format.startsWith('MMM', i)) {
+            out += monthShort[m] || '';
+            i += 3;
+        } else if (format.startsWith('yyyy', i) || format.startsWith('YYYY', i)) {
+            out += String(y);
+            i += 4;
+        } else if (format.startsWith('yy', i)) {
+            out += yy;
+            i += 2;
+        } else if (format.startsWith('MM', i)) {
+            out += pad2(m + 1);
+            i += 2;
+        } else if (format.startsWith('dd', i) || format.startsWith('DD', i)) {
+            out += pad2(d);
+            i += 2;
+        } else if (format.startsWith('EEEE', i)) {
+            out += dayLong[dow] || '';
+            i += 4;
+        } else if (format.startsWith('HH', i)) {
+            out += pad2(hours);
+            i += 2;
+        } else if (format.startsWith('mm', i)) {
+            out += pad2(minutes);
+            i += 2;
+        } else if (format.startsWith('M', i)) {
+            out += String(m + 1);
+            i += 1;
+        } else if (format.startsWith('d', i)) {
+            out += String(d);
+            i += 1;
+        } else if (format.startsWith('E', i)) {
+            out += dayShort[dow] || '';
+            i += 1;
+        } else if (format.startsWith('T', i)) {
+            out += String(ts);
+            i += 1;
+        } else {
             out += format[i];
             i += 1;
         }
