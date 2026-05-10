@@ -1,4 +1,4 @@
-import { createStateFromOptions, mergeOptions } from './core/state.js';
+import { createStateFromOptions, isSelectAllowed, mergeOptions } from './core/state.js';
 import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
 import { clearSelection, selectDate, unselectDate } from './core/selection.js';
 import { cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
@@ -138,16 +138,6 @@ Lightpickr.prototype.down = function () {
  * @returns {void}
  */
 Lightpickr.prototype.selectDate = function (date, opts) {
-  const canSelect = (value) => {
-    const ts = toTimestamp(value);
-    if (ts == null) {
-      return false;
-    }
-    return this._state.onBeforeSelect({
-      date: timestampToPickerDate(ts, this._state),
-      datepicker: this
-    }) !== false;
-  };
   if (Array.isArray(date) && Array.isArray(date[0])) {
     if (!this._state.range) {
       return;
@@ -163,7 +153,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
   if (Array.isArray(date)) {
     let cur = this._state;
     for (let i = 0; i < date.length; i++) {
-      if (!canSelect(date[i])) {
+      if (!isSelectAllowed(this, date[i])) {
         continue;
       }
       const r = selectDate(cur, toTimestamp(date[i]));
@@ -171,7 +161,7 @@ Lightpickr.prototype.selectDate = function (date, opts) {
     }
     this._commit(cur, { emitSelect: true, selectTrigger: 'select' });
   } else {
-    if (!canSelect(date)) {
+    if (!isSelectAllowed(this, date)) {
       return;
     }
     const r = selectDate(this._state, toTimestamp(date));

@@ -1,10 +1,7 @@
 import { clampInt } from '../utils/common.js';
 import { getViewDates } from '../utils/view.js';
 import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
-import { findDayIndex, isSameDay, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
-
-/** @type {number} */
-const GRID_COLS_DAY = 7;
+import { findDayIndex, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 
 /**
  * @param {string} key
@@ -98,35 +95,33 @@ export function applyEventKey(instance, evLike) {
 
 /**
  * @private
- * @param {number} idx
+ * @param {import('./state.js').LightpickrInternalState} state
  * @param {string} key
- * @param {number} cols
- * @param {number} len
- * @returns {number}
+ * @param {number[]} gridDates
+ * @returns {{ next: import('./state.js').LightpickrInternalState, idx: number }}
  */
-function _moveGridIndex(idx, key, cols, len) {
+function _moveFocusInGrid(state, key, gridDates) {
+  const gridCols = state.currentView === 'month' ? state.monthViewCols : state.currentView === 'year' ? state.yearViewCols : state.dayViewCols;
+  let idx = state.focusDate != null ? findDayIndex(state.focusDate, gridDates) : 0;
   if (idx < 0) {
     idx = 0;
   }
   if (key === 'Home') {
-    return clampInt(Math.floor(idx / cols) * cols, 0, len - 1, 0);
+    idx = clampInt(Math.floor(idx / gridCols) * gridCols, 0, len - 1, 0);
+  } else if (key === 'End') {
+    idx = clampInt(Math.floor(idx / gridCols) * gridCols + (gridCols - 1), 0, len - 1, 0);
+  } else if (key === 'ArrowLeft') {
+    idx = idx - 1;
+  } else if (key === 'ArrowRight') {
+    idx = idx + 1;
+  } else if (key === 'ArrowUp') {
+    idx = idx - gridCols;
+  } else if (key === 'ArrowDown') {
+    idx = idx + gridCols;
   }
-  if (key === 'End') {
-    return clampInt(Math.floor(idx / cols) * cols + (cols - 1), 0, len - 1, 0);
-  }
-  if (key === 'ArrowLeft') {
-    return idx - 1;
-  }
-  if (key === 'ArrowRight') {
-    return idx + 1;
-  }
-  if (key === 'ArrowUp') {
-    return idx - cols;
-  }
-  if (key === 'ArrowDown') {
-    return idx + cols;
-  }
-  return idx;
+  idx = clampInt(idx, 0, gridDates.length - 1, 0);
+  const next = setFocusDateState(state, gridDates[idx]);
+  return { next, idx };
 }
 
 /**
@@ -228,9 +223,7 @@ function _nextStateAfterDayViewKey(state, key, shiftKey, dayGridDates) {
   if (!dayGridDates.length) {
     return state;
   }
-  let idx = state.focusDate != null ? findDayIndex(state.focusDate, dayGridDates) : 0;
-  idx = clampInt(_moveGridIndex(idx, key, GRID_COLS_DAY, dayGridDates.length), 0, dayGridDates.length - 1, 0);
-  let next = setFocusDateState(state, dayGridDates[idx]);
+  const { next, idx } = _moveFocusInGrid(state, key, dayGridDates);
   const { y, m } = tsToYmd(next.viewDate);
   const cell = tsToYmd(dayGridDates[idx]);
   if (cell.m !== m || cell.y !== y) {
@@ -278,8 +271,5 @@ function _nextStateAfterMonthYearGridKey(state, key, shiftKey, gridDates, curren
   if (!gridDates.length) {
     return state;
   }
-  let idx = state.focusDate != null ? gridDates.findIndex((x) => isSameDay(x, state.focusDate)) : 0;
-  const gridCols = currentView === 'month' ? state.monthViewCols : state.yearViewCols;
-  idx = clampInt(_moveGridIndex(idx, key, gridCols, gridDates.length), 0, gridDates.length - 1, 0);
-  return setFocusDateState(state, gridDates[idx]);
+  return _moveFocusInGrid(state, key, gridDates).next;
 }

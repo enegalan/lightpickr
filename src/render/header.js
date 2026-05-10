@@ -1,16 +1,17 @@
 import { formatDate } from '../utils/time.js';
 import { createEl } from '../utils/common.js';
 import { isNavOutOfRange } from '../core/navigation.js';
+import { buildCtx } from './context.js';
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
- * @param {import('./context.js').RenderCtx} ctx
  * @param {'day'|'month'|'year'} view
  * @param {boolean} canGoUp
  * @returns {void}
  */
-export function mountViewHeader(instance, container, ctx, view, canGoUp) {
+export function mountViewHeader(instance, container, view, canGoUp) {
+    const ctx = buildCtx(instance, instance._state.viewDate);
     const { header: headerHook } = instance._state.render;
     const header = createEl('div', instance._state.classes.header);
     const headerEl = headerHook?.(ctx) || buildDefaultHeader(instance, view, canGoUp);

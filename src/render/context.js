@@ -1,4 +1,4 @@
-import { isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
+import { isInClosedRangeDay, isSameDay, isDayDisabled, isFocusDay, startOfDayTs } from '../utils/time.js';
 
 /**
  * @typedef {Object} RenderCtx
@@ -35,7 +35,7 @@ export function buildCtx(instance, dayTs, outside = false) {
     isInRange: flags.isInRange,
     isRangeStart: flags.isRangeStart,
     isRangeEnd: flags.isRangeEnd,
-    isFocused: instance._state.focusDate != null && isSameDay(instance._state.focusDate, date),
+    isFocused: isFocusDay(instance._state.focusDate, date),
     isOutside: outside,
     isWeekend: instance._state.weekends.indexOf(new Date(date).getDay()) >= 0,
     state: {

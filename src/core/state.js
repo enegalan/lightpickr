@@ -1,5 +1,5 @@
 import { clampView } from '../utils/view.js';
-import { parseSelectedDates, startOfDayTs, toTimestamp } from '../utils/time.js';
+import { parseSelectedDates, startOfDayTs, timestampToPickerDate, toTimestamp } from '../utils/time.js';
 import { normalizeShowEvents, normalizeWeekendIndexes, normalizeAllowedViews, normalizeFirstDay } from '../utils/normalize.js';
 import { clampInt, isTextInputLike, noop, toInt, truthy } from '../utils/common.js';
 import lightpickrDefaults from './defaults.js';
@@ -79,6 +79,8 @@ import lightpickrDefaults from './defaults.js';
  * @property {string} [mobileBackdropOpen]
  * @property {string} [popoverAnim]
  * @property {string} [popoverOpen]
+ * @property {string} [themeDark]
+ * @property {string} [themeLight]
  */
 
 /**
@@ -155,6 +157,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {number} [yearViewCount]
  * @property {number} [monthViewCount]
  * @property {number} [monthViewRadius]
+ * @property {number} [dayViewCols]
  * @property {number} [monthViewCols]
  * @property {number} [monthViewRows]
  * @property {number} [yearViewCols]
@@ -228,6 +231,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {number} yearViewCount
  * @property {number} monthViewCount
  * @property {number} monthViewRadius
+ * @property {number} dayViewCols
  * @property {number} monthViewCols
  * @property {number} monthViewRows
  * @property {number} yearViewCols
@@ -279,6 +283,24 @@ import lightpickrDefaults from './defaults.js';
  * @property {() => void} _detachDatepicker
  * @property {() => boolean} _shouldCloseAfterSelect
  */
+
+/**
+ * @param {LightpickrInstance} instance
+ * @param {number|Date|string} value
+ * @returns {boolean}
+ */
+export function isSelectAllowed(instance, value) {
+  const ts = typeof value === 'number' && Number.isFinite(value) ? value : toTimestamp(value);
+  if (ts == null) {
+    return false;
+  }
+  return (
+    instance._state.onBeforeSelect({
+      date: timestampToPickerDate(ts, instance._state),
+      datepicker: instance
+    }) !== false
+  );
+}
 
 /**
  * @param {Partial<LightpickrOptions>} incomingRaw
@@ -361,6 +383,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
   const maxMinutes = clampInt(raw.maxMinutes, minMinutes, 59, lightpickrDefaults.maxMinutes);
   const hoursStep = clampInt(raw.hoursStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.hoursStep);
   const minutesStep = clampInt(raw.minutesStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.minutesStep);
+  const dayViewCols = clampInt(raw.dayViewCols, 1, 7, lightpickrDefaults.dayViewCols);
   const yearViewCount = clampInt(raw.yearViewCount, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.yearViewCount);
   const yearViewRadius = clampInt(raw.yearViewRadius, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.yearViewRadius);
   const monthViewCount = clampInt(raw.monthViewCount, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.monthViewCount);
@@ -452,6 +475,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     yearViewRadius,
     monthViewCount,
     monthViewRadius,
+    dayViewCols,
     monthViewCols,
     monthViewRows,
     yearViewCols,
@@ -556,6 +580,7 @@ function _extractRawOptions(state) {
     yearViewRadius: state.yearViewRadius,
     monthViewCount: state.monthViewCount,
     monthViewRadius: state.monthViewRadius,
+    dayViewCols: state.dayViewCols,
     monthViewCols: state.monthViewCols,
     monthViewRows: state.monthViewRows,
     yearViewCols: state.yearViewCols,

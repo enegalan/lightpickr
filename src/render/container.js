@@ -5,6 +5,8 @@ import { renderMonthView, renderYearView } from './views/month-year.js';
 import { renderFooter } from './footer.js';
 import { bindHandlers } from './handlers.js';
 import { invokePluginHook } from '../core/plugins.js';
+import { buildDayMonthCells } from '../core/calendar-grid.js';
+import { clampInt } from '../utils/common.js';
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
@@ -24,6 +26,30 @@ export function renderContainer(instance) {
     cn += ' ' + instance._state.classes.popoverOpen;
   }
   instance.$datepicker.className = cn.trim();
+
+  if (!instance._state.onlyTime) {
+    instance.$datepicker.setAttribute(instance._state.properties.calendarView, instance._state.currentView === 'time' ? 'time' : instance._state.currentView);
+    instance.$datepicker.style.setProperty(instance._state.properties.dayViewCols, String(instance._state.dayViewCols));
+    instance.$datepicker.style.setProperty(instance._state.properties.dayViewRows, String(buildDayMonthCells(instance._state).length / clampInt(instance._state.dayViewCols, 1, 7, 7)));
+    instance.$datepicker.style.setProperty(instance._state.properties.monthViewCols, String(instance._state.monthViewCols));
+    instance.$datepicker.style.setProperty(instance._state.properties.monthViewRows, String(instance._state.monthViewRows));
+    instance.$datepicker.style.setProperty(instance._state.properties.yearViewCols, String(instance._state.yearViewCols));
+    instance.$datepicker.style.setProperty(instance._state.properties.yearViewRows, String(instance._state.yearViewRows));
+    if (instance._state.enableTime) {
+      instance.$datepicker.setAttribute(instance._state.attributes.time, '1');
+    } else {
+      instance.$datepicker.removeAttribute(instance._state.attributes.time);
+    }
+  } else {
+    instance.$datepicker.removeAttribute(instance._state.properties.calendarView);
+    instance.$datepicker.removeAttribute(instance._state.attributes.time);
+    instance.$datepicker.style.removeProperty(instance._state.properties.dayViewCols);
+    instance.$datepicker.style.removeProperty(instance._state.properties.dayViewRows);
+    instance.$datepicker.style.removeProperty(instance._state.properties.monthViewCols);
+    instance.$datepicker.style.removeProperty(instance._state.properties.monthViewRows);
+    instance.$datepicker.style.removeProperty(instance._state.properties.yearViewCols);
+    instance.$datepicker.style.removeProperty(instance._state.properties.yearViewRows);
+  }
 
   let container = instance.$datepicker;
   if (instance._state.render.container) {

@@ -40,6 +40,7 @@ export function buildDayMonthCells(state) {
   const { y, m } = tsToYmd(state.viewDate);
   const dim = daysInMonth(y, m);
   const leading = (firstWeekdayOfMonth(y, m) - (state.firstDay % 7) + 7) % 7;
+  const cols = clampInt(state.dayViewCols, 1, 7, 7);
 
   const prevY = m - 1 < 0 ? y - 1 : y;
   const prevM = m - 1 < 0 ? 11 : m - 1;
@@ -47,7 +48,7 @@ export function buildDayMonthCells(state) {
 
   let dayNum = 1;
   let nextMonthDay = 1;
-  const totalCells = Math.max(6, Math.ceil((leading + dim) / 7)) * 7;
+  const totalCells = Math.max(6, Math.ceil((leading + dim) / cols)) * cols;
 
   const out = [];
   for (let cell = 0; cell < totalCells; cell++) {

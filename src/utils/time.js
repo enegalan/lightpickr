@@ -39,6 +39,15 @@ export function isSameDay(a, b) {
 }
 
 /**
+ * @param {number|null} focusDate
+ * @param {number} dayTs
+ * @returns {boolean}
+ */
+export function isFocusDay(focusDate, dayTs) {
+    return focusDate != null && isSameDay(focusDate, dayTs);
+}
+
+/**
  * @param {number} ts
  * @param {{ enableTime: boolean, timePart: { hours: number, minutes: number } }} state
  * @returns {Date}

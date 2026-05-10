@@ -1,5 +1,6 @@
 import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
 import { invokePluginHook } from '../core/plugins.js';
+import { isSelectAllowed } from '../core/state.js';
 import { selectDate, applyRangeEndpointDrag } from '../core/selection.js';
 import { createEl, isTextInputLike } from '../utils/common.js';
 import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
@@ -705,11 +706,7 @@ function _buildSelectedParts(instance) {
  * @returns {void}
  */
 function _onDayPick(instance, ts) {
-  const allowSelect = instance._state.onBeforeSelect({
-    date: timestampToPickerDate(ts, instance._state),
-    datepicker: instance
-  });
-  if (allowSelect === false) {
+  if (!isSelectAllowed(instance, ts)) {
     return;
   }
   const r = selectDate(instance._state, ts);

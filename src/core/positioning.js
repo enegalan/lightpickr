@@ -13,7 +13,7 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
   const gx = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverGapX)) || 0;
   const gy = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverGapY)) || 0;
   const margin = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverViewportMargin)) || 8;
-  let { top, left } = _computePopoverCoords(target.getBoundingClientRect, popover.offsetWidth, popover.offsetHeight, main, sec, gx, gy);
+  let { top, left } = _computePopoverCoords(target.getBoundingClientRect(), popover.offsetWidth, popover.offsetHeight, main, sec, gx, gy);
   left = Math.min(
     Math.max(window.scrollX + margin, left + window.scrollX),
     Math.max(window.scrollX + margin, window.scrollX + window.innerWidth - popover.offsetWidth - margin)

@@ -42,6 +42,8 @@ assert.ok(p.$datepicker);
 assert.equal(p.visible, false);
 p.show();
 assert.equal(p.visible, true);
+assert.match(String(p.$datepicker.style.top), /^\d+(?:\.\d+)?px$/);
+assert.match(String(p.$datepicker.style.left), /^\d+(?:\.\d+)?px$/);
 p.hide();
 assert.equal(p.visible, false);
 assert.deepEqual(showCalls, [false, true]);

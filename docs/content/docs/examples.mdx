@@ -74,9 +74,28 @@ new Lightpickr('#inline-root', {
 });
 ```
 
+### Day view columns
+
+Use **`dayViewCols`** to change how many day cells appear **per row** in the day calendar (default **7**, allowed **1–7**). Example with **6** columns:
+
+<DayViewColsDemo />
+
+```js
+import Lightpickr from 'lightpickr';
+import 'lightpickr/lightpickr.css';
+
+new Lightpickr('#inline-day-cols', {
+  inline: true,
+  autoClose: false,
+  dayViewCols: 6,
+});
+```
+
+See [Options — dayViewCols](/docs/documentation/options#dayviewcols).
+
 ### Custom month/year grid shape
 
-You can change how many cells are shown and column/row layout. See [Options — monthViewCount](/docs/documentation/options#monthviewcount) through **yearViewRows**.
+You can change how many cells are shown and column/row layout for **month** and **year** views. See [Options — monthViewCount](/docs/documentation/options#monthviewcount) through **yearViewRows** (and **dayViewCols** for the day grid).
 
 <CustomGridShapeDemo />
 

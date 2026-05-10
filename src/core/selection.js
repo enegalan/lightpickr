@@ -1,5 +1,6 @@
-import { findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs, timestampToPickerDate } from '../utils/time.js';
+import { findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
 import { trimFifo } from '../utils/common.js';
+import { isSelectAllowed } from './state.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -110,10 +111,7 @@ export function applyRangeEndpointDrag(instance, timestamp) {
     return { state: instance._state, changed: false };
   }
   const d = startOfDayTs(timestamp);
-  if (instance._state.onBeforeSelect({
-    date: timestampToPickerDate(timestamp, instance._state),
-    datepicker: instance
-  }) === false) {
+  if (!isSelectAllowed(instance, timestamp)) {
     return { state: instance._state, changed: false };
   }
   if (isDayDisabled(instance._state, d)) {

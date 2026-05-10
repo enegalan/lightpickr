@@ -18,6 +18,9 @@ const { default: Lightpickr } = await import('../src/index.js');
 
 const input = document.querySelector('#x');
 const p = new Lightpickr(input, { inline: false });
+assert.equal(p._state.dayViewCols, 7);
+p.update({ dayViewCols: 4 });
+assert.equal(p._state.dayViewCols, 4);
 assert.equal(Object.prototype.hasOwnProperty.call(p._state, 'numberOfMonths'), false);
 p.update({ minDate: '2026-01-01', format: 'YYYY-MM-DD' });
 assert.equal(Object.prototype.hasOwnProperty.call(p._state, 'numberOfMonths'), false);

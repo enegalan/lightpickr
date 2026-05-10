@@ -125,17 +125,9 @@
 
   --lp-inline-max-width: none;
 
-  /* Day grid: 7 columns + column gaps; weekday row + up to 6 day rows (buildDayGrid). */
-  --lp-day-body-min-width: calc(7 * var(--lp-cell-size));
-  /* 7 rows in .lp-grid column + row gaps + .lp-row--head margin-bottom */
-  --lp-day-body-min-height: calc(7 * var(--lp-cell-size) + 6 * var(--lp-grid-gap) + var(--lp-space-2xs));
-  /* Nav row + header margin; cap taller title/year labels so shell height stays stable across views */
   --lp-header-stack-min: max(
     calc(var(--lp-nav-button-size) + var(--lp-space-sm)),
     calc(var(--lp-title-font-size) * 1.5 + 2 * var(--lp-title-button-padding-y) + var(--lp-space-sm))
-  );
-  --lp-calendar-shell-min-height: calc(
-    var(--lp-header-stack-min) + var(--lp-day-body-min-height) + 2 * var(--lp-space-md)
   );
 }
 
@@ -148,6 +140,29 @@
   border: 1px solid var(--lp-border);
   padding: var(--lp-space-md);
   max-width: var(--lp-inline-max-width);
+}
+
+.lp[data-lp-calendar-view] {
+  --lp-time-band-min: calc(var(--lp-space-sm) + 1px + var(--lp-time-panel-padding-y) + 3.25rem);
+  --lp-view-body-min-width: max(
+    calc(var(--lp-day-view-cols) * var(--lp-cell-size)),
+    calc(var(--lp-month-view-cols) * var(--lp-cell-size) + (var(--lp-month-view-cols) - 1) * var(--lp-grid-gap)),
+    calc(var(--lp-year-view-cols) * var(--lp-cell-size) + (var(--lp-year-view-cols) - 1) * var(--lp-grid-gap))
+  );
+  --lp-view-body-min-height: max(
+    calc((1 + var(--lp-day-view-rows)) * var(--lp-cell-size) + var(--lp-space-2xs)),
+    calc(var(--lp-month-view-rows) * var(--lp-cell-size) + (var(--lp-month-view-rows) - 1) * var(--lp-grid-gap)),
+    calc(var(--lp-year-view-rows) * var(--lp-cell-size) + (var(--lp-year-view-rows) - 1) * var(--lp-grid-gap))
+  );
+  --lp-calendar-shell-min-height: calc(
+    var(--lp-header-stack-min) + var(--lp-view-body-min-height) + 2 * var(--lp-space-md)
+  );
+}
+
+.lp[data-lp-calendar-view][data-lp-time]:not(.lp--only-time) {
+  --lp-calendar-shell-min-height: calc(
+    var(--lp-header-stack-min) + var(--lp-view-body-min-height) + var(--lp-time-band-min) + 2 * var(--lp-space-md)
+  );
 }
 
 .lp.lp--light {
@@ -192,7 +207,7 @@
   position: relative;
   display: inline-grid;
   box-sizing: border-box;
-  min-width: calc(var(--lp-day-body-min-width) + 2 * var(--lp-space-md));
+  min-width: calc(var(--lp-view-body-min-width) + 2 * var(--lp-space-md));
   min-height: var(--lp-calendar-shell-min-height);
 }
 
@@ -206,7 +221,7 @@
   margin: 0;
   overflow: visible;
   box-sizing: border-box;
-  min-width: calc(var(--lp-day-body-min-width) + 2 * var(--lp-space-md));
+  min-width: calc(var(--lp-view-body-min-width) + 2 * var(--lp-space-md));
   min-height: var(--lp-calendar-shell-min-height);
 }
 
@@ -299,7 +314,7 @@
 
 .lp--inline .lp-view-body,
 .lp--popover .lp-view-body {
-  min-height: var(--lp-day-body-min-height);
+  min-height: var(--lp-view-body-min-height);
   box-sizing: border-box;
 }
 

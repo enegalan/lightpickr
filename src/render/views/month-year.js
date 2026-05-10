@@ -1,5 +1,5 @@
 import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
-import { isSameDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
+import { isFocusDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
 import { buildCtx } from '../context.js';
@@ -99,7 +99,7 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
     }
   }
 
-  const isFocused = instance._state.focusDate != null && isSameDay(instance._state.focusDate, ts);
+  const isFocused = isFocusDay(instance._state.focusDate, ts);
   const cellClass =
     instance._state.classes.cell + (selected ? ' ' + instance._state.classes.cellSelected : '') + (isFocused ? ' ' + instance._state.classes.cellFocused : '');
   const attrs = {
@@ -131,13 +131,10 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
  * @returns {void}
  */
 function _renderMonthYearGridView(instance, container, canGoUp, gridExtraClass, ariaLabel, cellCount, cols, rows, buildCell) {
-  const ctx = buildCtx(instance, instance._state.viewDate);
-  mountViewHeader(instance, container, ctx, instance._state.currentView, canGoUp);
+  mountViewHeader(instance, container, instance._state.currentView, canGoUp);
 
   const viewBody = createEl('div', instance._state.classes.viewBody);
   const grid = createEl('div', instance._state.classes.grid + ' ' + gridExtraClass, { role: 'grid', 'aria-label': ariaLabel });
-  const cssVarName = instance._state.currentView === 'month' ? instance._state.properties.monthViewCols : instance._state.properties.yearViewCols;
-  grid.style.setProperty(cssVarName, String(cols));
 
   let index = 0;
   for (let r = 0; r < rows; r++) {

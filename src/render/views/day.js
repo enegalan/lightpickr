@@ -13,8 +13,7 @@ import lightpickrDefaults from '../../core/defaults.js';
  * @returns {void}
  */
 export function renderDayView(instance, container) {
-  const ctx = buildCtx(instance, instance._state.viewDate);
-  mountViewHeader(instance, container, ctx, 'day', instance._state.allowedViews.indexOf('month') >= 0);
+  mountViewHeader(instance, container, 'day', instance._state.allowedViews.indexOf('month') >= 0);
 
   const viewBody = createEl('div', instance._state.classes.viewBody);
   const monthsWrap = createEl('div', instance._state.classes.grid + ' ' + instance._state.classes.months);
@@ -49,7 +48,7 @@ function _buildDayGridHeadRow(instance, grid) {
   const baseClass = instance._state.classes.headCell + (clickable ? ' ' + instance._state.classes.headCell + '--clickable' : '');
 
   const row = createEl('div', instance._state.classes.row + ' ' + instance._state.classes.row + '--head', { role: 'row' });
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < instance._state.dayViewCols; i++) {
     const idx = (fd + i) % 7;
     const attrs = clickable
       ? { type: 'button', [instance._state.attributes.dayName]: String(idx), role: 'columnheader' }
@@ -72,13 +71,12 @@ function _buildDayGridHeadRow(instance, grid) {
  * @returns {void}
  */
 function _buildDayGridBodyRows(instance, grid) {
-  const c = instance._state.classes;
   const cells = buildDayMonthCells(instance._state);
 
   /** @type {HTMLElement|null} */
   let row = null;
   for (let cell = 0; cell < cells.length; cell++) {
-    if (cell % 7 === 0) {
+    if (cell % instance._state.dayViewCols === 0) {
       row = createEl('div', instance._state.classes.row, { role: 'row' });
       grid.appendChild(row);
     }
@@ -87,7 +85,7 @@ function _buildDayGridBodyRows(instance, grid) {
 
     if (outside && !instance._state.showOtherMonths) {
       row && row.appendChild(
-        createEl('span', c.cell + ' ' + c.cellOutside + ' ' + c.cellDisabled)
+        createEl('span', instance._state.classes.cell + ' ' + instance._state.classes.cellOutside + ' ' + instance._state.classes.cellDisabled)
       );
       continue;
     }
@@ -100,17 +98,17 @@ function _buildDayGridBodyRows(instance, grid) {
     }
     if (!cellEl) {
       const format = typeof instance._state.format === 'string' ? instance._state.format : lightpickrDefaults.format;
-      const extra = [c.cell];
+      const extra = [instance._state.classes.cell];
       const flagClassPairs = [
-        [ctx.isSelected, c.cellSelected],
-        [ctx.isDisabled, c.cellDisabled],
-        [ctx.isToday, c.cellToday],
-        [ctx.isInRange, c.cellRange],
-        [ctx.isRangeStart, c.cellRangeStart],
-        [ctx.isRangeEnd, c.cellRangeEnd],
-        [ctx.isOutside, c.cellOutside],
-        [ctx.isWeekend, c.cellWeekend],
-        [ctx.isFocused, c.cellFocused]
+        [ctx.isSelected, instance._state.classes.cellSelected],
+        [ctx.isDisabled, instance._state.classes.cellDisabled],
+        [ctx.isToday, instance._state.classes.cellToday],
+        [ctx.isInRange, instance._state.classes.cellRange],
+        [ctx.isRangeStart, instance._state.classes.cellRangeStart],
+        [ctx.isRangeEnd, instance._state.classes.cellRangeEnd],
+        [ctx.isOutside, instance._state.classes.cellOutside],
+        [ctx.isWeekend, instance._state.classes.cellWeekend],
+        [ctx.isFocused, instance._state.classes.cellFocused]
       ];
       for (let i = 0; i < flagClassPairs.length; i++) {
         if (flagClassPairs[i][0]) {
