@@ -3,6 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
 [![license](https://img.shields.io/npm/l/lightpickr.svg)](https://www.npmjs.com/package/lightpickr)
 
+<img src="art/lightpickr.png" width="624" height="624" alt="Time to Go" />
+
 **Dependency-free** JavaScript datepicker with a ready-made UI, CSS-variable theming, ranges, optional time, and plugins. ~16KB gzipped.
 
 ## Documentation
