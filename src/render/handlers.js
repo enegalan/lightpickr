@@ -531,7 +531,9 @@ function _syncTheme(instance) {
   if (!(instance.$datepicker instanceof HTMLElement)) {
     return;
   }
-  const darkClass = document.documentElement.classList.contains('dark') || document.body && document.body.classList.contains('dark');
+  const darkClass = document.documentElement.classList.contains('dark') || (document.body instanceof HTMLElement && document.body.classList.contains('dark'));
+  const dataTheme = document.documentElement.getAttribute('data-theme') || (document.body instanceof HTMLElement ? document.body.getAttribute('data-theme') : null);
+  const inlineColorScheme = document.documentElement.style.colorScheme || (document.body instanceof HTMLElement ? document.body.style.colorScheme : '');
 
   const documentColorScheme = window.getComputedStyle(document.documentElement).colorScheme || '';
   const hasLightKeyword = documentColorScheme.indexOf('light') >= 0;
@@ -539,12 +541,18 @@ function _syncTheme(instance) {
 
   let shouldUseDark = false;
 
-  if (hasLightKeyword && !hasDarkKeyword) {
+  if (darkClass || dataTheme === 'dark') {
+    shouldUseDark = true;
+  } else if (dataTheme === 'light' || inlineColorScheme === 'light') {
+    shouldUseDark = false;
+  } else if (hasLightKeyword && !hasDarkKeyword) {
     shouldUseDark = false;
   } else if (hasDarkKeyword && !hasLightKeyword) {
     shouldUseDark = true;
-  } else if (darkClass) {
+  } else if (inlineColorScheme === 'dark') {
     shouldUseDark = true;
+  } else if (hasLightKeyword && hasDarkKeyword) {
+    shouldUseDark = false;
   } else if (typeof window.matchMedia === 'function') {
     shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   }

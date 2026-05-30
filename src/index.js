@@ -506,7 +506,7 @@ Lightpickr.prototype._bindMutationObserver = function () {
   });
   const attrs = {
     attributes: true,
-    attributeFilter: ['class', 'style'],
+    attributeFilter: ['class', 'style', 'data-theme'],
   };
   this._windowMutationObserver.observe(document.documentElement, attrs);
   if (document.body) {
