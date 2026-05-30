@@ -486,8 +486,8 @@ Lightpickr.prototype._commit = function (next, opts) {
     next.pendingRangeHoverTs = null;
   }
   this._state = next;
-  syncInstanceClasses(this, prevState);
   renderContainer(this);
+  syncInstanceClasses(this, prevState);
   emitEvents(this, prevState, next, opts);
   this._positionPopover(!(opts && opts.popoverInitialOpen));
 };

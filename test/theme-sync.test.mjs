@@ -114,4 +114,15 @@ async function flushMutations() {
   picker.destroy();
 }
 
+{
+  setupDom('<!doctype html><html class="dark"><body><input id="d" /></body></html>', false);
+  const { default: Lightpickr } = await import('../src/index.js');
+  const input = document.querySelector('#d');
+  const picker = new Lightpickr(input, { inline: false });
+  assert.equal(hasDarkTheme(picker), true);
+  picker.show();
+  assert.equal(hasDarkTheme(picker), true);
+  picker.destroy();
+}
+
 console.log('theme-sync OK');
