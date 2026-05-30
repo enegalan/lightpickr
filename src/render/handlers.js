@@ -532,6 +532,7 @@ function _syncTheme(instance) {
     return;
   }
   const darkClass = document.documentElement.classList.contains('dark') || (document.body instanceof HTMLElement && document.body.classList.contains('dark'));
+  const lightClass = document.documentElement.classList.contains('light') || (document.body instanceof HTMLElement && document.body.classList.contains('light'));
   const dataTheme = document.documentElement.getAttribute('data-theme') || (document.body instanceof HTMLElement ? document.body.getAttribute('data-theme') : null);
   const inlineColorScheme = document.documentElement.style.colorScheme || (document.body instanceof HTMLElement ? document.body.style.colorScheme : '');
 
@@ -543,7 +544,7 @@ function _syncTheme(instance) {
 
   if (darkClass || dataTheme === 'dark') {
     shouldUseDark = true;
-  } else if (dataTheme === 'light' || inlineColorScheme === 'light') {
+  } else if (lightClass || dataTheme === 'light' || inlineColorScheme === 'light') {
     shouldUseDark = false;
   } else if (hasLightKeyword && !hasDarkKeyword) {
     shouldUseDark = false;
