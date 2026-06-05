@@ -8,20 +8,6 @@ import { syncTimePanelDom } from './time-panel.js';
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
- * @returns {void}
-*/
-export function focusCell(instance) {
-  if (instance.isDestroyed) {
-    return;
-  }
-  const el = instance.$datepicker.querySelector('[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]');
-  if (el instanceof HTMLElement) {
-    el.focus({ preventScroll: true });
-  }
-}
-
-/**
- * @param {import('../core/state.js').LightpickrInstance} instance
  * @param {import('../core/state.js').LightpickrInternalState|null} [prevState]
  * @returns {void}
  */
@@ -29,14 +15,12 @@ export function syncInstanceClasses(instance, prevState = null) {
   _syncPendingRangeHoverClasses(instance);
   _syncInput(instance);
   _syncTheme(instance);
+  if (instance._state.inline) {
+    return;
+  }
   if (!prevState || instance._state.isMobile !== prevState.isMobile) {
     _syncPopoverMobile(instance);
-  } else if (
-    instance._state.isMobile &&
-    !instance._state.inline &&
-    prevState &&
-    prevState.visible !== instance._state.visible
-  ) {
+  } else if (instance._state.isMobile && prevState.visible !== instance._state.visible) {
     _syncMobileBackdropDisplay(instance);
   }
   _syncDatepickerDisplay(instance);
@@ -165,7 +149,7 @@ function _bindCalendarKeyboard(instance) {
         result.prev.focusDate !== result.next.focusDate
       ) {
         instance._commit(result.next, { emitSelect: false });
-        focusCell(instance);
+        _focusCell(instance);
       }
       return;
     }
@@ -175,7 +159,7 @@ function _bindCalendarKeyboard(instance) {
     }
     if (result.next !== instance._state) {
       instance._commit(result.next, { emitSelect: false });
-      focusCell(instance);
+      _focusCell(instance);
     }
   };
   instance.$datepicker.addEventListener('keydown', instance._datepickerKeydown, true);
@@ -410,12 +394,26 @@ function _bindRangeDragHandlers(instance) {
  * @private
  * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
+*/
+function _focusCell(instance) {
+  if (instance.isDestroyed) {
+    return;
+  }
+  const el = instance.$datepicker.querySelector('[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]');
+  if (el instanceof HTMLElement) {
+    el.focus({ preventScroll: true });
+  }
+}
+
+/**
+ * @private
+ * @param {import('../core/state.js').LightpickrInstance} instance
+ * @returns {void}
  */
 function _syncPendingRangeHoverClasses(instance) {
   const buttons = instance.$datepicker.querySelectorAll('[' + instance._state.attributes.day + ']');
   for (let i = 0; i < buttons.length; i++) {
-    const el = buttons[i];
-    el.classList.remove(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid, instance._state.classes.cellRangePreviewStartCap, instance._state.classes.cellRangePreviewEndCap);
+    buttons[i].classList.remove(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid, instance._state.classes.cellRangePreviewStartCap, instance._state.classes.cellRangePreviewEndCap);
   }
 
   if (!instance._state.range || instance._state.pendingRangeStart == null || instance._state.pendingRangeHoverTs == null) {
@@ -432,8 +430,7 @@ function _syncPendingRangeHoverClasses(instance) {
   const hi = Math.max(anchor, hover);
 
   for (let i = 0; i < buttons.length; i++) {
-    const el = /** @type {HTMLButtonElement} */ (buttons[i]);
-    const ts = _parseElementNumber(el, instance._state.attributes.day);
+    const ts = _parseElementNumber(buttons[i], instance._state.attributes.day);
     if (ts == null) {
       continue;
     }
@@ -449,20 +446,20 @@ function _syncPendingRangeHoverClasses(instance) {
     const atAnchor = d === anchor;
 
     if (atMid || (atLo && atHi)) {
-      el.classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid);
+      buttons[i].classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid);
       continue;
     }
 
     if (atLo) {
       if (!atAnchor) {
-        el.classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewStartCap);
+        buttons[i].classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewStartCap);
       } else if (lo !== hi) {
-        el.classList.add(instance._state.classes.cellRangePreviewStartCap);
+        buttons[i].classList.add(instance._state.classes.cellRangePreviewStartCap);
       }
       continue;
     }
     if (atHi) {
-      el.classList.add(atAnchor ? instance._state.classes.cellRangePreviewEndCap : instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewEndCap);
+      buttons[i].classList.add(atAnchor ? instance._state.classes.cellRangePreviewEndCap : instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewEndCap);
     }
   }
 }
@@ -568,9 +565,6 @@ function _syncTheme(instance) {
  * @returns {void}
  */
 function _syncPopoverMobile(instance) {
-  if (instance._state.inline) {
-    return;
-  }
   if (instance._state.isMobile) {
     if (!instance.$backdrop) {
       const backdropStyles = typeof instance._state.position === 'function' ? { display: 'none' } : {};
@@ -615,9 +609,6 @@ function _syncMobileBackdropDisplay(instance) {
  * @returns {void}
  */
 function _syncDatepickerDisplay(instance) {
-  if (instance._state.inline) {
-    return;
-  }
   if (typeof instance._state.position === 'function') {
     if (instance._state.visible) {
       instance.$datepicker.style.removeProperty('display');
