@@ -799,9 +799,7 @@
   height: var(--lp-time-slider-track-h);
   border-radius: 999px;
   background: var(--lp-time-slider-track-bg);
-  transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
 .lp-time-slider::-webkit-slider-thumb {
@@ -816,17 +814,14 @@
   margin-top: calc((var(--lp-time-slider-thumb-size) - var(--lp-time-slider-track-h)) / -2);
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+    box-shadow 0.15s ease;
 }
 
 .lp-time-slider::-moz-range-track {
   height: var(--lp-time-slider-track-h);
   border-radius: 999px;
   background: var(--lp-time-slider-track-bg);
-  transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
 .lp-time-slider::-moz-range-thumb {
@@ -838,8 +833,7 @@
   box-shadow: var(--lp-time-slider-thumb-shadow);
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+    box-shadow 0.15s ease;
 }
 
 .lp-time-slider:focus-visible::-webkit-slider-thumb {
