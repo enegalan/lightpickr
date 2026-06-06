@@ -51,5 +51,18 @@ assert.equal(pr._state.focusDate, null);
 pr.$datepicker.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
 assert.ok(pr._state.focusDate != null);
 
+const timeInput = document.createElement('input');
+document.body.appendChild(timeInput);
+const timePicker = new Lightpickr(timeInput, {
+  enableTime: true,
+  startDate: '2026-03-01',
+});
+assert.equal(timePicker._state.currentView, 'time');
+timePicker.show();
+timePicker.up();
+assert.equal(timePicker._state.currentView, 'month');
+timePicker.destroy();
+timeInput.remove();
+
 pr.destroy();
 p.destroy();

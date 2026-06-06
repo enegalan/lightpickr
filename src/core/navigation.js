@@ -118,14 +118,11 @@ export function navigateMonthKeepFocusMonth(state, dir) {
  */
 export function navigateUp(state) {
   const next = Object.assign({}, state);
-  const idx = lightpickrDefaults.viewOrder.indexOf(state.currentView);
-  if (state.currentView === 'time') {
-    if (state.onlyTime) {
-      return next;
-    }
-    next.currentView = 'day';
+  if (state.onlyTime && state.currentView === 'time') {
     return next;
   }
+  const viewKey = state.currentView === 'time' ? 'day' : state.currentView;
+  const idx = lightpickrDefaults.viewOrder.indexOf(viewKey);
   if (idx >= 0 && idx < lightpickrDefaults.viewOrder.length - 1) {
     const requested = lightpickrDefaults.viewOrder[idx + 1];
     next.currentView = clampView(state.allowedViews, requested);
