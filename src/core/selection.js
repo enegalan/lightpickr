@@ -20,7 +20,7 @@ export function selectDate(state, timestamp) {
 
   if (state.range) {
     if (state.pendingRangeStart == null) {
-      if (Array.isArray(next.selectedDates[0])) {
+      if (Array.isArray(next.selectedDates[0]) && state.multipleLimit <= 1) {
         next.selectedDates = [];
       }
       next.pendingRangeStart = d;

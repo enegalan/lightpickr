@@ -552,7 +552,14 @@ Lightpickr.prototype._shouldCloseAfterSelect = function () {
   if (!this._state.range && !this._state.multipleEnabled) {
     return true;
   }
-  return this._state.range && !this._state.pendingRangeStart;
+  if (this._state.range && !this._state.pendingRangeStart) {
+    if (this._state.multipleLimit > 1) {
+      const ranges = /** @type {number[][]} */ (this._state.selectedDates);
+      return ranges.length >= this._state.multipleLimit;
+    }
+    return true;
+  }
+  return false;
 };
 
 Object.defineProperties(Lightpickr.prototype, {

@@ -79,6 +79,42 @@ day18.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })
 assert.deepEqual(range._state.selectedDates, [[ymdToTsStartOfDay(2026, 3, 14), ymdToTsStartOfDay(2026, 3, 18)]]);
 assert.equal(range._state.pendingRangeStart, null);
 
+const multiRangeInput = document.createElement('input');
+document.body.appendChild(multiRangeInput);
+const multiRange = new Lightpickr(multiRangeInput, {
+  range: true,
+  multiple: 2,
+  autoClose: true,
+  startDate: '2026-04-01',
+});
+multiRange.show();
+assert.equal(multiRange.visible, true);
+multiRange.selectDate('2026-04-01');
+assert.equal(multiRange.visible, true);
+multiRange.selectDate('2026-04-05');
+assert.equal(multiRange.visible, true);
+multiRange.selectDate('2026-04-10');
+assert.equal(multiRange.visible, true);
+multiRange.selectDate('2026-04-15');
+assert.equal(multiRange.visible, false);
+multiRange.destroy();
+multiRangeInput.remove();
+
+const singleRangeInput = document.createElement('input');
+document.body.appendChild(singleRangeInput);
+const singleRange = new Lightpickr(singleRangeInput, {
+  range: true,
+  autoClose: true,
+  startDate: '2026-04-01',
+});
+singleRange.show();
+singleRange.selectDate('2026-04-01');
+assert.equal(singleRange.visible, true);
+singleRange.selectDate('2026-04-05');
+assert.equal(singleRange.visible, false);
+singleRange.destroy();
+singleRangeInput.remove();
+
 range.destroy();
 rangeHost.remove();
 inline.destroy();
