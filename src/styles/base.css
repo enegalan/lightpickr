@@ -743,7 +743,7 @@
 .lp-time-display-minutes,
 .lp-time-display-ampm,
 .lp-time-display-sep {
-  transition: color 0.15s ease;
+  transition: none;
 }
 
 .lp-time-display-ampm {
