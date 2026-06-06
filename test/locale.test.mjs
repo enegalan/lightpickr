@@ -4,9 +4,8 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
-
-import { defaultMonthNames, defaultWeekdayNames, DEFAULT_TRANSLATIONS, getTranslations } from '../src/utils/locale.js';
 import lightpickrDefaults from '../src/core/defaults.js';
+import { defaultMonthNames, defaultWeekdayNames, DEFAULT_TRANSLATIONS, getTranslations } from '../src/utils/locale.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const localeDir = join(__dirname, '../src/locale');
@@ -19,7 +18,7 @@ const localeBundles = await Promise.all(
   localeCodes.map(async (code) => {
     const mod = await import(`../src/locale/${code}.js`);
     return { code, locale: mod.default };
-  })
+  }),
 );
 
 /** Same order as `_buildDayGridHeadRow` with default `firstDay` 1 (Monday). */
@@ -63,7 +62,7 @@ test('defaultMonthNames/defaultWeekdayNames: string locale uses built-in bundle'
 
 const dom = new JSDOM('<!doctype html><html><body><input id="x" /></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;
@@ -80,13 +79,15 @@ for (const { code, locale } of localeBundles) {
   test(`locale/${code}.js: Lightpickr DOM`, () => {
     const input = document.querySelector('#x');
     const picker = new Lightpickr(input, { inline: true, locale });
-    const headCells = picker.$datepicker.querySelectorAll('.' + lightpickrDefaults.classes.row + '--head .' + lightpickrDefaults.classes.headCell);
+    const headCells = picker.$datepicker.querySelectorAll(
+      `.${lightpickrDefaults.classes.row}--head .${lightpickrDefaults.classes.headCell}`,
+    );
     assert.equal(headCells.length, 7);
     const expected = weekdayHeadLabels(locale.weekdaysShort, DEFAULT_FIRST_DAY);
     for (let i = 0; i < 7; i++) {
       assert.equal(headCells[i].textContent, expected[i]);
     }
-    const dayGrid = picker.$datepicker.querySelector('.' + lightpickrDefaults.classes.grid + '[role="grid"]');
+    const dayGrid = picker.$datepicker.querySelector(`.${lightpickrDefaults.classes.grid}[role="grid"]`);
     assert.ok(dayGrid);
     assert.equal(dayGrid.getAttribute('aria-label'), locale.ariaDayGrid);
     picker.destroy();
@@ -99,10 +100,15 @@ test('footer: custom buttons', () => {
     inline: true,
     buttons: [
       { content: 'Hoy', onClick() {} },
-      { content: 'Vac', onClick(picker) { picker.clear(); } }
-    ]
+      {
+        content: 'Vac',
+        onClick(picker) {
+          picker.clear();
+        },
+      },
+    ],
   });
-  const footerBtns = pickerFooter.$datepicker.querySelectorAll('.' + lightpickrDefaults.classes.footerBtn);
+  const footerBtns = pickerFooter.$datepicker.querySelectorAll(`.${lightpickrDefaults.classes.footerBtn}`);
   assert.equal(footerBtns[0].textContent, 'Hoy');
   assert.equal(footerBtns[1].textContent, 'Vac');
   pickerFooter.destroy();

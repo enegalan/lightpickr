@@ -11,9 +11,9 @@ const base = createStateFromOptions(
   {
     range: true,
     selectedDates: [[a, b]],
-    format: 'YYYY-MM-DD'
+    format: 'YYYY-MM-DD',
   },
-  null
+  null,
 );
 
 const first = selectDate(base, c);
@@ -37,9 +37,9 @@ const stMin = createStateFromOptions(
     selectedDates: [[march10, march20]],
     minDate: '2026-03-15',
     viewDate: '2026-03-01',
-    format: 'YYYY-MM-DD'
+    format: 'YYYY-MM-DD',
   },
-  null
+  null,
 );
 const clrMin = selectDate(stMin, march5);
 assert.equal(clrMin.changed, false);
@@ -54,9 +54,9 @@ const stOut = createStateFromOptions(
     selectOtherMonths: false,
     selectedDates: [[march10, march20]],
     viewDate: '2026-03-01',
-    format: 'YYYY-MM-DD'
+    format: 'YYYY-MM-DD',
   },
-  null
+  null,
 );
 const clrOut = selectDate(stOut, feb26);
 assert.equal(clrOut.changed, true);
@@ -71,9 +71,9 @@ const stSimple = createStateFromOptions(
     range: true,
     selectedDates: [[apr15, apr16]],
     viewDate: '2026-04-01',
-    format: 'YYYY-MM-DD'
+    format: 'YYYY-MM-DD',
   },
-  null
+  null,
 );
 const resetSimple = selectDate(stSimple, apr14);
 assert.equal(resetSimple.changed, true);

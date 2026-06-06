@@ -1,12 +1,12 @@
+import { buildDayMonthCells } from '../core/calendar-grid.js';
+import { invokePluginHook } from '../core/plugins.js';
+import { clampInt } from '../utils/common.js';
 import { buildCtx } from './context.js';
+import { renderFooter } from './footer.js';
+import { bindHandlers } from './handlers.js';
 import { renderTimePanel } from './time-panel.js';
 import { renderDayView } from './views/day.js';
 import { renderMonthView, renderYearView } from './views/month-year.js';
-import { renderFooter } from './footer.js';
-import { bindHandlers } from './handlers.js';
-import { invokePluginHook } from '../core/plugins.js';
-import { buildDayMonthCells } from '../core/calendar-grid.js';
-import { clampInt } from '../utils/common.js';
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
@@ -14,27 +14,43 @@ import { clampInt } from '../utils/common.js';
  */
 export function renderContainer(instance) {
   instance.$datepicker.innerHTML = '';
-  let cn =
-    instance._state.classes.container +
-    ' ' +
-    (instance._state.inline ? instance._state.classes.inline : instance._state.classes.popover) +
-    (instance._state.onlyTime ? ' ' + instance._state.classes.container + '--only-time' : '');
+  let cn = `${instance._state.classes.container} ${
+    instance._state.inline ? instance._state.classes.inline : instance._state.classes.popover
+  }${instance._state.onlyTime ? ` ${instance._state.classes.container}--only-time` : ''}`;
   if (!instance._state.inline && typeof instance._state.position !== 'function') {
-    cn += ' ' + instance._state.classes.popoverAnim;
+    cn += ` ${instance._state.classes.popoverAnim}`;
   }
   if (!instance._state.inline && instance._state.visible && typeof instance._state.position !== 'function') {
-    cn += ' ' + instance._state.classes.popoverOpen;
+    cn += ` ${instance._state.classes.popoverOpen}`;
   }
   instance.$datepicker.className = cn.trim();
 
   if (!instance._state.onlyTime) {
-    instance.$datepicker.setAttribute(instance._state.properties.calendarView, instance._state.currentView === 'time' ? 'time' : instance._state.currentView);
+    instance.$datepicker.setAttribute(
+      instance._state.properties.calendarView,
+      instance._state.currentView === 'time' ? 'time' : instance._state.currentView,
+    );
     instance.$datepicker.style.setProperty(instance._state.properties.dayViewCols, String(instance._state.dayViewCols));
-    instance.$datepicker.style.setProperty(instance._state.properties.dayViewRows, String(buildDayMonthCells(instance._state).length / clampInt(instance._state.dayViewCols, 1, 7, 7)));
-    instance.$datepicker.style.setProperty(instance._state.properties.monthViewCols, String(instance._state.monthViewCols));
-    instance.$datepicker.style.setProperty(instance._state.properties.monthViewRows, String(instance._state.monthViewRows));
-    instance.$datepicker.style.setProperty(instance._state.properties.yearViewCols, String(instance._state.yearViewCols));
-    instance.$datepicker.style.setProperty(instance._state.properties.yearViewRows, String(instance._state.yearViewRows));
+    instance.$datepicker.style.setProperty(
+      instance._state.properties.dayViewRows,
+      String(buildDayMonthCells(instance._state).length / clampInt(instance._state.dayViewCols, 1, 7, 7)),
+    );
+    instance.$datepicker.style.setProperty(
+      instance._state.properties.monthViewCols,
+      String(instance._state.monthViewCols),
+    );
+    instance.$datepicker.style.setProperty(
+      instance._state.properties.monthViewRows,
+      String(instance._state.monthViewRows),
+    );
+    instance.$datepicker.style.setProperty(
+      instance._state.properties.yearViewCols,
+      String(instance._state.yearViewCols),
+    );
+    instance.$datepicker.style.setProperty(
+      instance._state.properties.yearViewRows,
+      String(instance._state.yearViewRows),
+    );
     if (instance._state.enableTime) {
       instance.$datepicker.setAttribute(instance._state.attributes.time, '1');
     } else {

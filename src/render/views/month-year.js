@@ -1,7 +1,7 @@
-import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
-import { isFocusDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
+import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
+import { isFocusDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { buildCtx } from '../context.js';
 import { mountViewHeader } from '../header.js';
 
@@ -27,7 +27,7 @@ export function renderMonthView(instance, container) {
     (i) => {
       const ts = stamps[i];
       const { y: yy, m: mm } = tsToYmd(ts);
-      const ariaLabel = months[mm] + ' ' + String(yy);
+      const ariaLabel = `${months[mm]} ${String(yy)}`;
       return _buildMonthYearGridCell(
         instance,
         instance._state.attributes.month,
@@ -35,9 +35,9 @@ export function renderMonthView(instance, container) {
         yy === y && mm === m,
         ts,
         ariaLabel,
-        instance._state.monthViewCount > 12 ? months[mm] + ' ' + String(yy) : months[mm]
+        instance._state.monthViewCount > 12 ? `${months[mm]} ${String(yy)}` : months[mm],
       );
-    }
+    },
   );
 }
 
@@ -63,16 +63,8 @@ export function renderYearView(instance, container) {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);
       const yyStr = String(yy);
-      return _buildMonthYearGridCell(
-        instance,
-        instance._state.attributes.year,
-        yyStr,
-        yy === y,
-        ts,
-        yyStr,
-        yyStr
-      );
-    }
+      return _buildMonthYearGridCell(instance, instance._state.attributes.year, yyStr, yy === y, ts, yyStr, yyStr);
+    },
   );
 }
 
@@ -101,14 +93,16 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
 
   const isFocused = isFocusDay(instance._state.focusDate, ts);
   const cellClass =
-    instance._state.classes.cell + (selected ? ' ' + instance._state.classes.cellSelected : '') + (isFocused ? ' ' + instance._state.classes.cellFocused : '');
+    instance._state.classes.cell +
+    (selected ? ` ${instance._state.classes.cellSelected}` : '') +
+    (isFocused ? ` ${instance._state.classes.cellFocused}` : '');
   const attrs = {
     type: 'button',
     [dataAttr]: dataValueStr,
     role: 'gridcell',
     tabindex: isFocused ? '0' : '-1',
     'aria-selected': selected ? 'true' : 'false',
-    'aria-label': ariaLabel
+    'aria-label': ariaLabel,
   };
   const el = createEl('button', cellClass, attrs);
   el.textContent = textContent;
@@ -120,7 +114,6 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
  * @private
  * @param {import('../../core/state.js').LightpickrInstance} instance
  * @param {HTMLElement} container
- * @param {'month'|'year'} view
  * @param {boolean} canGoUp
  * @param {string} gridExtraClass
  * @param {string} ariaLabel
@@ -130,18 +123,33 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
  * @param {(cellIndex: number) => HTMLElement} buildCell
  * @returns {void}
  */
-function _renderMonthYearGridView(instance, container, canGoUp, gridExtraClass, ariaLabel, cellCount, cols, rows, buildCell) {
+function _renderMonthYearGridView(
+  instance,
+  container,
+  canGoUp,
+  gridExtraClass,
+  ariaLabel,
+  cellCount,
+  cols,
+  rows,
+  buildCell,
+) {
   mountViewHeader(instance, container, instance._state.currentView, canGoUp);
 
   const viewBody = createEl('div', instance._state.classes.viewBody);
-  const grid = createEl('div', instance._state.classes.grid + ' ' + gridExtraClass, { role: 'grid', 'aria-label': ariaLabel });
+  const grid = createEl('div', `${instance._state.classes.grid} ${gridExtraClass}`, {
+    role: 'grid',
+    'aria-label': ariaLabel,
+  });
 
   let index = 0;
   for (let r = 0; r < rows; r++) {
     if (index >= cellCount) {
       break;
     }
-    const rowEl = createEl('div', instance._state.classes.gridRow + ' ' + instance._state.classes.gridRow + '--contents', { role: 'row' });
+    const rowEl = createEl('div', `${instance._state.classes.gridRow} ${instance._state.classes.gridRow}--contents`, {
+      role: 'row',
+    });
     for (let col = 0; col < cols; col++) {
       if (index >= cellCount) {
         break;

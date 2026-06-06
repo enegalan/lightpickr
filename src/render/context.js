@@ -1,7 +1,7 @@
 import { isInClosedRangeDay, isSameDay, isDayDisabled, isFocusDay, startOfDayTs } from '../utils/time.js';
 
 /**
- * @typedef {Object} RenderCtx
+ * @typedef {object} RenderCtx
  * @property {number} date
  * @property {number} viewDate
  * @property {boolean} isSelected
@@ -58,9 +58,9 @@ export function buildCtx(instance, dayTs, outside = false) {
       visible: instance._state.visible,
       selectedDates: instance._state.selectedDates,
       timePart: Object.assign({}, instance._state.timePart),
-      allowedViews: instance._state.allowedViews.slice()
+      allowedViews: instance._state.allowedViews.slice(),
     },
-    instance
+    instance,
   };
 }
 
@@ -104,6 +104,6 @@ function _dayFlags(state, date) {
     isToday: isSameDay(date, startOfDayTs(Date.now())),
     isInRange,
     isRangeStart,
-    isRangeEnd
+    isRangeEnd,
   };
 }

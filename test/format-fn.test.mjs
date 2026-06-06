@@ -1,9 +1,9 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('<!doctype html><html><body><input id="a" /><input id="b" /><input id="c" /></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;
@@ -22,7 +22,7 @@ const { default: Lightpickr } = await import('../src/index.js');
     inline: true,
     format(date) {
       return date.toLocaleString('en-US', { year: 'numeric', month: 'long', day: '2-digit' });
-    }
+    },
   });
   picker.selectDate('2026-03-15');
   assert.ok(input.value.includes('March'));
@@ -38,7 +38,7 @@ const { default: Lightpickr } = await import('../src/index.js');
     format(dates) {
       assert.ok(Array.isArray(dates));
       return dates.map((d) => d.getDate()).join('|');
-    }
+    },
   });
   picker.selectDate(['2026-04-01', '2026-04-02']);
   assert.equal(input.value, '1|2');
@@ -53,8 +53,8 @@ const { default: Lightpickr } = await import('../src/index.js');
     format(pair) {
       assert.ok(Array.isArray(pair));
       assert.equal(pair.length, 2);
-      return pair[0].getMonth() + 1 + ':' + pair[1].getDate();
-    }
+      return `${pair[0].getMonth() + 1}:${pair[1].getDate()}`;
+    },
   });
   picker.selectDate([['2026-05-10', '2026-05-20']]);
   assert.equal(input.value, '5:20');

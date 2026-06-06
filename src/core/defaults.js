@@ -53,7 +53,7 @@ export default {
     footer: 'lp-footer',
     footerBtn: 'lp-footer-btn',
     popoverPointer: 'lp-popover-pointer',
-    viewBody: 'lp-view-body'
+    viewBody: 'lp-view-body',
   },
   properties: {
     pointerVisible: '--lp-pointer-visible',

@@ -1,7 +1,15 @@
 import { clampInt } from '../utils/common.js';
-import { getViewDates } from '../utils/view.js';
-import { navigateDown, navigateMonthKeepFocusDay, navigateMonthKeepFocusMonth, navigateNextPrev, navigateUp, navigateYearKeepFocusDay, setFocusDateState } from './navigation.js';
 import { findDayIndex, startOfDayTs, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
+import { getViewDates } from '../utils/view.js';
+import {
+  navigateDown,
+  navigateMonthKeepFocusDay,
+  navigateMonthKeepFocusMonth,
+  navigateNextPrev,
+  navigateUp,
+  navigateYearKeepFocusDay,
+  setFocusDateState,
+} from './navigation.js';
 
 /**
  * @param {string} key
@@ -52,7 +60,7 @@ export function applyEventKey(instance, evLike) {
     return {
       type: 'altView',
       prev: instance._state,
-      next: reseedKeyboardFocusForView(navigated)
+      next: reseedKeyboardFocusForView(navigated),
     };
   }
 
@@ -66,13 +74,7 @@ export function applyEventKey(instance, evLike) {
         s = seeded;
       }
     }
-    const next = _nextStateAfterMonthYearGridKey(
-      s,
-      key,
-      shiftKey,
-      getViewDates(s.currentView, s),
-      s.currentView
-    );
+    const next = _nextStateAfterMonthYearGridKey(s, key, shiftKey, getViewDates(s.currentView, s), s.currentView);
     return { type: 'grid', seed, next };
   }
 
@@ -101,15 +103,21 @@ export function applyEventKey(instance, evLike) {
  * @returns {{ next: import('./state.js').LightpickrInternalState, idx: number }}
  */
 function _moveFocusInGrid(state, key, gridDates) {
-  const gridCols = state.currentView === 'month' ? state.monthViewCols : state.currentView === 'year' ? state.yearViewCols : state.dayViewCols;
+  let gridCols = state.dayViewCols;
+  if (state.currentView === 'month') {
+    gridCols = state.monthViewCols;
+  } else if (state.currentView === 'year') {
+    gridCols = state.yearViewCols;
+  }
   let idx = state.focusDate != null ? findDayIndex(state.focusDate, gridDates) : 0;
   if (idx < 0) {
     idx = 0;
   }
+  const lastIdx = gridDates.length - 1;
   if (key === 'Home') {
-    idx = clampInt(Math.floor(idx / gridCols) * gridCols, 0, len - 1, 0);
+    idx = clampInt(Math.floor(idx / gridCols) * gridCols, 0, lastIdx, 0);
   } else if (key === 'End') {
-    idx = clampInt(Math.floor(idx / gridCols) * gridCols + (gridCols - 1), 0, len - 1, 0);
+    idx = clampInt(Math.floor(idx / gridCols) * gridCols + (gridCols - 1), 0, lastIdx, 0);
   } else if (key === 'ArrowLeft') {
     idx = idx - 1;
   } else if (key === 'ArrowRight') {
@@ -256,14 +264,14 @@ function _nextStateAfterMonthYearGridKey(state, key, shiftKey, gridDates, curren
     return _stateWithDefaultMonthYearGridFocus(
       nextNav,
       /** @type {number[]} */ (getViewDates('year', nextNav)),
-      'year'
+      'year',
     );
   }
   const page = _pageUpDownWithOptionalShiftYear(
     state,
     key,
     shiftKey,
-    currentView === 'month' ? navigateMonthKeepFocusMonth : navigateNextPrev
+    currentView === 'month' ? navigateMonthKeepFocusMonth : navigateNextPrev,
   );
   if (page !== null) {
     return page;

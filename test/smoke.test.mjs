@@ -1,12 +1,11 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
-
+import { JSDOM } from 'jsdom';
 import lightpickrDefaults from '../src/core/defaults.js';
 import { ymdToTsStartOfDay } from '../src/utils/time.js';
 
 const dom = new JSDOM('<!doctype html><html><body><input id="d" /><div id="c"></div></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;
@@ -36,7 +35,7 @@ const p = new Lightpickr(input, {
   },
   onSelect(payload) {
     selectCalls.push(payload.trigger);
-  }
+  },
 });
 assert.ok(p.$datepicker);
 assert.equal(p.visible, false);
@@ -63,14 +62,18 @@ const range = new Lightpickr(rangeHost, {
   inline: true,
   range: true,
   startDate: '2026-04-01',
-  selectedDates: [['2026-04-15', '2026-04-16']]
+  selectedDates: [['2026-04-15', '2026-04-16']],
 });
-const day14 = range.$datepicker.querySelector('[' + range._state.attributes.day + '="' + String(ymdToTsStartOfDay(2026, 3, 14)) + '"]');
+const day14 = range.$datepicker.querySelector(
+  `[${range._state.attributes.day}="${String(ymdToTsStartOfDay(2026, 3, 14))}"]`,
+);
 assert.ok(day14 instanceof HTMLElement);
 day14.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 assert.deepEqual(range._state.selectedDates, []);
 assert.equal(range._state.pendingRangeStart, ymdToTsStartOfDay(2026, 3, 14));
-const day18 = range.$datepicker.querySelector('[' + range._state.attributes.day + '="' + String(ymdToTsStartOfDay(2026, 3, 18)) + '"]');
+const day18 = range.$datepicker.querySelector(
+  `[${range._state.attributes.day}="${String(ymdToTsStartOfDay(2026, 3, 18))}"]`,
+);
 assert.ok(day18 instanceof HTMLElement);
 day18.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 assert.deepEqual(range._state.selectedDates, [[ymdToTsStartOfDay(2026, 3, 14), ymdToTsStartOfDay(2026, 3, 18)]]);
@@ -86,8 +89,8 @@ document.body.appendChild(onlyTimeHost);
 const ot = new Lightpickr(onlyTimeHost, { inline: true, onlyTime: true });
 assert.equal(ot._state.onlyTime, true);
 assert.equal(ot._state.enableTime, true);
-assert.ok(ot.$datepicker.querySelector('.' + lightpickrDefaults.classes.timePanel));
-assert.equal(ot.$datepicker.querySelector('.' + lightpickrDefaults.classes.header), null);
+assert.ok(ot.$datepicker.querySelector(`.${lightpickrDefaults.classes.timePanel}`));
+assert.equal(ot.$datepicker.querySelector(`.${lightpickrDefaults.classes.header}`), null);
 ot.destroy();
 onlyTimeHost.remove();
 

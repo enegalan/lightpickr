@@ -1,5 +1,5 @@
-import { findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
 import { trimFifo } from '../utils/common.js';
+import { findDayIndex, isInClosedRangeDay, isSameDay, isDayDisabled, startOfDayTs } from '../utils/time.js';
 import { isSelectAllowed } from './state.js';
 
 /**
@@ -9,11 +9,11 @@ import { isSelectAllowed } from './state.js';
  */
 export function selectDate(state, timestamp) {
   if (timestamp == null) {
-    return { state: state, changed: false };
+    return { state, changed: false };
   }
   const d = startOfDayTs(timestamp);
   if (isDayDisabled(state, d)) {
-    return { state: state, changed: false };
+    return { state, changed: false };
   }
 
   const next = Object.assign({}, state);
@@ -65,7 +65,7 @@ export function selectDate(state, timestamp) {
  */
 export function unselectDate(state, timestamp) {
   if (timestamp == null) {
-    return { state: state, changed: false };
+    return { state, changed: false };
   }
   const d = startOfDayTs(timestamp);
   const next = Object.assign({}, state);
@@ -103,7 +103,12 @@ export function clearSelection(state) {
  * @returns {{ state: import('./state.js').LightpickrInternalState, changed: boolean }}
  */
 export function applyRangeEndpointDrag(instance, timestamp) {
-  if (!instance._state.range || !Array.isArray(instance._state.selectedDates[0]) || !instance._rangeDrag || timestamp == null) {
+  if (
+    !instance._state.range ||
+    !Array.isArray(instance._state.selectedDates[0]) ||
+    !instance._rangeDrag ||
+    timestamp == null
+  ) {
     return { state: instance._state, changed: false };
   }
   const ranges = instance.selectedDates;

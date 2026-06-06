@@ -1,9 +1,9 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('<!doctype html><html><body><input id="x" /></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;

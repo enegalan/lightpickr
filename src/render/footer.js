@@ -21,7 +21,7 @@ export function renderFooter(instance, container) {
   }
 
   const buttons = Array.isArray(instance._state.buttons) ? instance._state.buttons : [instance._state.buttons];
-  const wrap = createEl('div', instance._state.classes.footer + ' ' + instance._state.classes.footer + '--actions');
+  const wrap = createEl('div', `${instance._state.classes.footer} ${instance._state.classes.footer}--actions`);
 
   for (let i = 0; i < buttons.length; i++) {
     if (!buttons[i] || typeof buttons[i] !== 'object') {
@@ -29,7 +29,7 @@ export function renderFooter(instance, container) {
     }
 
     const tag = buttons[i].tagName || 'button';
-    const cls = instance._state.classes.footerBtn + (buttons[i].className ? ' ' + buttons[i].className : '');
+    const cls = instance._state.classes.footerBtn + (buttons[i].className ? ` ${buttons[i].className}` : '');
 
     const el = createEl(tag, cls, tag === 'button' ? { type: 'button' } : {});
 

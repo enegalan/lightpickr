@@ -1,11 +1,10 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
-
+import { JSDOM } from 'jsdom';
 import lightpickrDefaults from '../src/core/defaults.js';
 
 const dom = new JSDOM('<!doctype html><html><body><div id="host"></div></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;
@@ -21,7 +20,7 @@ const navAttr = lightpickrDefaults.attributes.nav;
 const monthAttr = lightpickrDefaults.attributes.month;
 
 function findHeaderRoot(picker) {
-  return picker.$datepicker.querySelector('.' + headerClass);
+  return picker.$datepicker.querySelector(`.${headerClass}`);
 }
 
 {
@@ -35,8 +34,8 @@ function findHeaderRoot(picker) {
         el.setAttribute('data-test', 'custom-header');
         el.textContent = 'from-header';
         return el;
-      }
-    }
+      },
+    },
   });
   const headerRoot = findHeaderRoot(p);
   assert.ok(headerRoot);
@@ -54,12 +53,12 @@ function findHeaderRoot(picker) {
     render: {
       header() {
         return null;
-      }
-    }
+      },
+    },
   });
   const root = findHeaderRoot(p);
-  assert.ok(root.querySelector('[' + navAttr + '="prev"]'));
-  assert.ok(root.querySelector('[' + navAttr + '="next"]'));
+  assert.ok(root.querySelector(`[${navAttr}="prev"]`));
+  assert.ok(root.querySelector(`[${navAttr}="next"]`));
   p.destroy();
 }
 
@@ -73,8 +72,8 @@ function findHeaderRoot(picker) {
         const el = document.createElement('div');
         el.setAttribute('data-test', 'month-header');
         return el;
-      }
-    }
+      },
+    },
   });
   const custom = findHeaderRoot(p).querySelector('[data-test="month-header"]');
   assert.ok(custom);
@@ -91,8 +90,8 @@ function findHeaderRoot(picker) {
         const el = document.createElement('div');
         el.setAttribute('data-test', 'year-header');
         return el;
-      }
-    }
+      },
+    },
   });
   const custom = findHeaderRoot(p).querySelector('[data-test="year-header"]');
   assert.ok(custom);
@@ -116,13 +115,13 @@ function findHeaderRoot(picker) {
         b.setAttribute('tabindex', '-1');
         b.setAttribute('aria-selected', 'false');
         b.setAttribute('aria-label', 'January');
-        b.className = lightpickrDefaults.classes.cell + ' cell-hook-jan';
+        b.className = `${lightpickrDefaults.classes.cell} cell-hook-jan`;
         b.textContent = 'Jan';
         return b;
-      }
-    }
+      },
+    },
   });
-  const janBtn = p.$datepicker.querySelector('[' + monthAttr + '="0"]');
+  const janBtn = p.$datepicker.querySelector(`[${monthAttr}="0"]`);
   assert.ok(janBtn && janBtn.classList.contains('cell-hook-jan'));
   p.destroy();
 }

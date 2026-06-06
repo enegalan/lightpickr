@@ -1,11 +1,11 @@
 import { buildDayMonthCells } from '../../core/calendar-grid.js';
+import lightpickrDefaults from '../../core/defaults.js';
+import { createEl } from '../../utils/common.js';
 import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
 import { formatDate, tsToYmd } from '../../utils/time.js';
-import { createEl } from '../../utils/common.js';
 import { buildCtx } from '../context.js';
 import { mountViewHeader } from '../header.js';
 import { renderTimePanel } from '../time-panel.js';
-import lightpickrDefaults from '../../core/defaults.js';
 
 /**
  * @param {import('../../core/state.js').LightpickrInstance} instance
@@ -16,9 +16,12 @@ export function renderDayView(instance, container) {
   mountViewHeader(instance, container, 'day', instance._state.allowedViews.indexOf('month') >= 0);
 
   const viewBody = createEl('div', instance._state.classes.viewBody);
-  const monthsWrap = createEl('div', instance._state.classes.grid + ' ' + instance._state.classes.months);
+  const monthsWrap = createEl('div', `${instance._state.classes.grid} ${instance._state.classes.months}`);
   const block = createEl('div', instance._state.classes.monthBlock);
-  const grid = createEl('div', instance._state.classes.grid, { role: 'grid', 'aria-label': getTranslations(instance._state.locale).ariaDayGrid });
+  const grid = createEl('div', instance._state.classes.grid, {
+    role: 'grid',
+    'aria-label': getTranslations(instance._state.locale).ariaDayGrid,
+  });
 
   _buildDayGridHeadRow(instance, grid);
   _buildDayGridBodyRows(instance, grid);
@@ -45,9 +48,10 @@ function _buildDayGridHeadRow(instance, grid) {
   const clickable = instance._state.dayNameClickable === true;
 
   const tag = clickable ? 'button' : 'div';
-  const baseClass = instance._state.classes.headCell + (clickable ? ' ' + instance._state.classes.headCell + '--clickable' : '');
+  const baseClass =
+    instance._state.classes.headCell + (clickable ? ` ${instance._state.classes.headCell}--clickable` : '');
 
-  const row = createEl('div', instance._state.classes.row + ' ' + instance._state.classes.row + '--head', { role: 'row' });
+  const row = createEl('div', `${instance._state.classes.row} ${instance._state.classes.row}--head`, { role: 'row' });
   for (let i = 0; i < instance._state.dayViewCols; i++) {
     const idx = (fd + i) % 7;
     const attrs = clickable
@@ -55,8 +59,8 @@ function _buildDayGridHeadRow(instance, grid) {
       : { role: 'columnheader' };
     const cell = createEl(
       tag,
-      baseClass + (instance._state.weekends.indexOf(idx) >= 0 ? ' ' + instance._state.classes.headCell + '--weekend' : ''),
-      attrs
+      baseClass + (instance._state.weekends.indexOf(idx) >= 0 ? ` ${instance._state.classes.headCell}--weekend` : ''),
+      attrs,
     );
     cell.textContent = names[idx];
     row.appendChild(cell);
@@ -84,9 +88,13 @@ function _buildDayGridBodyRows(instance, grid) {
     const { ts, outside } = cells[cell];
 
     if (outside && !instance._state.showOtherMonths) {
-      row && row.appendChild(
-        createEl('span', instance._state.classes.cell + ' ' + instance._state.classes.cellOutside + ' ' + instance._state.classes.cellDisabled)
-      );
+      row &&
+        row.appendChild(
+          createEl(
+            'span',
+            `${instance._state.classes.cell} ${instance._state.classes.cellOutside} ${instance._state.classes.cellDisabled}`,
+          ),
+        );
       continue;
     }
 
@@ -108,7 +116,7 @@ function _buildDayGridBodyRows(instance, grid) {
         [ctx.isRangeEnd, instance._state.classes.cellRangeEnd],
         [ctx.isOutside, instance._state.classes.cellOutside],
         [ctx.isWeekend, instance._state.classes.cellWeekend],
-        [ctx.isFocused, instance._state.classes.cellFocused]
+        [ctx.isFocused, instance._state.classes.cellFocused],
       ];
       for (let i = 0; i < flagClassPairs.length; i++) {
         if (flagClassPairs[i][0]) {
@@ -125,7 +133,7 @@ function _buildDayGridBodyRows(instance, grid) {
         tabindex: ctx.isFocused ? '0' : '-1',
         'aria-label': label,
         'aria-selected': ctx.isSelected ? 'true' : 'false',
-        'aria-disabled': ctx.isDisabled || (ctx.isOutside && !instance._state.selectOtherMonths) ? 'true' : 'false'
+        'aria-disabled': ctx.isDisabled || (ctx.isOutside && !instance._state.selectOtherMonths) ? 'true' : 'false',
       });
       cellEl.textContent = String(d);
 

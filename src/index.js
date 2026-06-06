@@ -1,15 +1,29 @@
-import { createStateFromOptions, isSelectAllowed, mergeOptions } from './core/state.js';
-import { navigateNextPrev, navigateUp, navigateDown, setCurrentViewState, setViewDateState, setFocusDateState } from './core/navigation.js';
-import { clearSelection, selectDate, unselectDate } from './core/selection.js';
-import { cloneSelectedDates, formatDate, startOfDayTs, toTimestamp, parseSelectedDates, timestampToPickerDate } from './utils/time.js';
-import { bindDocListeners, syncInstanceClasses, emitEvents } from './render/handlers.js';
-import { renderContainer } from './render/container.js';
-import { getViewDates } from './utils/view.js';
-import { applyStringPosition } from './core/positioning.js';
-import { reseedKeyboardFocusForView } from './core/keyboard.js';
-import { createEl, isTextInputLike, noop } from './utils/common.js';
 import lightpickrDefaults from './core/defaults.js';
+import { reseedKeyboardFocusForView } from './core/keyboard.js';
+import {
+  navigateNextPrev,
+  navigateUp,
+  navigateDown,
+  setCurrentViewState,
+  setViewDateState,
+  setFocusDateState,
+} from './core/navigation.js';
 import { invokePluginHook, registerPlugin } from './core/plugins.js';
+import { applyStringPosition } from './core/positioning.js';
+import { clearSelection, selectDate, unselectDate } from './core/selection.js';
+import { createStateFromOptions, isSelectAllowed, mergeOptions } from './core/state.js';
+import { renderContainer } from './render/container.js';
+import { bindDocListeners, syncInstanceClasses, emitEvents } from './render/handlers.js';
+import { createEl, isTextInputLike, noop } from './utils/common.js';
+import {
+  cloneSelectedDates,
+  formatDate,
+  startOfDayTs,
+  toTimestamp,
+  parseSelectedDates,
+  timestampToPickerDate,
+} from './utils/time.js';
+import { getViewDates } from './utils/view.js';
 
 /**
  * @param {string|HTMLElement} target
@@ -142,7 +156,9 @@ Lightpickr.prototype.selectDate = function (date, opts) {
       return;
     }
     const next = Object.assign({}, this._state);
-    next.selectedDates = /** @type {number[][]} */ (parseSelectedDates({ range: true, multipleEnabled: false, multipleLimit: this._state.multipleLimit }, date));
+    next.selectedDates = /** @type {number[][]} */ (
+      parseSelectedDates({ range: true, multipleEnabled: false, multipleLimit: this._state.multipleLimit }, date)
+    );
     this._commit(next, { emitSelect: true, selectTrigger: 'select' });
     if (opts && opts.close && this._state.autoClose) {
       this.hide();
@@ -216,7 +232,7 @@ Lightpickr.prototype.destroy = function () {
   this._unbindMutationObserver();
   this._detachListeners();
   this._detachDatepicker();
-  this._delegateOffs.forEach(function (fn) {
+  this._delegateOffs.forEach((fn) => {
     fn();
   });
   this._delegateOffs = [];
@@ -298,7 +314,7 @@ Lightpickr.prototype.enableDate = function (date) {
     return;
   }
   const next = Object.assign({}, this._state);
-  next.disabledDatesSorted = next.disabledDatesSorted.filter(function (x) {
+  next.disabledDatesSorted = next.disabledDatesSorted.filter((x) => {
     return x !== ts;
   });
   this._commit(next, { emitSelect: false });
@@ -317,7 +333,7 @@ Lightpickr.prototype.disableDate = function (date) {
   const arr = next.disabledDates;
   if (arr.indexOf(ts) < 0) {
     arr.push(ts);
-    arr.sort(function (a, b) {
+    arr.sort((a, b) => {
       return a - b;
     });
   }
@@ -369,7 +385,7 @@ Lightpickr.prototype._getPositionReference = function () {
   }
   const fields = this.$el.querySelectorAll('input, textarea');
   for (let i = 0; i < fields.length; i++) {
-    const hostRoot = fields[i].closest('[' + this._state.attributes.root + ']');
+    const hostRoot = fields[i].closest(`[${this._state.attributes.root}]`);
     if (hostRoot && this.$el.contains(hostRoot) && hostRoot !== this.$datepicker) {
       continue;
     }
@@ -396,13 +412,13 @@ Lightpickr.prototype._bindTargetEvents = function () {
       };
       if (eventName === 'focus') {
         el.addEventListener('focus', listener, true);
-        self._boundShowTargets.push({ el: el, eventName: 'focus', listener: listener, capture: true });
+        self._boundShowTargets.push({ el, eventName: 'focus', listener, capture: true });
         el.addEventListener('focusin', listener);
-        self._boundShowTargets.push({ el: el, eventName: 'focusin', listener: listener, capture: false });
+        self._boundShowTargets.push({ el, eventName: 'focusin', listener, capture: false });
         continue;
       }
       el.addEventListener(eventName, listener);
-      self._boundShowTargets.push({ el: el, eventName: eventName, listener: listener, capture: false });
+      self._boundShowTargets.push({ el, eventName, listener, capture: false });
     }
   };
   bindField(this.$el);
@@ -440,8 +456,8 @@ Lightpickr.prototype._positionPopover = function (isViewChange) {
       $target: this.$el,
       $anchor: anchorEl,
       $pointer: this.$pointer,
-      isViewChange: !!isViewChange,
-      done: noop
+      isViewChange: Boolean(isViewChange),
+      done: noop,
     });
     this._positionHideCleanup = typeof ret === 'function' ? ret : null;
     return;
@@ -500,7 +516,7 @@ Lightpickr.prototype._bindMutationObserver = function () {
   if (!window.MutationObserver) {
     return;
   }
-  this._windowMutationObserver = new window.MutationObserver(function () {
+  this._windowMutationObserver = new window.MutationObserver(() => {
     syncInstanceClasses(self, self._state);
   });
   const attrs = {
@@ -527,7 +543,6 @@ Lightpickr.prototype._unbindMutationObserver = function () {
 
 /**
  * @private
- * @param {import('./core/state.js').LightpickrInternalState} state
  * @returns {boolean}
  */
 Lightpickr.prototype._shouldCloseAfterSelect = function () {
@@ -542,35 +557,35 @@ Lightpickr.prototype._shouldCloseAfterSelect = function () {
 
 Object.defineProperties(Lightpickr.prototype, {
   visible: {
-    get: function () {
+    get() {
       return this._state.visible;
-    }
+    },
   },
   viewDate: {
-    get: function () {
+    get() {
       return this._state.viewDate;
-    }
+    },
   },
   currentView: {
-    get: function () {
+    get() {
       return this._state.currentView;
-    }
+    },
   },
   selectedDates: {
-    get: function () {
+    get() {
       return cloneSelectedDates(this._state);
-    }
+    },
   },
   focusDate: {
-    get: function () {
+    get() {
       return this._state.focusDate;
-    }
+    },
   },
   disabledDates: {
-    get: function () {
+    get() {
       return this._state.disabledDatesSorted.slice();
-    }
-  }
+    },
+  },
 });
 
 export default Lightpickr;

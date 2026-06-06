@@ -1,6 +1,14 @@
 import { clampInt } from '../utils/common.js';
+import {
+  addMonths,
+  addYears,
+  daysInMonth,
+  startOfDayTs,
+  toTimestamp,
+  tsToYmd,
+  ymdToTsStartOfDay,
+} from '../utils/time.js';
 import { clampView } from '../utils/view.js';
-import { addMonths, addYears, daysInMonth, startOfDayTs, toTimestamp, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
 import lightpickrDefaults from './defaults.js';
 
 /**
@@ -147,7 +155,8 @@ export function navigateDown(state) {
  */
 export function setCurrentViewState(state, view, params) {
   let next = Object.assign({}, state);
-  next.currentView = state.onlyTime || (state.enableTime || view === 'time') ? 'time' : clampView(state.allowedViews, 'day');
+  next.currentView =
+    state.onlyTime || state.enableTime || view === 'time' ? 'time' : clampView(state.allowedViews, 'day');
   if (params?.date != null) {
     next = setViewDateState(next, params.date);
   }
@@ -222,7 +231,7 @@ function _navTargetPeriodYmd(state, dir) {
         startMonth: m,
         endMonth: m,
         startDay: 1,
-        endDay: monthLastDay
+        endDay: monthLastDay,
       };
     }
     case 'month': {
@@ -233,7 +242,7 @@ function _navTargetPeriodYmd(state, dir) {
         startMonth: 0,
         endMonth: 11,
         startDay: 1,
-        endDay: 31
+        endDay: 31,
       };
     }
     case 'year': {
@@ -247,7 +256,7 @@ function _navTargetPeriodYmd(state, dir) {
         startMonth: 0,
         endMonth: 11,
         startDay: 1,
-        endDay: 31
+        endDay: 31,
       };
     }
     default:

@@ -1,5 +1,5 @@
-import { getTranslations } from '../utils/locale.js';
 import { clampInt, createEl, pad2 } from '../utils/common.js';
+import { getTranslations } from '../utils/locale.js';
 import { buildCtx } from './context.js';
 
 /**
@@ -40,16 +40,20 @@ export function renderTimePanel(instance, container) {
   const slidersCol = createEl('div', instance._state.classes.timeSlidersCol);
 
   const makeSlider = (type, value, min, max, step) => {
-    const el = createEl('input', instance._state.classes.timeSlider + ' ' + instance._state.classes.timeSlider + '--' + type, {
-      type: 'range',
-      min: String(min),
-      max: String(max),
-      step: String(step),
-      [instance._state.attributes.time]: type,
-      'aria-label': type === 'hours' ? ui.ariaTimeHours : ui.ariaTimeMinutes,
-      'aria-valuemin': String(min),
-      'aria-valuemax': String(max)
-    });
+    const el = createEl(
+      'input',
+      `${instance._state.classes.timeSlider} ${instance._state.classes.timeSlider}--${type}`,
+      {
+        type: 'range',
+        min: String(min),
+        max: String(max),
+        step: String(step),
+        [instance._state.attributes.time]: type,
+        'aria-label': type === 'hours' ? ui.ariaTimeHours : ui.ariaTimeMinutes,
+        'aria-valuemin': String(min),
+        'aria-valuemax': String(max),
+      },
+    );
     const v = String(value);
     el.value = v;
     el.setAttribute('aria-valuenow', v);
@@ -57,11 +61,21 @@ export function renderTimePanel(instance, container) {
     return el;
   };
 
-  const rowHours = createEl('div', instance._state.classes.timeSliderRow + ' ' + instance._state.classes.timeSliderRow + '--hours');
-  rowHours.appendChild(makeSlider('hours', h, instance._state.minHours, instance._state.maxHours, instance._state.hoursStep));
+  const rowHours = createEl(
+    'div',
+    `${instance._state.classes.timeSliderRow} ${instance._state.classes.timeSliderRow}--hours`,
+  );
+  rowHours.appendChild(
+    makeSlider('hours', h, instance._state.minHours, instance._state.maxHours, instance._state.hoursStep),
+  );
 
-  const rowMinutes = createEl('div', instance._state.classes.timeSliderRow + ' ' + instance._state.classes.timeSliderRow + '--minutes');
-  rowMinutes.appendChild(makeSlider('minutes', m, instance._state.minMinutes, instance._state.maxMinutes, instance._state.minutesStep));
+  const rowMinutes = createEl(
+    'div',
+    `${instance._state.classes.timeSliderRow} ${instance._state.classes.timeSliderRow}--minutes`,
+  );
+  rowMinutes.appendChild(
+    makeSlider('minutes', m, instance._state.minMinutes, instance._state.maxMinutes, instance._state.minutesStep),
+  );
 
   slidersCol.appendChild(rowHours);
   slidersCol.appendChild(rowMinutes);
@@ -78,14 +92,14 @@ export function renderTimePanel(instance, container) {
  * @returns {void}
  */
 export function syncTimePanelDom(instance) {
-  const block = instance.$datepicker.querySelector('.' + instance._state.classes.timeDisplayBlock);
+  const block = instance.$datepicker.querySelector(`.${instance._state.classes.timeDisplayBlock}`);
   if (!block) {
     return;
   }
 
-  const hoursSpan = block.querySelector('.' + instance._state.classes.timeDisplayHours);
-  const minutesSpan = block.querySelector('.' + instance._state.classes.timeDisplayMinutes);
-  const ampmSpan = block.querySelector('.' + instance._state.classes.timeDisplayAmpm);
+  const hoursSpan = block.querySelector(`.${instance._state.classes.timeDisplayHours}`);
+  const minutesSpan = block.querySelector(`.${instance._state.classes.timeDisplayMinutes}`);
+  const ampmSpan = block.querySelector(`.${instance._state.classes.timeDisplayAmpm}`);
   if (!hoursSpan || !minutesSpan || !ampmSpan) {
     return;
   }
@@ -98,8 +112,8 @@ export function syncTimePanelDom(instance) {
   minutesSpan.textContent = minuteStr;
   ampmSpan.textContent = ampm;
 
-  const hoursRange = instance.$datepicker.querySelector('input[' + instance._state.attributes.time + '="hours"]');
-  const minutesRange = instance.$datepicker.querySelector('input[' + instance._state.attributes.time + '="minutes"]');
+  const hoursRange = instance.$datepicker.querySelector(`input[${instance._state.attributes.time}="hours"]`);
+  const minutesRange = instance.$datepicker.querySelector(`input[${instance._state.attributes.time}="minutes"]`);
 
   const hv = String(hours);
   const mv = String(minutes);
@@ -139,6 +153,6 @@ function _formatClock12Parts(hours24, minutes, amStr, pmStr) {
     hourStr,
     minuteStr,
     ampm,
-    fullLabel: hourStr + ':' + minuteStr + ' ' + ampm
+    fullLabel: `${hourStr}:${minuteStr} ${ampm}`,
   };
 }

@@ -13,17 +13,25 @@ export function applyStringPosition(popover, target, pointer, positionStr) {
   const gx = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverGapX)) || 0;
   const gy = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverGapY)) || 0;
   const margin = parseFloat(s.getPropertyValue(lightpickrDefaults.properties.popoverViewportMargin)) || 8;
-  let { top, left } = _computePopoverCoords(target.getBoundingClientRect(), popover.offsetWidth, popover.offsetHeight, main, sec, gx, gy);
+  let { top, left } = _computePopoverCoords(
+    target.getBoundingClientRect(),
+    popover.offsetWidth,
+    popover.offsetHeight,
+    main,
+    sec,
+    gx,
+    gy,
+  );
   left = Math.min(
     Math.max(window.scrollX + margin, left + window.scrollX),
-    Math.max(window.scrollX + margin, window.scrollX + window.innerWidth - popover.offsetWidth - margin)
+    Math.max(window.scrollX + margin, window.scrollX + window.innerWidth - popover.offsetWidth - margin),
   );
   top = Math.min(
     Math.max(window.scrollY + margin, top + window.scrollY),
-    Math.max(window.scrollY + margin, window.scrollY + window.innerHeight - popover.offsetHeight - margin)
+    Math.max(window.scrollY + margin, window.scrollY + window.innerHeight - popover.offsetHeight - margin),
   );
-  popover.style.top = top + 'px';
-  popover.style.left = left + 'px';
+  popover.style.top = `${top}px`;
+  popover.style.left = `${left}px`;
   popover.style.transform = '';
   _placePopoverPointer(popover, target, pointer, main, sec, s);
 }
@@ -149,13 +157,13 @@ function _placePopoverPointer(popover, target, pointer, main, sec, popoverStyle)
     if (sec === 'center') {
       const cx = tr.left + tr.width / 2 - pr.left - ptrSize / 2;
       const maxL = Math.max(pad, pr.width - ptrSize - pad);
-      pointer.style.left = Math.min(Math.max(pad, cx), maxL) + 'px';
+      pointer.style.left = `${Math.min(Math.max(pad, cx), maxL)}px`;
     }
   } else if (main === 'left' || main === 'right') {
     if (sec === 'center') {
       const cy = tr.top + tr.height / 2 - pr.top - ptrSize / 2;
       const maxT = Math.max(pad, pr.height - ptrSize - pad);
-      pointer.style.top = Math.min(Math.max(pad, cy), maxT) + 'px';
+      pointer.style.top = `${Math.min(Math.max(pad, cy), maxT)}px`;
     }
   }
 }

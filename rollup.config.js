@@ -34,11 +34,11 @@ function terserPlugin(rootOpts) {
       unsafe_proto: true,
       unsafe_regexp: true,
       unsafe_undefined: true,
-      pure_getters: true
+      pure_getters: true,
     },
     mangle: true,
     format: { comments: false, ecma: 2020 },
-    ...rootOpts
+    ...rootOpts,
   });
 }
 
@@ -51,20 +51,20 @@ const mainBundle = {
       format: 'iife',
       name: 'Lightpickr',
       sourcemap: false,
-      plugins: [terserPlugin()]
+      plugins: [terserPlugin()],
     },
     {
       file: 'dist/lightpickr.esm.js',
       format: 'es',
       sourcemap: false,
-      plugins: [terserPlugin({ module: true, toplevel: true })]
-    }
+      plugins: [terserPlugin({ module: true, toplevel: true })],
+    },
   ],
   plugins: [
     copy({
-      targets: [{ src: 'src/styles/base.css', dest: 'dist', rename: 'lightpickr.css' }]
-    })
-  ]
+      targets: [{ src: 'src/styles/base.css', dest: 'dist', rename: 'lightpickr.css' }],
+    }),
+  ],
 };
 
 /**
@@ -78,8 +78,8 @@ function localeBundle(code) {
       file: `dist/locale/${code}.js`,
       format: 'es',
       sourcemap: false,
-      plugins: [terserPlugin({ module: true, toplevel: true })]
-    }
+      plugins: [terserPlugin({ module: true, toplevel: true })],
+    },
   };
 }
 

@@ -1,18 +1,23 @@
-import { clampView } from '../utils/view.js';
-import { parseSelectedDates, startOfDayTs, timestampToPickerDate, toTimestamp } from '../utils/time.js';
-import { normalizeShowEvents, normalizeWeekendIndexes, normalizeAllowedViews, normalizeFirstDay } from '../utils/normalize.js';
 import { clampInt, isTextInputLike, noop, toInt, truthy } from '../utils/common.js';
+import {
+  normalizeShowEvents,
+  normalizeWeekendIndexes,
+  normalizeAllowedViews,
+  normalizeFirstDay,
+} from '../utils/normalize.js';
+import { parseSelectedDates, startOfDayTs, timestampToPickerDate, toTimestamp } from '../utils/time.js';
+import { clampView } from '../utils/view.js';
 import lightpickrDefaults from './defaults.js';
 
 /**
- * @typedef {Object} LightpickrNavTitles
+ * @typedef {object} LightpickrNavTitles
  * @property {string | ((picker: any) => string)} [day]
  * @property {string | ((picker: any) => string)} [month]
  * @property {string | ((picker: any) => string)} [year]
  */
 
 /**
- * @typedef {Object} LightpickrLocale
+ * @typedef {object} LightpickrLocale
  * @property {string[]} [monthsShort]
  * @property {string[]} [monthsLong]
  * @property {string[]} [weekdaysShort]
@@ -27,7 +32,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrRenderHooks
+ * @typedef {object} LightpickrRenderHooks
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [container]
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [header]
  * @property {(ctx: import('../render/context.js').RenderCtx) => HTMLElement} [time]
@@ -36,7 +41,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrSelectPayload
+ * @typedef {object} LightpickrSelectPayload
  * @property {Date|Date[]|null} date
  * @property {Date[]} dates
  * @property {string|string[]|''} formattedDate
@@ -46,7 +51,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrClassMap
+ * @typedef {object} LightpickrClassMap
  * @property {string} [container]
  * @property {string} [header]
  * @property {string} [nav]
@@ -84,7 +89,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrPositionCtx
+ * @typedef {object} LightpickrPositionCtx
  * @property {HTMLDivElement} $datepicker
  * @property {HTMLElement} $target
  * @property {HTMLElement} $anchor
@@ -100,7 +105,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrOptions
+ * @typedef {object} LightpickrOptions
  * @property {boolean} [inline]
  * @property {boolean|number} [multiple]
  * @property {boolean} [range]
@@ -165,7 +170,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrInternalState
+ * @typedef {object} LightpickrInternalState
  * @property {boolean} inline
  * @property {boolean} range
  * @property {boolean} multipleEnabled
@@ -239,13 +244,13 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrRangeDrag
+ * @typedef {object} LightpickrRangeDrag
  * @property {number} rangeIndex
  * @property {'start'|'end'} edge
  */
 
 /**
- * @typedef {Object} LightpickrPluginEntry
+ * @typedef {object} LightpickrPluginEntry
  * @property {() => void} [onInit]
  * @property {() => void} [onRender]
  * @property {() => void} [onSelect]
@@ -253,7 +258,7 @@ import lightpickrDefaults from './defaults.js';
  */
 
 /**
- * @typedef {Object} LightpickrInstance
+ * @typedef {object} LightpickrInstance
  * @property {HTMLElement} $el
  * @property {HTMLElement} $datepicker
  * @property {HTMLElement} $pointer
@@ -297,7 +302,7 @@ export function isSelectAllowed(instance, value) {
   return (
     instance._state.onBeforeSelect({
       date: timestampToPickerDate(ts, instance._state),
-      datepicker: instance
+      datepicker: instance,
     }) !== false
   );
 }
@@ -315,27 +320,36 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     ...incoming,
     classes: {
       ...lightpickrDefaults.classes,
-      ...incoming.classes
+      ...incoming.classes,
     },
     render: {
       ...lightpickrDefaults.render,
-      ...incoming.render
+      ...incoming.render,
     },
     navTitles: {
       ...lightpickrDefaults.navTitles,
-      ...incoming.navTitles
+      ...incoming.navTitles,
     },
     attributes: {
       ...lightpickrDefaults.attributes,
-      ...incoming.attributes
+      ...incoming.attributes,
     },
     properties: {
       ...lightpickrDefaults.properties,
-      ...incoming.properties
-    }
+      ...incoming.properties,
+    },
   };
   const isMobile = Boolean(raw.isMobile);
-  const inline = incoming.inline != null ? Boolean(incoming.inline) : (isMobile ? false : (typeof HTMLElement !== 'undefined' && targetEl instanceof HTMLElement ? !isTextInputLike(targetEl) : Boolean(raw.inline)));
+  let inline;
+  if (incoming.inline != null) {
+    inline = Boolean(incoming.inline);
+  } else if (isMobile) {
+    inline = false;
+  } else if (typeof HTMLElement !== 'undefined' && targetEl instanceof HTMLElement) {
+    inline = !isTextInputLike(targetEl);
+  } else {
+    inline = Boolean(raw.inline);
+  }
   const onlyTime = Boolean(raw.onlyTime);
   const enableTime = onlyTime || Boolean(raw.enableTime);
   const range = onlyTime ? false : Boolean(raw.range);
@@ -384,14 +398,54 @@ export function createStateFromOptions(incomingRaw, targetEl) {
   const hoursStep = clampInt(raw.hoursStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.hoursStep);
   const minutesStep = clampInt(raw.minutesStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.minutesStep);
   const dayViewCols = clampInt(raw.dayViewCols, 1, 7, lightpickrDefaults.dayViewCols);
-  const yearViewCount = clampInt(raw.yearViewCount, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.yearViewCount);
-  const yearViewRadius = clampInt(raw.yearViewRadius, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.yearViewRadius);
-  const monthViewCount = clampInt(raw.monthViewCount, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.monthViewCount);
-  const monthViewRadius = clampInt(raw.monthViewRadius, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, lightpickrDefaults.monthViewRadius);
-  let monthViewCols = clampInt(raw.monthViewCols, Number.NEGATIVE_INFINITY, monthViewCount, lightpickrDefaults.monthViewCols);
-  let monthViewRows = clampInt(raw.monthViewRows, Number.NEGATIVE_INFINITY, monthViewCount, lightpickrDefaults.monthViewRows);
-  let yearViewCols = clampInt(raw.yearViewCols, Number.NEGATIVE_INFINITY, yearViewCount, lightpickrDefaults.yearViewCols);
-  let yearViewRows = clampInt(raw.yearViewRows, Number.NEGATIVE_INFINITY, yearViewCount, lightpickrDefaults.yearViewRows);
+  const yearViewCount = clampInt(
+    raw.yearViewCount,
+    Number.NEGATIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
+    lightpickrDefaults.yearViewCount,
+  );
+  const yearViewRadius = clampInt(
+    raw.yearViewRadius,
+    Number.NEGATIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
+    lightpickrDefaults.yearViewRadius,
+  );
+  const monthViewCount = clampInt(
+    raw.monthViewCount,
+    Number.NEGATIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
+    lightpickrDefaults.monthViewCount,
+  );
+  const monthViewRadius = clampInt(
+    raw.monthViewRadius,
+    Number.NEGATIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
+    lightpickrDefaults.monthViewRadius,
+  );
+  let monthViewCols = clampInt(
+    raw.monthViewCols,
+    Number.NEGATIVE_INFINITY,
+    monthViewCount,
+    lightpickrDefaults.monthViewCols,
+  );
+  let monthViewRows = clampInt(
+    raw.monthViewRows,
+    Number.NEGATIVE_INFINITY,
+    monthViewCount,
+    lightpickrDefaults.monthViewRows,
+  );
+  let yearViewCols = clampInt(
+    raw.yearViewCols,
+    Number.NEGATIVE_INFINITY,
+    yearViewCount,
+    lightpickrDefaults.yearViewCols,
+  );
+  let yearViewRows = clampInt(
+    raw.yearViewRows,
+    Number.NEGATIVE_INFINITY,
+    yearViewCount,
+    lightpickrDefaults.yearViewRows,
+  );
 
   if (monthViewCols > 0 && monthViewRows > 0) {
     monthViewRows = Math.max(monthViewRows, Math.ceil(monthViewCount / monthViewCols));
@@ -413,7 +467,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     inline,
     range,
     multipleEnabled,
-    multipleLimit: range ? multipleLimit : multipleEnabled ? multipleLimit : 1,
+    multipleLimit: range || multipleEnabled ? multipleLimit : 1,
     onlyTime,
     enableTime,
     showEvents: normalizeShowEvents(raw.showEvent),
@@ -497,26 +551,25 @@ export function mergeOptions(instance, patch) {
     ...p,
     render: {
       ...instance._state.render,
-      ...p.render
+      ...p.render,
     },
     classes: {
       ...instance._state.classes,
-      ...p.classes
+      ...p.classes,
     },
     attributes: {
       ...instance._state.attributes,
-      ...p.attributes
+      ...p.attributes,
     },
     properties: {
       ...instance._state.properties,
-      ...p.properties
-    }
+      ...p.properties,
+    },
   };
   const next = createStateFromOptions(raw, instance.$el);
   const wasStringPopover = !instance._state.inline && typeof instance._state.position !== 'function';
   const isStringPopover = !next.inline && typeof next.position !== 'function';
-  next.popoverAlreadyOpened =
-    !isStringPopover || (wasStringPopover && instance._state.popoverAlreadyOpened);
+  next.popoverAlreadyOpened = !isStringPopover || (wasStringPopover && instance._state.popoverAlreadyOpened);
   return next;
 }
 /**
@@ -527,7 +580,12 @@ export function mergeOptions(instance, patch) {
 function _extractRawOptions(state) {
   return {
     inline: state.inline,
-    multiple: state.multipleEnabled ? (Number.isFinite(state.multipleLimit) ? state.multipleLimit : true) : false,
+    multiple: (() => {
+      if (!state.multipleEnabled) {
+        return false;
+      }
+      return Number.isFinite(state.multipleLimit) ? state.multipleLimit : true;
+    })(),
     range: state.range,
     enableTime: state.enableTime,
     onlyTime: state.onlyTime,

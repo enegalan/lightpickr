@@ -1,9 +1,16 @@
 import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
 import { invokePluginHook } from '../core/plugins.js';
-import { isSelectAllowed } from '../core/state.js';
 import { selectDate, applyRangeEndpointDrag } from '../core/selection.js';
+import { isSelectAllowed } from '../core/state.js';
 import { createEl, isTextInputLike } from '../utils/common.js';
-import { formatDate, setTimePart, startOfDayTs, timestampToPickerDate, tsToYmd, ymdToTsStartOfDay } from '../utils/time.js';
+import {
+  formatDate,
+  setTimePart,
+  startOfDayTs,
+  timestampToPickerDate,
+  tsToYmd,
+  ymdToTsStartOfDay,
+} from '../utils/time.js';
 import { syncTimePanelDom } from './time-panel.js';
 
 /**
@@ -28,6 +35,7 @@ export function syncInstanceClasses(instance, prevState = null) {
 
 /**
  * @param {import('../core/state.js').LightpickrInstance} instance
+ * @param {import('../core/state.js').LightpickrInternalState} prevState
  * @param {import('../core/state.js').LightpickrInternalState} next
  * @param {object} options
  * @returns {void}
@@ -40,7 +48,7 @@ export function emitEvents(instance, prevState, next, options = {}) {
       month: parts.m,
       year: parts.y,
       decade: [decadeStart, decadeStart + 9],
-      datepicker: instance
+      datepicker: instance,
     });
   }
   if (prevState.currentView !== next.currentView) {
@@ -49,7 +57,7 @@ export function emitEvents(instance, prevState, next, options = {}) {
   if (next.focusDate != null && prevState.focusDate !== next.focusDate) {
     next.onFocus({
       date: timestampToPickerDate(next.focusDate, next),
-      datepicker: instance
+      datepicker: instance,
     });
   }
   if (options && options.emitSelect && _selectionChanged(prevState, next)) {
@@ -118,7 +126,7 @@ function _bindEscapeListener(instance) {
     }
   };
   document.addEventListener('keydown', instance._docKeydownEsc);
-};
+}
 
 /**
  * @private
@@ -136,7 +144,7 @@ function _bindCalendarKeyboard(instance) {
     const result = applyEventKey(instance, {
       key: ev.key,
       shiftKey: ev.shiftKey,
-      altKey: ev.altKey
+      altKey: ev.altKey,
     });
     if (result.type === 'noop') {
       return;
@@ -163,7 +171,7 @@ function _bindCalendarKeyboard(instance) {
     }
   };
   instance.$datepicker.addEventListener('keydown', instance._datepickerKeydown, true);
-};
+}
 
 /**
  * @private
@@ -174,17 +182,22 @@ function _bindDelegatedHandlers(instance) {
   (instance._delegateOffs || []).forEach((fn) => fn());
   _clearPressedCellActive(instance);
 
-  const offCellPointerDown = _delegate(instance.$datepicker, 'button.' + instance._state.classes.cell, 'pointerdown', function (ev, el) {
-    if (!(el instanceof HTMLButtonElement) || el.disabled) {
-      return;
-    }
-    if (ev.pointerType === 'mouse' && ev.button !== 0) {
-      return;
-    }
-    _clearPressedCellActive(instance);
-    el.classList.add(instance._state.classes.cellActive);
-    instance._pressedCellEl = el;
-  });
+  const offCellPointerDown = _delegate(
+    instance.$datepicker,
+    `button.${instance._state.classes.cell}`,
+    'pointerdown',
+    (ev, el) => {
+      if (!(el instanceof HTMLButtonElement) || el.disabled) {
+        return;
+      }
+      if (ev.pointerType === 'mouse' && ev.button !== 0) {
+        return;
+      }
+      _clearPressedCellActive(instance);
+      el.classList.add(instance._state.classes.cellActive);
+      instance._pressedCellEl = el;
+    },
+  );
 
   const onDocPointerEnd = function () {
     _clearPressedCellActive(instance);
@@ -209,7 +222,7 @@ function _bindDelegatedHandlers(instance) {
     _clearPressedCellActive(instance);
   };
 
-  const off1 = _delegate(instance.$datepicker, '[' + instance._state.attributes.day + ']', 'click', function (_ev, el) {
+  const off1 = _delegate(instance.$datepicker, `[${instance._state.attributes.day}]`, 'click', (_ev, el) => {
     const ts = _parseElementNumber(el, instance._state.attributes.day);
     if (ts == null) {
       return;
@@ -217,7 +230,7 @@ function _bindDelegatedHandlers(instance) {
     _onDayPick(instance, ts);
   });
 
-  const off2 = _delegate(instance.$datepicker, '[' + instance._state.attributes.nav + ']', 'click', function (_ev, el) {
+  const off2 = _delegate(instance.$datepicker, `[${instance._state.attributes.nav}]`, 'click', (_ev, el) => {
     if (el instanceof HTMLButtonElement && el.disabled) {
       return;
     }
@@ -231,7 +244,7 @@ function _bindDelegatedHandlers(instance) {
     }
   });
 
-  const off3 = _delegate(instance.$datepicker, '[' + instance._state.attributes.month + ']', 'click', function (_ev, el) {
+  const off3 = _delegate(instance.$datepicker, `[${instance._state.attributes.month}]`, 'click', (_ev, el) => {
     const monthTs = _parseElementNumber(el, instance._state.attributes.month);
     if (typeof monthTs !== 'number' || !Number.isFinite(monthTs)) {
       return;
@@ -239,7 +252,7 @@ function _bindDelegatedHandlers(instance) {
     _onMonthPick(instance, monthTs);
   });
 
-  const off4 = _delegate(instance.$datepicker, '[' + instance._state.attributes.year + ']', 'click', function (_ev, el) {
+  const off4 = _delegate(instance.$datepicker, `[${instance._state.attributes.year}]`, 'click', (_ev, el) => {
     const y = _parseElementNumber(el, instance._state.attributes.year);
     if (y == null) {
       return;
@@ -247,12 +260,12 @@ function _bindDelegatedHandlers(instance) {
     _onYearPick(instance, y);
   });
 
-  const offDayName = _delegate(instance.$datepicker, '[' + instance._state.attributes.dayName + ']', 'click', function (_ev, el) {
+  const offDayName = _delegate(instance.$datepicker, `[${instance._state.attributes.dayName}]`, 'click', (_ev, el) => {
     const dayIndex = _parseElementNumber(el, instance._state.attributes.dayName);
     if (dayIndex == null) {
       return;
     }
-    instance._state.onClickDayName({ dayIndex: dayIndex, datepicker: instance });
+    instance._state.onClickDayName({ dayIndex, datepicker: instance });
   });
 
   const timeFn = function (ev) {
@@ -272,11 +285,11 @@ function _bindDelegatedHandlers(instance) {
     if (!(ev.target instanceof Node) || !instance.$datepicker.contains(ev.target)) {
       return;
     }
-    let el = ev.target instanceof Element ? ev.target : ev.target.parentElement;
+    const el = ev.target instanceof Element ? ev.target : ev.target.parentElement;
     if (el == null) {
       return;
     }
-    const dayBtn = el.closest('[' + instance._state.attributes.day + ']');
+    const dayBtn = el.closest(`[${instance._state.attributes.day}]`);
     const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
     if (ts == null) {
       return;
@@ -319,11 +332,16 @@ function _bindRangeDragHandlers(instance) {
     if (!(ev.target instanceof HTMLElement)) {
       return;
     }
-    const dayBtn = ev.target.closest('[' + instance._state.attributes.day + ']');
+    const dayBtn = ev.target.closest(`[${instance._state.attributes.day}]`);
     if (!(dayBtn instanceof HTMLElement) || !instance.$datepicker.contains(dayBtn)) {
       return;
     }
-    if (!(dayBtn.classList.contains(instance._state.classes.cellRangeStart) || dayBtn.classList.contains(instance._state.classes.cellRangeEnd))) {
+    if (
+      !(
+        dayBtn.classList.contains(instance._state.classes.cellRangeStart) ||
+        dayBtn.classList.contains(instance._state.classes.cellRangeEnd)
+      )
+    ) {
       return;
     }
     const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
@@ -351,7 +369,7 @@ function _bindRangeDragHandlers(instance) {
       return;
     }
     ev.preventDefault();
-    instance._rangeDrag = { rangeIndex: rangeIndex, edge: edge };
+    instance._rangeDrag = { rangeIndex, edge };
   };
   const moveDrag = (ev) => {
     if (!instance._rangeDrag) {
@@ -361,7 +379,7 @@ function _bindRangeDragHandlers(instance) {
     if (!(target instanceof HTMLElement)) {
       return;
     }
-    const dayBtn = target.closest('[' + instance._state.attributes.day + ']');
+    const dayBtn = target.closest(`[${instance._state.attributes.day}]`);
     if (!(dayBtn instanceof HTMLElement) || !instance.$datepicker.contains(dayBtn)) {
       return;
     }
@@ -383,7 +401,7 @@ function _bindRangeDragHandlers(instance) {
   instance.$datepicker.addEventListener('pointerdown', startDrag);
   document.addEventListener('pointermove', moveDrag);
   document.addEventListener('pointerup', endDrag);
-  instance._delegateOffs.push(function () {
+  instance._delegateOffs.push(() => {
     instance.$datepicker.removeEventListener('pointerdown', startDrag);
     document.removeEventListener('pointermove', moveDrag);
     document.removeEventListener('pointerup', endDrag);
@@ -394,12 +412,14 @@ function _bindRangeDragHandlers(instance) {
  * @private
  * @param {import('../core/state.js').LightpickrInstance} instance
  * @returns {void}
-*/
+ */
 function _focusCell(instance) {
   if (instance.isDestroyed) {
     return;
   }
-  const el = instance.$datepicker.querySelector('[' + instance._state.attributes.day + '][tabindex="0"], [' + instance._state.attributes.month + '][tabindex="0"], [' + instance._state.attributes.year + '][tabindex="0"]');
+  const el = instance.$datepicker.querySelector(
+    `[${instance._state.attributes.day}][tabindex="0"], [${instance._state.attributes.month}][tabindex="0"], [${instance._state.attributes.year}][tabindex="0"]`,
+  );
   if (el instanceof HTMLElement) {
     el.focus({ preventScroll: true });
   }
@@ -411,12 +431,21 @@ function _focusCell(instance) {
  * @returns {void}
  */
 function _syncPendingRangeHoverClasses(instance) {
-  const buttons = instance.$datepicker.querySelectorAll('[' + instance._state.attributes.day + ']');
+  const buttons = instance.$datepicker.querySelectorAll(`[${instance._state.attributes.day}]`);
   for (let i = 0; i < buttons.length; i++) {
-    buttons[i].classList.remove(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewMid, instance._state.classes.cellRangePreviewStartCap, instance._state.classes.cellRangePreviewEndCap);
+    buttons[i].classList.remove(
+      instance._state.classes.cellRangePreview,
+      instance._state.classes.cellRangePreviewMid,
+      instance._state.classes.cellRangePreviewStartCap,
+      instance._state.classes.cellRangePreviewEndCap,
+    );
   }
 
-  if (!instance._state.range || instance._state.pendingRangeStart == null || instance._state.pendingRangeHoverTs == null) {
+  if (
+    !instance._state.range ||
+    instance._state.pendingRangeStart == null ||
+    instance._state.pendingRangeHoverTs == null
+  ) {
     return;
   }
 
@@ -452,14 +481,20 @@ function _syncPendingRangeHoverClasses(instance) {
 
     if (atLo) {
       if (!atAnchor) {
-        buttons[i].classList.add(instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewStartCap);
+        buttons[i].classList.add(
+          instance._state.classes.cellRangePreview,
+          instance._state.classes.cellRangePreviewStartCap,
+        );
       } else if (lo !== hi) {
         buttons[i].classList.add(instance._state.classes.cellRangePreviewStartCap);
       }
       continue;
     }
     if (atHi) {
-      buttons[i].classList.add(atAnchor ? instance._state.classes.cellRangePreviewEndCap : instance._state.classes.cellRangePreview, instance._state.classes.cellRangePreviewEndCap);
+      buttons[i].classList.add(
+        atAnchor ? instance._state.classes.cellRangePreviewEndCap : instance._state.classes.cellRangePreview,
+        instance._state.classes.cellRangePreviewEndCap,
+      );
     }
   }
 }
@@ -477,7 +512,8 @@ function _syncInput(instance) {
   if (typeof instance._state.format === 'string') {
     if (instance._state.range) {
       const parts = /** @type {number[][]} */ (instance._state.selectedDates).map(
-        (pair) => formatDate(instance._state.format, pair[0], tp, instance._state) + ' – ' + formatDate(instance._state.format, pair[1], tp, instance._state)
+        (pair) =>
+          `${formatDate(instance._state.format, pair[0], tp, instance._state)} – ${formatDate(instance._state.format, pair[1], tp, instance._state)}`,
       );
       instance.$el.value = parts.join(instance._state.multipleSeparator);
     } else {
@@ -485,9 +521,13 @@ function _syncInput(instance) {
       if (!dates.length && !instance._state.onlyTime) {
         instance.$el.value = '';
       } else {
-        const rows =
-          dates.length > 0 ? dates : instance._state.onlyTime ? [instance._state.viewDate] : [];
-        instance.$el.value = rows.map((d) => formatDate(instance._state.format, d, tp, instance._state)).join(instance._state.multipleSeparator);
+        let rows = dates;
+        if (!rows.length && instance._state.onlyTime) {
+          rows = [instance._state.viewDate];
+        }
+        instance.$el.value = rows
+          .map((d) => formatDate(instance._state.format, d, tp, instance._state))
+          .join(instance._state.multipleSeparator);
       }
     }
     return;
@@ -496,7 +536,7 @@ function _syncInput(instance) {
   const fn = /** @type {(d: Date | Date[]) => string} */ (instance._state.format);
   if (instance._state.range) {
     const parts = /** @type {number[][]} */ (instance._state.selectedDates).map((pair) =>
-      String(fn([timestampToPickerDate(pair[0], instance._state), timestampToPickerDate(pair[1], instance._state)]))
+      String(fn([timestampToPickerDate(pair[0], instance._state), timestampToPickerDate(pair[1], instance._state)])),
     );
     instance.$el.value = parts.join(instance._state.multipleSeparator);
     return;
@@ -507,7 +547,10 @@ function _syncInput(instance) {
     instance.$el.value = '';
     return;
   }
-  const rows = tss.length > 0 ? tss : instance._state.onlyTime ? [instance._state.viewDate] : [];
+  let rows = tss;
+  if (!rows.length && instance._state.onlyTime) {
+    rows = [instance._state.viewDate];
+  }
   if (!rows.length) {
     instance.$el.value = '';
     return;
@@ -528,10 +571,18 @@ function _syncTheme(instance) {
   if (!(instance.$datepicker instanceof HTMLElement)) {
     return;
   }
-  const darkClass = document.documentElement.classList.contains('dark') || (document.body instanceof HTMLElement && document.body.classList.contains('dark'));
-  const lightClass = document.documentElement.classList.contains('light') || (document.body instanceof HTMLElement && document.body.classList.contains('light'));
-  const dataTheme = document.documentElement.getAttribute('data-theme') || (document.body instanceof HTMLElement ? document.body.getAttribute('data-theme') : null);
-  const inlineColorScheme = document.documentElement.style.colorScheme || (document.body instanceof HTMLElement ? document.body.style.colorScheme : '');
+  const darkClass =
+    document.documentElement.classList.contains('dark') ||
+    (document.body instanceof HTMLElement && document.body.classList.contains('dark'));
+  const lightClass =
+    document.documentElement.classList.contains('light') ||
+    (document.body instanceof HTMLElement && document.body.classList.contains('light'));
+  const dataTheme =
+    document.documentElement.getAttribute('data-theme') ||
+    (document.body instanceof HTMLElement ? document.body.getAttribute('data-theme') : null);
+  const inlineColorScheme =
+    document.documentElement.style.colorScheme ||
+    (document.body instanceof HTMLElement ? document.body.style.colorScheme : '');
 
   const documentColorScheme = window.getComputedStyle(document.documentElement).colorScheme || '';
   const hasLightKeyword = documentColorScheme.indexOf('light') >= 0;
@@ -555,8 +606,13 @@ function _syncTheme(instance) {
     shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
-  shouldUseDark ? instance.$datepicker.classList.add('lp--dark') : instance.$datepicker.classList.remove('lp--dark');
-  shouldUseDark ? instance.$datepicker.classList.remove('lp--light') : instance.$datepicker.classList.add('lp--light');
+  if (shouldUseDark) {
+    instance.$datepicker.classList.add('lp--dark');
+    instance.$datepicker.classList.remove('lp--light');
+  } else {
+    instance.$datepicker.classList.remove('lp--dark');
+    instance.$datepicker.classList.add('lp--light');
+  }
 }
 
 /**
@@ -680,7 +736,10 @@ function _buildSelectedParts(instance) {
     if (instance._state.range) {
       const ranges = /** @type {number[][]} */ (instance._state.selectedDates);
       for (let i = 0; i < ranges.length; i++) {
-        const pair = [timestampToPickerDate(ranges[i][0], instance._state), timestampToPickerDate(ranges[i][1], instance._state)];
+        const pair = [
+          timestampToPickerDate(ranges[i][0], instance._state),
+          timestampToPickerDate(ranges[i][1], instance._state),
+        ];
         const segment = String(formatFn(pair));
         formattedDates.push(segment, segment);
       }
@@ -696,7 +755,7 @@ function _buildSelectedParts(instance) {
     }
   }
 
-  return { dates: dates, formattedDates: formattedDates };
+  return { dates, formattedDates };
 }
 
 /**
@@ -738,7 +797,7 @@ function _onMonthPick(instance, monthTs) {
   next.viewDate = ymdToTsStartOfDay(ymd.y, ymd.m, 1);
   next.currentView = instance._state.allowedViews.indexOf('day') >= 0 ? 'day' : instance._state.allowedViews[0];
   instance._commit(next, { emitSelect: false });
-};
+}
 
 /**
  * @private
@@ -809,15 +868,27 @@ function _onTimeChange(instance) {
     }
     return instance._state.viewDate;
   })();
+  let formattedDate = '';
+  if (primaryTs != null) {
+    if (typeof instance._state.format === 'function') {
+      formattedDate = String(
+        /** @type {(d: Date | Date[]) => string} */ (instance._state.format)(
+          timestampToPickerDate(primaryTs, instance._state),
+        ),
+      );
+    } else {
+      formattedDate = formatDate(
+        instance._state.format,
+        primaryTs,
+        instance._state.enableTime ? instance._state.timePart : null,
+        instance._state,
+      );
+    }
+  }
   instance._state.onTimeChange({
     date: primaryTs != null ? timestampToPickerDate(primaryTs, instance._state) : null,
-    formattedDate:
-      primaryTs == null
-        ? ''
-        : typeof instance._state.format === 'function'
-          ? String(/** @type {(d: Date | Date[]) => string} */ (instance._state.format)(timestampToPickerDate(primaryTs, instance._state)))
-          : formatDate(instance._state.format, primaryTs, instance._state.enableTime ? instance._state.timePart : null, instance._state),
-    datepicker: instance
+    formattedDate,
+    datepicker: instance,
   });
 }
 
@@ -838,7 +909,7 @@ function _onSelect(instance, trigger) {
     formattedDate: multiLike ? formattedDates : formattedDates[0] || '',
     formattedDates,
     trigger,
-    datepicker: instance
+    datepicker: instance,
   });
 }
 
@@ -885,7 +956,7 @@ function _clearPressedCellActive(instance) {
  * @param {Element} element
  * @param {string} attr
  * @returns {number|null}
-*/
+ */
 function _parseElementNumber(element, attr) {
   if (!(element instanceof Element)) {
     return null;
@@ -899,13 +970,13 @@ function _parseElementNumber(element, attr) {
 }
 
 /**
-  * @private
-  * @param {ParentNode} root
-  * @param {string} selector
-  * @param {string} type
-  * @param {(ev: Event, target: Element) => void} handler
-  * @returns {() => void}
-*/
+ * @private
+ * @param {ParentNode} root
+ * @param {string} selector
+ * @param {string} type
+ * @param {(ev: Event, target: Element) => void} handler
+ * @returns {() => void}
+ */
 function _delegate(root, selector, type, handler) {
   const fn = function (ev) {
     const match = ev.target instanceof Element ? ev.target.closest(selector) : null;

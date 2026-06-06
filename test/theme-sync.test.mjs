@@ -1,10 +1,10 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
 
 function setupDom(html, prefersDark) {
   const dom = new JSDOM(html, {
     pretendToBeVisual: true,
-    url: 'https://example.test/'
+    url: 'https://example.test/',
   });
 
   global.window = dom.window;
@@ -20,7 +20,7 @@ function setupDom(html, prefersDark) {
     removeEventListener() {},
     dispatchEvent() {
       return false;
-    }
+    },
   });
 
   return dom;
@@ -55,9 +55,18 @@ async function flushMutations() {
 }
 
 {
+  setupDom('<!doctype html><html style="color-scheme: light"><body><div id="host"></div></body></html>', true);
+  const { default: Lightpickr } = await import('../src/index.js');
+  const host = document.querySelector('#host');
+  const picker = new Lightpickr(host, { inline: true });
+  assert.equal(hasDarkTheme(picker), false);
+  picker.destroy();
+}
+
+{
   setupDom(
-    '<!doctype html><html style="color-scheme: light"><body><div id="host"></div></body></html>',
-    true
+    '<!doctype html><html><head><style>html { color-scheme: light dark; }</style></head><body><div id="host"></div></body></html>',
+    true,
   );
   const { default: Lightpickr } = await import('../src/index.js');
   const host = document.querySelector('#host');
@@ -69,19 +78,7 @@ async function flushMutations() {
 {
   setupDom(
     '<!doctype html><html><head><style>html { color-scheme: light dark; }</style></head><body><div id="host"></div></body></html>',
-    true
-  );
-  const { default: Lightpickr } = await import('../src/index.js');
-  const host = document.querySelector('#host');
-  const picker = new Lightpickr(host, { inline: true });
-  assert.equal(hasDarkTheme(picker), false);
-  picker.destroy();
-}
-
-{
-  setupDom(
-    '<!doctype html><html><head><style>html { color-scheme: light dark; }</style></head><body><div id="host"></div></body></html>',
-    true
+    true,
   );
   const { default: Lightpickr } = await import('../src/index.js');
   const host = document.querySelector('#host');

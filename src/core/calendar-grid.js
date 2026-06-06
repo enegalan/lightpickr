@@ -31,8 +31,6 @@ export function buildYearViewYears(state) {
 }
 
 /**
- * @param {number} y
- * @param {number} m
  * @param {import('./state.js').LightpickrInternalState} state
  * @returns {{ ts: number, outside: boolean }[]}
  */

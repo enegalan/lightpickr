@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import zlib from 'node:zlib';
 import { promisify } from 'node:util';
+import zlib from 'node:zlib';
 
 const gzipAsync = promisify(zlib.gzip);
 
@@ -61,27 +61,25 @@ async function main() {
     rows.push({
       relativePath,
       raw: buffer.length,
-      gzip: gzipped.length
+      gzip: gzipped.length,
     });
   }
 
   const nameWidth = Math.max(...rows.map((row) => [...row.relativePath].length), 12);
 
   console.log('Distribution sizes (dist/)\n');
-  console.log(
-    `${padEndVisible('file', nameWidth)}  ${padEndVisible('raw', 12)}  gzip (level 9)`
-  );
+  console.log(`${padEndVisible('file', nameWidth)}  ${padEndVisible('raw', 12)}  gzip (level 9)`);
   console.log(`${'-'.repeat(nameWidth)}  ${'-'.repeat(12)}  ${'-'.repeat(16)}`);
 
   for (const row of rows) {
     console.log(
-      `${padEndVisible(row.relativePath, nameWidth)}  ${padEndVisible(formatBytes(row.raw), 12)}  ${formatBytes(row.gzip)}`
+      `${padEndVisible(row.relativePath, nameWidth)}  ${padEndVisible(formatBytes(row.raw), 12)}  ${formatBytes(row.gzip)}`,
     );
   }
 
   console.log(`${'-'.repeat(nameWidth)}  ${'-'.repeat(12)}  ${'-'.repeat(16)}`);
   console.log(
-    `${padEndVisible('total', nameWidth)}  ${padEndVisible(formatBytes(totalRaw), 12)}  ${formatBytes(totalGzip)}`
+    `${padEndVisible('total', nameWidth)}  ${padEndVisible(formatBytes(totalRaw), 12)}  ${formatBytes(totalGzip)}`,
   );
 }
 

@@ -1,9 +1,9 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('<!doctype html><html><body><input id="p" /></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;
@@ -33,7 +33,7 @@ p.use(() => ({
   },
   onDestroy() {
     hooks.onDestroy += 1;
-  }
+  },
 }));
 
 assert.equal(hooks.onInit, 1);

@@ -19,8 +19,13 @@
   ],
   "scripts": {
     "build": "rollup -c rollup.config.js",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "size": "node scripts/check-bundle-size.mjs",
-    "test": "node --test test/*.mjs"
+    "test": "node --test test/*.mjs",
+    "verify": "npm run lint && npm run format && npm run test && npm run build && npm run size"
   },
   "keywords": [
     "datepicker",
@@ -32,8 +37,17 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@rollup/plugin-terser": "^1.0.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-node": "^0.3.9",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsdoc": "^61.5.0",
+    "eslint-plugin-n": "^17.23.2",
+    "globals": "^17.4.0",
     "jsdom": "^25.0.1",
+    "prettier": "^3.8.1",
     "rollup": "^4.28.1",
     "rollup-plugin-copy": "^3.5.0"
   }

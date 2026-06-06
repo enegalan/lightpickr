@@ -1,9 +1,9 @@
-import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('<!doctype html><html><body><input id="d" /></body></html>', {
   pretendToBeVisual: true,
-  url: 'https://example.test/'
+  url: 'https://example.test/',
 });
 
 global.window = dom.window;
@@ -21,7 +21,7 @@ const input = document.querySelector('#d');
 const p = new Lightpickr(input, {
   inline: false,
   startDate: '2026-03-01',
-  selectedDates: ['2026-03-01']
+  selectedDates: ['2026-03-01'],
 });
 p.show();
 assert.ok(p.focusDate != null);
@@ -34,7 +34,7 @@ assert.equal(p.visible, false);
 
 p.show();
 p.$datepicker.dispatchEvent(
-  new KeyboardEvent('keydown', { key: 'ArrowUp', altKey: true, bubbles: true, cancelable: true })
+  new KeyboardEvent('keydown', { key: 'ArrowUp', altKey: true, bubbles: true, cancelable: true }),
 );
 assert.equal(p._state.currentView, 'month');
 const monthFocusBefore = p.focusDate;
@@ -44,7 +44,7 @@ assert.notEqual(p.focusDate, monthFocusBefore);
 const pr = new Lightpickr(document.createElement('div'), {
   inline: true,
   range: true,
-  startDate: '2026-03-01'
+  startDate: '2026-03-01',
 });
 assert.equal(pr.visible, true);
 assert.equal(pr._state.focusDate, null);
