@@ -1,16 +1,25 @@
 import { clampInt } from '../utils/common.js';
-import { daysInMonth, firstWeekdayOfMonth, tsToYmd, yearBlockStart, ymdToTsStartOfDay } from '../utils/time.js';
+import {
+  addMonths,
+  daysInMonth,
+  firstWeekdayOfMonth,
+  tsToYmd,
+  yearBlockStart,
+  ymdToTsStartOfDay,
+} from '../utils/time.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]}
  */
 export function buildMonthViewTimestamps(state) {
-  const { y } = tsToYmd(state.viewDate);
+  const { y, m } = tsToYmd(state.viewDate);
   const out = [];
   const n = clampInt(state.monthViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
-  for (let mm = 0; mm < n; mm++) {
-    out.push(ymdToTsStartOfDay(y, mm, 1));
+  let ts = n === 12 ? ymdToTsStartOfDay(y, 0, 1) : addMonths(ymdToTsStartOfDay(y, m, 1), -state.monthViewRadius).ts;
+  for (let i = 0; i < n; i++) {
+    out.push(ts);
+    ({ ts } = addMonths(ts, 1));
   }
   return out;
 }
