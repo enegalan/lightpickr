@@ -64,7 +64,16 @@ export function renderYearView(instance, container) {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);
       const yyStr = String(yy);
-      return _buildMonthYearGridCell(instance, 'year', instance._state.attributes.year, yyStr, yy === y, ts, yyStr, yyStr);
+      return _buildMonthYearGridCell(
+        instance,
+        'year',
+        instance._state.attributes.year,
+        yyStr,
+        yy === y,
+        ts,
+        yyStr,
+        yyStr,
+      );
     },
   );
 }
