@@ -817,9 +817,23 @@ function _onMonthPick(instance, monthTs) {
   if (isMonthDisabled(instance._state, ymd.y, ymd.m)) {
     return;
   }
-  const next = Object.assign({}, instance._state);
-  next.viewDate = ymdToTsStartOfDay(ymd.y, ymd.m, 1);
-  next.currentView = instance._state.allowedViews.indexOf('day') >= 0 ? 'day' : instance._state.allowedViews[0];
+  const monthStart = ymdToTsStartOfDay(ymd.y, ymd.m, 1);
+  const dayAllowed = instance._state.allowedViews.indexOf('day') >= 0;
+  const next = Object.assign({}, instance._state, {
+    viewDate: monthStart,
+    currentView: dayAllowed ? 'day' : 'month',
+  });
+  if (!dayAllowed) {
+    if (!isSelectAllowed(instance, monthStart)) {
+      return;
+    }
+    const r = selectDate(next, monthStart);
+    instance._commit(r.state, { emitSelect: true, selectTrigger: 'select' });
+    if (instance._shouldCloseAfterSelect()) {
+      instance.hide();
+    }
+    return;
+  }
   instance._commit(next, { emitSelect: false });
 }
 
@@ -834,9 +848,23 @@ function _onYearPick(instance, year) {
     return;
   }
   const m = tsToYmd(instance._state.viewDate).m;
-  const next = Object.assign({}, instance._state);
-  next.viewDate = ymdToTsStartOfDay(year, m, 1);
-  next.currentView = instance._state.allowedViews.indexOf('month') >= 0 ? 'month' : instance._state.allowedViews[0];
+  const monthAllowed = instance._state.allowedViews.indexOf('month') >= 0;
+  const pickTs = monthAllowed ? ymdToTsStartOfDay(year, m, 1) : ymdToTsStartOfDay(year, 0, 1);
+  const next = Object.assign({}, instance._state, {
+    viewDate: pickTs,
+    currentView: monthAllowed ? 'month' : 'year',
+  });
+  if (!monthAllowed) {
+    if (!isSelectAllowed(instance, pickTs)) {
+      return;
+    }
+    const r = selectDate(next, pickTs);
+    instance._commit(r.state, { emitSelect: true, selectTrigger: 'select' });
+    if (instance._shouldCloseAfterSelect()) {
+      instance.hide();
+    }
+    return;
+  }
   instance._commit(next, { emitSelect: false });
 }
 

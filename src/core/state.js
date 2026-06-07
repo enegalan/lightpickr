@@ -471,6 +471,14 @@ export function createStateFromOptions(incomingRaw, targetEl) {
   ({ cols: monthViewCols, rows: monthViewRows } = resolveGridDims(monthViewCount, monthViewCols, monthViewRows));
   ({ cols: yearViewCols, rows: yearViewRows } = resolveGridDims(yearViewCount, yearViewCols, yearViewRows));
 
+  const clampedView = clampView(allowedViews, raw.view);
+  let initialView = clampedView;
+  if (onlyTime) {
+    initialView = 'time';
+  } else if (enableTime && clampedView === 'day') {
+    initialView = 'time';
+  }
+
   const nextState = {
     inline,
     range,
@@ -522,7 +530,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     classes: raw.classes,
     attributes: raw.attributes,
     properties: raw.properties,
-    currentView: onlyTime || enableTime ? 'time' : clampView(allowedViews, raw.view),
+    currentView: initialView,
     viewDate,
     focusDate: null,
     visible: inline,
