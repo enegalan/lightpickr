@@ -150,10 +150,11 @@ export function navigateDown(state) {
  */
 export function setCurrentViewState(state, view, params) {
   let next = Object.assign({}, state);
-  if (state.onlyTime || (view === 'time' && state.enableTime)) {
+  if (state.onlyTime) {
     next.currentView = 'time';
   } else {
-    next.currentView = clampView(state.allowedViews, view === 'time' ? 'day' : view);
+    const clamped = clampView(state.allowedViews, view === 'time' ? 'day' : view);
+    next.currentView = state.enableTime && clamped === 'day' ? 'time' : clamped;
   }
   if (params?.date != null) {
     next = setViewDateState(next, params.date);

@@ -25,16 +25,16 @@ const yearAttr = lightpickrDefaults.attributes.year;
 
 /**
  * @param {Record<string, unknown>} opts
- * @returns {import('../src/index.js').default}
+ * @returns {{ picker: import('../src/index.js').default, input: HTMLInputElement }}
  */
 function mountInline(opts) {
   const input = document.createElement('input');
   document.body.appendChild(input);
-  return new Lightpickr(input, { inline: true, ...opts });
+  return { picker: new Lightpickr(input, { inline: true, ...opts }), input };
 }
 
 {
-  const picker = mountInline({
+  const { picker, input } = mountInline({
     view: 'month',
     minDate: '2026-03-01',
     maxDate: '2026-04-15',
@@ -56,10 +56,11 @@ function mountInline(opts) {
   assert.equal(picker.currentView, viewBefore);
 
   picker.destroy();
+  input.remove();
 }
 
 {
-  const picker = mountInline({
+  const { picker, input } = mountInline({
     view: 'year',
     minDate: '2026-03-01',
     maxDate: '2026-04-15',
@@ -81,4 +82,26 @@ function mountInline(opts) {
   assert.equal(picker.currentView, viewBefore);
 
   picker.destroy();
+  input.remove();
+}
+
+{
+  const { picker, input } = mountInline({ allowedViews: ['month', 'year'], format: 'YYYY-MM' });
+  assert.equal(picker.currentView, 'month');
+  const mar = picker.$datepicker.querySelector(`[${monthAttr}="${String(ymdToTsStartOfDay(2026, 2, 1))}"]`);
+  assert.ok(mar instanceof HTMLButtonElement);
+  mar.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  assert.equal(input.value, '2026-03');
+  picker.destroy();
+  input.remove();
+}
+
+{
+  const { picker, input } = mountInline({ allowedViews: ['year'], view: 'year', format: 'YYYY' });
+  const y2026 = picker.$datepicker.querySelector(`[${yearAttr}="2026"]`);
+  assert.ok(y2026 instanceof HTMLButtonElement);
+  y2026.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  assert.equal(input.value, '2026');
+  picker.destroy();
+  input.remove();
 }
