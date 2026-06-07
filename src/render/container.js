@@ -1,6 +1,5 @@
-import { buildDayMonthCells } from '../core/calendar-grid.js';
+import { buildDayMonthRowCount } from '../core/calendar-grid.js';
 import { invokePluginHook } from '../core/plugins.js';
-import { clampInt } from '../utils/common.js';
 import { buildCtx } from './context.js';
 import { renderFooter } from './footer.js';
 import { bindHandlers } from './handlers.js';
@@ -33,7 +32,7 @@ export function renderContainer(instance) {
     instance.$datepicker.style.setProperty(instance._state.properties.dayViewCols, String(instance._state.dayViewCols));
     instance.$datepicker.style.setProperty(
       instance._state.properties.dayViewRows,
-      String(buildDayMonthCells(instance._state).length / clampInt(instance._state.dayViewCols, 1, 7, 7)),
+      String(buildDayMonthRowCount(instance._state)),
     );
     instance.$datepicker.style.setProperty(
       instance._state.properties.monthViewCols,

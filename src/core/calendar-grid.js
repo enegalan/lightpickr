@@ -32,7 +32,23 @@ export function buildYearViewYears(state) {
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
- * @returns {{ ts: number, outside: boolean }[]}
+ * @returns {number}
+ */
+export function buildDayMonthRowCount(state) {
+  const { y, m } = tsToYmd(state.viewDate);
+  const dim = daysInMonth(y, m);
+  const leading = (firstWeekdayOfMonth(y, m) - (state.firstDay % 7) + 7) % 7;
+  const cols = clampInt(state.dayViewCols, 1, 7, 7);
+  if (state.showOtherMonths) {
+    const totalCells = Math.max(6, Math.ceil((leading + dim) / cols)) * cols;
+    return totalCells / cols;
+  }
+  return Math.floor((leading + dim - 1) / cols) + 1;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @returns {{ ts: number, outside: boolean, col: number, row: number }[]}
  */
 export function buildDayMonthCells(state) {
   const { y, m } = tsToYmd(state.viewDate);
@@ -67,7 +83,15 @@ export function buildDayMonthCells(state) {
       month = m + 1 > 11 ? 0 : m + 1;
       day = nextMonthDay++;
     }
-    out.push({ ts: ymdToTsStartOfDay(year, month, day), outside });
+    if (outside && !state.showOtherMonths) {
+      continue;
+    }
+    out.push({
+      ts: ymdToTsStartOfDay(year, month, day),
+      outside,
+      col: cell % cols,
+      row: Math.floor(cell / cols),
+    });
   }
   return out;
 }

@@ -551,6 +551,11 @@
   margin-bottom: var(--lp-space-2xs);
 }
 
+.lp-day-grid-body {
+  display: grid;
+  grid-template-columns: repeat(var(--lp-day-view-cols), minmax(0, 1fr));
+}
+
 .lp-head-cell {
   width: 100%;
   height: var(--lp-cell-size);

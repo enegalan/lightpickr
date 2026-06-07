@@ -238,9 +238,7 @@ export function formatDate(format, ts, timePart, state) {
   let out = '';
   let i = 0;
   while (i < format.length) {
-    const token = tokenNames.find(token =>
-      format.startsWith(token, i)
-    );
+    const token = tokenNames.find((token) => format.startsWith(token, i));
 
     if (token) {
       out += tokens[token]();
