@@ -76,27 +76,10 @@ function _buildDayGridHeadRow(instance, grid) {
  */
 function _buildDayGridBodyRows(instance, grid) {
   const cells = buildDayMonthCells(instance._state);
+  const body = createEl('div', 'lp-day-grid-body', { role: 'rowgroup' });
 
-  /** @type {HTMLElement|null} */
-  let row = null;
   for (let cell = 0; cell < cells.length; cell++) {
-    if (cell % instance._state.dayViewCols === 0) {
-      row = createEl('div', instance._state.classes.row, { role: 'row' });
-      grid.appendChild(row);
-    }
-
-    const { ts, outside } = cells[cell];
-
-    if (outside && !instance._state.showOtherMonths) {
-      row &&
-        row.appendChild(
-          createEl(
-            'span',
-            `${instance._state.classes.cell} ${instance._state.classes.cellOutside} ${instance._state.classes.cellDisabled}`,
-          ),
-        );
-      continue;
-    }
+    const { ts, outside, col, row } = cells[cell];
 
     const ctx = buildCtx(instance, ts, outside);
     let cellEl = null;
@@ -144,6 +127,12 @@ function _buildDayGridBodyRows(instance, grid) {
         cellEl.disabled = true;
       }
     }
-    cellEl && row && row.appendChild(cellEl);
+    if (cellEl) {
+      cellEl.style.gridColumn = String(col + 1);
+      cellEl.style.gridRow = String(row + 1);
+      body.appendChild(cellEl);
+    }
   }
+
+  grid.appendChild(body);
 }
