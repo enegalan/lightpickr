@@ -7,6 +7,8 @@ import { createEl, isTextInputLike } from '../utils/common.js';
 import {
   formatDate,
   isDayDisabled,
+  isMonthDisabled,
+  isYearDisabled,
   setTimePart,
   startOfDayTs,
   timestampToPickerDate,
@@ -811,8 +813,11 @@ function _onDayPick(instance, ts) {
  * @returns {void}
  */
 function _onMonthPick(instance, monthTs) {
-  const next = Object.assign({}, instance._state);
   const ymd = tsToYmd(startOfDayTs(monthTs));
+  if (isMonthDisabled(instance._state, ymd.y, ymd.m)) {
+    return;
+  }
+  const next = Object.assign({}, instance._state);
   next.viewDate = ymdToTsStartOfDay(ymd.y, ymd.m, 1);
   next.currentView = instance._state.allowedViews.indexOf('day') >= 0 ? 'day' : instance._state.allowedViews[0];
   instance._commit(next, { emitSelect: false });
@@ -825,6 +830,9 @@ function _onMonthPick(instance, monthTs) {
  * @returns {void}
  */
 function _onYearPick(instance, year) {
+  if (isYearDisabled(instance._state, year)) {
+    return;
+  }
   const m = tsToYmd(instance._state.viewDate).m;
   const next = Object.assign({}, instance._state);
   next.viewDate = ymdToTsStartOfDay(year, m, 1);

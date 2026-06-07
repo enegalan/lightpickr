@@ -69,10 +69,7 @@ export function timestampToPickerDate(ts, state) {
  */
 export function isDayDisabled(state, dayTs) {
   const d = startOfDayTs(dayTs);
-  if (state.minDate != null && d < state.minDate) {
-    return true;
-  }
-  if (state.maxDate != null && d > state.maxDate) {
+  if (!_isInRange(state, d, d)) {
     return true;
   }
   let lo = 0;
@@ -88,6 +85,35 @@ export function isDayDisabled(state, dayTs) {
     } else {
       hi = mid - 1;
     }
+  }
+  return false;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} y
+ * @param {number} m
+ * @returns {boolean}
+ */
+export function isMonthDisabled(state, y, m) {
+  const monthStart = ymdToTsStartOfDay(y, m, 1);
+  const monthEnd = ymdToTsStartOfDay(y, m, daysInMonth(y, m));
+  if (!_isInRange(state, monthStart, monthEnd)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} y
+ * @returns {boolean}
+ */
+export function isYearDisabled(state, y) {
+  const yearStart = ymdToTsStartOfDay(y, 0, 1);
+  const yearEnd = ymdToTsStartOfDay(y, 11, 31);
+  if (!_isInRange(state, yearStart, yearEnd)) {
+    return true;
   }
   return false;
 }
@@ -418,4 +444,21 @@ function _localTimestampFromParts(y, mo, d, h, mi, sec) {
   }
   const t = new Date(y, m, d, h, mi, s, 0).getTime();
   return Number.isFinite(t) ? t : null;
+}
+
+/**
+ * @private
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} start
+ * @param {number} end
+ * @returns {boolean}
+ */
+function _isInRange(state, start, end) {
+  if (state.minDate != null && end < state.minDate) {
+    return false;
+  }
+  if (state.maxDate != null && start > state.maxDate) {
+    return false;
+  }
+  return true;
 }

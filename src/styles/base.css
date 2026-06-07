@@ -480,11 +480,16 @@
   color: var(--lp-nav-button-color);
 }
 
-.lp-nav-btn:hover {
+.lp-nav-btn:disabled {
+  opacity: var(--lp-cell-disabled-opacity);
+  cursor: var(--lp-cell-disabled-cursor);
+}
+
+.lp-nav-btn:hover:not(:disabled) {
   background: var(--lp-nav-button-bg-hover);
 }
 
-.lp-nav-btn:active {
+.lp-nav-btn:active:not(:disabled) {
   background: var(--lp-nav-button-bg-active);
 }
 
