@@ -1,4 +1,4 @@
-import { buildDayMonthCells, buildMonthViewTimestamps, buildYearViewYears } from '../core/calendar-grid.js';
+import { buildDayMonthCells, viewPage } from '../core/calendar-grid.js';
 import lightpickrDefaults from '../core/defaults.js';
 import { normalizeAllowedViews } from './normalize.js';
 import { ymdToTsStartOfDay } from './time.js';
@@ -43,14 +43,11 @@ export function getViewDates(view, state) {
       out.push(cells[i].ts);
     }
   } else if (view === 'month') {
-    const stamps = buildMonthViewTimestamps(state);
-    for (let i = 0; i < stamps.length; i++) {
-      out.push(stamps[i]);
-    }
+    out.push(...viewPage(state, 'month').items);
   } else if (view === 'year') {
-    const years = buildYearViewYears(state);
-    for (let i = 0; i < years.length; i++) {
-      out.push(ymdToTsStartOfDay(years[i], 0, 1));
+    const items = viewPage(state, 'year').items;
+    for (let i = 0; i < items.length; i++) {
+      out.push(ymdToTsStartOfDay(items[i], 0, 1));
     }
   }
   return out;

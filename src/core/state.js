@@ -317,7 +317,7 @@ export function isSelectAllowed(instance, value) {
  */
 function resolveGridDims(count, cols, rows) {
   if (cols > 0 && rows > 0) {
-    return { cols, rows: Math.max(rows, Math.ceil(count / cols)) };
+    return { cols, rows };
   }
   if (cols > 0) {
     return { cols, rows: Math.ceil(count / cols) };

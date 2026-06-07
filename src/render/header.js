@@ -1,6 +1,7 @@
+import { viewPage } from '../core/calendar-grid.js';
 import { isNavOutOfRange } from '../core/navigation.js';
 import { createEl } from '../utils/common.js';
-import { formatDate } from '../utils/time.js';
+import { formatDate, tsToYmd } from '../utils/time.js';
 import { buildCtx } from './context.js';
 
 /**
@@ -71,11 +72,23 @@ export function buildDefaultHeader(instance, view, canGoUp) {
  * @returns {string}
  */
 function _formatHeaderTitle(instance, view) {
-  const resolver = (instance._state.navTitles || {})[view];
+  let titleView = view;
+  /** @type {{ start: number, end: number }|null} */
+  let blockYears = null;
+  if (view === 'month') {
+    const { items } = viewPage(instance._state, 'month');
+    const y1 = tsToYmd(items[0]).y;
+    const y2 = tsToYmd(items[items.length - 1]).y;
+    if (y1 !== y2) {
+      titleView = 'year';
+      blockYears = { start: y1, end: y2 };
+    }
+  }
+  const resolver = (instance._state.navTitles || {})[titleView];
   if (typeof resolver === 'function') {
     return String(resolver(instance));
   }
 
   const rawTemplate = typeof resolver === 'string' ? resolver : '';
-  return formatDate(rawTemplate, instance._state.viewDate, null, instance._state);
+  return formatDate(rawTemplate, instance._state.viewDate, null, instance._state, blockYears);
 }

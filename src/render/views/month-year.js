@@ -1,7 +1,14 @@
-import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
+import { viewPage } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
 import { getTranslations, fromLocale } from '../../utils/locale.js';
-import { isFocusDay, isMonthDisabled, isYearDisabled, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
+import {
+  isFocusDay,
+  isMonthDisabled,
+  isMonthSelected,
+  isYearDisabled,
+  tsToYmd,
+  ymdToTsStartOfDay,
+} from '../../utils/time.js';
 import { buildCtx } from '../context.js';
 import { mountViewHeader } from '../header.js';
 
@@ -11,9 +18,8 @@ import { mountViewHeader } from '../header.js';
  * @returns {void}
  */
 export function renderMonthView(instance, container) {
-  const { y, m } = tsToYmd(instance._state.viewDate);
   const months = fromLocale(instance._state.locale, instance._state.monthsField);
-  const stamps = buildMonthViewTimestamps(instance._state);
+  const { items: stamps } = viewPage(instance._state, 'month');
 
   _renderMonthYearGridView(
     instance,
@@ -21,7 +27,7 @@ export function renderMonthView(instance, container) {
     instance._state.allowedViews.indexOf('year') >= 0,
     instance._state.classes.monthView,
     getTranslations(instance._state.locale).ariaMonthGrid,
-    instance._state.monthViewCount,
+    stamps.length,
     instance._state.monthViewCols,
     instance._state.monthViewRows,
     (i) => {
@@ -33,7 +39,7 @@ export function renderMonthView(instance, container) {
         'month',
         instance._state.attributes.month,
         String(ts),
-        yy === y && mm === m,
+        isMonthSelected(instance._state, yy, mm),
         ts,
         ariaLabel,
         instance._state.monthViewCount > 12 ? `${months[mm]} ${String(yy)}` : months[mm],
@@ -48,8 +54,7 @@ export function renderMonthView(instance, container) {
  * @returns {void}
  */
 export function renderYearView(instance, container) {
-  const y = tsToYmd(instance._state.viewDate).y;
-  const years = buildYearViewYears(instance._state);
+  const { items: years } = viewPage(instance._state, 'year');
 
   _renderMonthYearGridView(
     instance,
@@ -57,7 +62,7 @@ export function renderYearView(instance, container) {
     false,
     instance._state.classes.yearView,
     getTranslations(instance._state.locale).ariaYearView,
-    instance._state.yearViewCount,
+    years.length,
     instance._state.yearViewCols,
     instance._state.yearViewRows,
     (i) => {
@@ -69,7 +74,7 @@ export function renderYearView(instance, container) {
         'year',
         instance._state.attributes.year,
         yyStr,
-        yy === y,
+        isMonthSelected(instance._state, yy),
         ts,
         yyStr,
         yyStr,

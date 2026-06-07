@@ -1,16 +1,31 @@
 import { clampInt } from '../utils/common.js';
-import { daysInMonth, firstWeekdayOfMonth, tsToYmd, yearBlockStart, ymdToTsStartOfDay } from '../utils/time.js';
+import {
+  addMonths,
+  daysInMonth,
+  firstWeekdayOfMonth,
+  tsToYmd,
+  yearBlockStart,
+  ymdToTsStartOfDay,
+} from '../utils/time.js';
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
  * @returns {number[]}
  */
 export function buildMonthViewTimestamps(state) {
-  const { y } = tsToYmd(state.viewDate);
+  const { y, m } = tsToYmd(state.viewDate);
   const out = [];
   const n = clampInt(state.monthViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
-  for (let mm = 0; mm < n; mm++) {
-    out.push(ymdToTsStartOfDay(y, mm, 1));
+  let ts;
+  if (n === 12) {
+    ts = ymdToTsStartOfDay(y, 0, 1);
+  } else {
+    const radius = state.monthViewRadius >= n ? 0 : clampInt(state.monthViewRadius, 0, n - 1, 0);
+    ts = addMonths(ymdToTsStartOfDay(y, m, 1), -radius).ts;
+  }
+  for (let i = 0; i < n; i++) {
+    out.push(ts);
+    ({ ts } = addMonths(ts, 1));
   }
   return out;
 }
@@ -28,6 +43,47 @@ export function buildYearViewYears(state) {
     out.push(start + i);
   }
   return out;
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {'month'|'year'} kind
+ * @returns {{ items: number[], offset: number, all: number[], size: number }}
+ */
+export function viewPage(state, kind) {
+  const isMonth = kind === 'month';
+  const all = isMonth ? buildMonthViewTimestamps(state) : buildYearViewYears(state);
+  const size =
+    clampInt(isMonth ? state.monthViewCols : state.yearViewCols, 1, Number.MAX_SAFE_INTEGER, 1) *
+    clampInt(isMonth ? state.monthViewRows : state.yearViewRows, 1, Number.MAX_SAFE_INTEGER, 1);
+  let offset = 0;
+  if (size < all.length) {
+    let idx = 0;
+    if (isMonth) {
+      const { y, m } = tsToYmd(state.viewDate);
+      idx = all.findIndex((ts) => {
+        const cell = tsToYmd(ts);
+        return cell.y === y && cell.m === m;
+      });
+      if (idx < 0) {
+        idx = all.findIndex((ts) => ts >= ymdToTsStartOfDay(y, m, 1));
+        if (idx < 0) {
+          idx = all.length - 1;
+        }
+      }
+    } else {
+      const y = tsToYmd(state.viewDate).y;
+      idx = all.indexOf(y);
+      if (idx < 0) {
+        idx = all.findIndex((yy) => yy >= y);
+        if (idx < 0) {
+          idx = all.length - 1;
+        }
+      }
+    }
+    offset = Math.floor(idx / size) * size;
+  }
+  return { all, size, offset, items: size >= all.length ? all : all.slice(offset, offset + size) };
 }
 
 /**

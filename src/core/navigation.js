@@ -6,11 +6,82 @@ import {
   startOfDayTs,
   toTimestamp,
   tsToYmd,
-  yearBlockStart,
   ymdToTsStartOfDay,
 } from '../utils/time.js';
 import { clampView } from '../utils/view.js';
+import { buildMonthViewTimestamps, viewPage } from './calendar-grid.js';
 import lightpickrDefaults from './defaults.js';
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} dir
+ * @returns {number}
+ */
+export function navigateViewPage(state, dir) {
+  const kind = state.currentView === 'year' ? 'year' : 'month';
+  const { all, offset, size } = viewPage(state, kind);
+  const count = clampInt(
+    kind === 'month' ? state.monthViewCount : state.yearViewCount,
+    1,
+    Number.MAX_SAFE_INTEGER,
+    kind === 'month' ? 12 : 1,
+  );
+  if (size >= all.length) {
+    if (kind === 'month') {
+      return count === 12 ? addMonths(state.viewDate, dir * 12).ts : addMonths(state.viewDate, dir * count).ts;
+    }
+    const { y, m } = tsToYmd(state.viewDate);
+    return ymdToTsStartOfDay(y + dir * count, m, 1);
+  }
+  const next = offset + dir * size;
+  if (next >= 0 && next < all.length) {
+    const value = all[next];
+    return kind === 'month' ? value : ymdToTsStartOfDay(value, 0, 1);
+  }
+  if (kind === 'month') {
+    if (dir > 0) {
+      return count === 12 ? ymdToTsStartOfDay(tsToYmd(all[0]).y + 1, 0, 1) : addMonths(all[all.length - 1], 1).ts;
+    }
+    const prevAnchor = count === 12 ? ymdToTsStartOfDay(tsToYmd(all[0]).y - 1, 0, 1) : addMonths(all[0], -1).ts;
+    const prevAll = buildMonthViewTimestamps({ ...state, viewDate: prevAnchor });
+    return prevAll[Math.floor((prevAll.length - 1) / size) * size];
+  }
+  const start = all[0];
+  if (dir > 0) {
+    return ymdToTsStartOfDay(start + count, 0, 1);
+  }
+  return ymdToTsStartOfDay(start - count + Math.floor((count - 1) / size) * size, 0, 1);
+}
+
+/**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @returns {import('./state.js').LightpickrInternalState}
+ */
+export function alignViewPageEntry(state) {
+  if (state.currentView !== 'month' && state.currentView !== 'year') {
+    return state;
+  }
+  const kind = state.currentView;
+  let anchor = state.focusDate ?? state.viewDate;
+  const sel = state.selectedDates;
+  if (state.range) {
+    const ranges = /** @type {number[][]} */ (sel);
+    if (ranges.length) {
+      anchor = ranges[ranges.length - 1][0];
+    }
+  } else if (/** @type {number[]} */ (sel).length) {
+    anchor = /** @type {number[]} */ (sel)[sel.length - 1];
+  }
+  const { y, m } = tsToYmd(anchor);
+  const viewAnchor = kind === 'month' ? ymdToTsStartOfDay(y, m, 1) : ymdToTsStartOfDay(y, 0, 1);
+  const { all, offset } = viewPage({ ...state, viewDate: viewAnchor }, kind);
+  const pageStart = all[offset];
+  return {
+    ...state,
+    viewDate: kind === 'month' ? pageStart : ymdToTsStartOfDay(pageStart, 0, 1),
+    focusDate: null,
+  };
+}
 
 /**
  * @param {import('./state.js').LightpickrInternalState} state
@@ -27,12 +98,8 @@ export function navigateNextPrev(state, dir) {
   if (v === 'day' || v === 'time') {
     const { ts } = addMonths(state.viewDate, dir);
     timestamp = ts;
-  } else if (v === 'month') {
-    const { ts } = addYears(state.viewDate, dir);
-    timestamp = ts;
-  } else if (v === 'year') {
-    const { y, m } = tsToYmd(state.viewDate);
-    timestamp = ymdToTsStartOfDay(y + dir * state.yearViewCount, m, 1);
+  } else if (v === 'month' || v === 'year') {
+    timestamp = navigateViewPage(state, dir);
   }
   if (timestamp != null) {
     next.viewDate = timestamp;
@@ -125,7 +192,7 @@ export function navigateUp(state) {
     const requested = lightpickrDefaults.viewOrder[idx + 1];
     next.currentView = clampView(state.allowedViews, requested);
   }
-  return next;
+  return alignViewPageEntry(next);
 }
 
 /**
@@ -139,7 +206,7 @@ export function navigateDown(state) {
     const requested = lightpickrDefaults.viewOrder[idx - 1];
     next.currentView = clampView(state.allowedViews, requested);
   }
-  return next;
+  return alignViewPageEntry(next);
 }
 
 /**
@@ -159,7 +226,7 @@ export function setCurrentViewState(state, view, params) {
   if (params?.date != null) {
     next = setViewDateState(next, params.date);
   }
-  return next;
+  return alignViewPageEntry(next);
 }
 
 /**
@@ -233,25 +300,28 @@ function _navTargetPeriodYmd(state, dir) {
         endDay: monthLastDay,
       };
     }
-    case 'month': {
-      const { y } = addYears(state.viewDate, dir);
-      return {
-        startYear: y,
-        endYear: y,
-        startMonth: 0,
-        endMonth: 11,
-        startDay: 1,
-        endDay: 31,
-      };
-    }
+    case 'month':
     case 'year': {
-      const { y } = tsToYmd(state.viewDate);
-      const n = clampInt(state.yearViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
-      const yTarget = y + dir * n;
-      const startYearOfBlock = yearBlockStart(yTarget, n, state.yearViewRadius);
+      const kind = state.currentView;
+      const { items } = viewPage({ ...state, viewDate: navigateViewPage(state, dir) }, kind);
+      if (!items.length) {
+        return null;
+      }
+      if (kind === 'month') {
+        const first = tsToYmd(items[0]);
+        const last = tsToYmd(items[items.length - 1]);
+        return {
+          startYear: first.y,
+          endYear: last.y,
+          startMonth: first.m,
+          endMonth: last.m,
+          startDay: 1,
+          endDay: daysInMonth(last.y, last.m),
+        };
+      }
       return {
-        startYear: startYearOfBlock,
-        endYear: startYearOfBlock + n - 1,
+        startYear: items[0],
+        endYear: items[items.length - 1],
         startMonth: 0,
         endMonth: 11,
         startDay: 1,
