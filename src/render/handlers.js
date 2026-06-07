@@ -1,10 +1,12 @@
 import { applyEventKey, isDayNavigationKey } from '../core/keyboard.js';
+import { setFocusDateState } from '../core/navigation.js';
 import { invokePluginHook } from '../core/plugins.js';
 import { selectDate, applyRangeEndpointDrag } from '../core/selection.js';
 import { isSelectAllowed } from '../core/state.js';
 import { createEl, isTextInputLike } from '../utils/common.js';
 import {
   formatDate,
+  isDayDisabled,
   setTimePart,
   startOfDayTs,
   timestampToPickerDate,
@@ -770,15 +772,30 @@ function _onDayPick(instance, ts) {
   if (!isSelectAllowed(instance, ts)) {
     return;
   }
+  const d = startOfDayTs(ts);
+  if (isDayDisabled(instance._state, d)) {
+    return;
+  }
+  const viewYmd = tsToYmd(instance._state.viewDate);
+  const clicked = tsToYmd(d);
+  if ((clicked.m !== viewYmd.m || clicked.y !== viewYmd.y) && !instance._state.selectOtherMonths) {
+    if (instance._state.moveToOtherMonthsOnSelect) {
+      const next = setFocusDateState(instance._state, d);
+      next.viewDate = ymdToTsStartOfDay(clicked.y, clicked.m, 1);
+      instance._commit(next, { emitSelect: false });
+      _focusCell(instance);
+    }
+    return;
+  }
   const r = selectDate(instance._state, ts);
   if (!r.changed) {
     return;
   }
   if (instance._state.moveToOtherMonthsOnSelect) {
     const currentMonth = tsToYmd(instance._state.viewDate).m;
-    const clicked = tsToYmd(ts);
-    if (clicked.m !== currentMonth) {
-      r.state.viewDate = ymdToTsStartOfDay(clicked.y, clicked.m, 1);
+    const picked = tsToYmd(ts);
+    if (picked.m !== currentMonth) {
+      r.state.viewDate = ymdToTsStartOfDay(picked.y, picked.m, 1);
     }
   }
   instance._commit(r.state, { emitSelect: true, selectTrigger: 'select' });
