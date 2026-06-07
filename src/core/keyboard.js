@@ -103,7 +103,7 @@ export function applyEventKey(instance, evLike) {
  * @returns {{ next: import('./state.js').LightpickrInternalState, idx: number }}
  */
 function _moveFocusInGrid(state, key, gridDates) {
-  let gridCols = state.dayViewCols;
+  let gridCols = 7;
   if (state.currentView === 'month') {
     gridCols = state.monthViewCols;
   } else if (state.currentView === 'year') {

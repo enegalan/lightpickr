@@ -29,7 +29,6 @@ export function renderContainer(instance) {
       instance._state.properties.calendarView,
       instance._state.currentView === 'time' ? 'time' : instance._state.currentView,
     );
-    instance.$datepicker.style.setProperty(instance._state.properties.dayViewCols, String(instance._state.dayViewCols));
     instance.$datepicker.style.setProperty(
       instance._state.properties.dayViewRows,
       String(buildDayMonthRowCount(instance._state)),
@@ -58,7 +57,6 @@ export function renderContainer(instance) {
   } else {
     instance.$datepicker.removeAttribute(instance._state.properties.calendarView);
     instance.$datepicker.removeAttribute(instance._state.attributes.time);
-    instance.$datepicker.style.removeProperty(instance._state.properties.dayViewCols);
     instance.$datepicker.style.removeProperty(instance._state.properties.dayViewRows);
     instance.$datepicker.style.removeProperty(instance._state.properties.monthViewCols);
     instance.$datepicker.style.removeProperty(instance._state.properties.monthViewRows);

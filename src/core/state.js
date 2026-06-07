@@ -163,7 +163,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {number} [yearViewCount]
  * @property {number} [monthViewCount]
  * @property {number} [monthViewRadius]
- * @property {number} [dayViewCols]
  * @property {number} [monthViewCols]
  * @property {number} [monthViewRows]
  * @property {number} [yearViewCols]
@@ -237,7 +236,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {number} yearViewCount
  * @property {number} monthViewCount
  * @property {number} monthViewRadius
- * @property {number} dayViewCols
  * @property {number} monthViewCols
  * @property {number} monthViewRows
  * @property {number} yearViewCols
@@ -418,7 +416,6 @@ export function createStateFromOptions(incomingRaw, targetEl) {
   const maxMinutes = clampInt(raw.maxMinutes, minMinutes, 59, lightpickrDefaults.maxMinutes);
   const hoursStep = clampInt(raw.hoursStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.hoursStep);
   const minutesStep = clampInt(raw.minutesStep, 1, Number.MAX_SAFE_INTEGER, lightpickrDefaults.minutesStep);
-  const dayViewCols = clampInt(raw.dayViewCols, 1, 7, lightpickrDefaults.dayViewCols);
   const yearViewCount = clampInt(
     raw.yearViewCount,
     Number.NEGATIVE_INFINITY,
@@ -545,7 +542,6 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     yearViewRadius,
     monthViewCount,
     monthViewRadius,
-    dayViewCols,
     monthViewCols,
     monthViewRows,
     yearViewCols,
@@ -656,7 +652,6 @@ function _extractRawOptions(state) {
     yearViewRadius: state.yearViewRadius,
     monthViewCount: state.monthViewCount,
     monthViewRadius: state.monthViewRadius,
-    dayViewCols: state.dayViewCols,
     monthViewCols: state.monthViewCols,
     monthViewRows: state.monthViewRows,
     yearViewCols: state.yearViewCols,
