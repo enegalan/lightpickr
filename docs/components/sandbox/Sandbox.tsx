@@ -550,16 +550,6 @@ export function Sandbox() {
                 <Switch label="month" checked={state.allowedViewsMonth} onChange={(v) => patch({allowedViewsMonth: v})} />
                 <Switch label="year" checked={state.allowedViewsYear} onChange={(v) => patch({allowedViewsYear: v})} />
               </div>
-              <Field label="dayViewCols">
-                <input
-                  type="number"
-                  min={1}
-                  max={7}
-                  className={controlClass}
-                  value={state.dayViewCols}
-                  onChange={(e) => patch({dayViewCols: Number(e.target.value)})}
-                />
-              </Field>
               <div className="grid grid-cols-2 gap-2">
                 <Field label="monthViewCount">
                   <input type="number" min={1} max={24} className={controlClass} value={state.monthViewCount} onChange={(e) => patch({monthViewCount: Number(e.target.value)})} />

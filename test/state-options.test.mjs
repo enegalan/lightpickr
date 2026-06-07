@@ -23,9 +23,6 @@ const { tsToYmd } = await import('../src/utils/time.js');
 
 const input = document.querySelector('#x');
 const p = new Lightpickr(input, { inline: false });
-assert.equal(p._state.dayViewCols, 7);
-p.update({ dayViewCols: 4 });
-assert.equal(p._state.dayViewCols, 4);
 p.update({ monthViewCount: 12, monthViewRows: 2, monthViewCols: 4 });
 assert.equal(p._state.monthViewRows, 2);
 p.update({ monthViewCount: 8, monthViewRadius: 1, startDate: '2026-06-15' });

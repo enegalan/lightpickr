@@ -67,7 +67,6 @@ export type SandboxFormState = {
   allowedViewsDay: boolean;
   allowedViewsMonth: boolean;
   allowedViewsYear: boolean;
-  dayViewCols: number;
   monthViewCount: number;
   monthViewRadius: number;
   monthViewCols: number;
@@ -154,7 +153,6 @@ export const DEFAULT_FORM_STATE: SandboxFormState = {
   allowedViewsDay: true,
   allowedViewsMonth: true,
   allowedViewsYear: true,
-  dayViewCols: 7,
   monthViewCount: 12,
   monthViewRadius: 5,
   monthViewCols: 3,
@@ -352,7 +350,6 @@ export function buildPickerOptions(state: SandboxFormState): Record<string, unkn
     minutesStep: state.minutesStep,
     view: state.view,
     allowedViews: getAllowedViewsValue(state),
-    dayViewCols: state.dayViewCols,
     monthViewCount: state.monthViewCount,
     monthViewRadius: state.monthViewRadius,
     monthViewCols: state.monthViewCols,
@@ -567,9 +564,6 @@ export function serializeOptionsCode(state: SandboxFormState): string {
   }
   if (!isDefaultAllowedViews(state)) {
     opts.allowedViews = getAllowedViewsValue(state);
-  }
-  if (state.dayViewCols !== DEFAULT_FORM_STATE.dayViewCols) {
-    opts.dayViewCols = state.dayViewCols;
   }
   if (state.monthViewCount !== DEFAULT_FORM_STATE.monthViewCount) {
     opts.monthViewCount = state.monthViewCount;

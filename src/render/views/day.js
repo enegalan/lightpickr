@@ -52,7 +52,7 @@ function _buildDayGridHeadRow(instance, grid) {
     instance._state.classes.headCell + (clickable ? ` ${instance._state.classes.headCell}--clickable` : '');
 
   const row = createEl('div', `${instance._state.classes.row} ${instance._state.classes.row}--head`, { role: 'row' });
-  for (let i = 0; i < instance._state.dayViewCols; i++) {
+  for (let i = 0; i < 7; i++) {
     const idx = (fd + i) % 7;
     const attrs = clickable
       ? { type: 'button', [instance._state.attributes.dayName]: String(idx), role: 'columnheader' }

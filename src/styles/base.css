@@ -143,6 +143,7 @@
 }
 
 .lp[data-lp-calendar-view] {
+  --lp-day-view-cols: 7;
   --lp-time-band-min: calc(var(--lp-space-sm) + 1px + var(--lp-time-panel-padding-y) + 3.25rem);
   --lp-view-body-min-width: max(
     calc(var(--lp-day-view-cols) * var(--lp-cell-size)),
