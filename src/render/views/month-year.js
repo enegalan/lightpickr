@@ -1,7 +1,7 @@
 import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
 import { getTranslations, fromLocale } from '../../utils/locale.js';
-import { isFocusDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
+import { isFocusDay, isMonthDisabled, isYearDisabled, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { buildCtx } from '../context.js';
 import { mountViewHeader } from '../header.js';
 
@@ -30,6 +30,7 @@ export function renderMonthView(instance, container) {
       const ariaLabel = `${months[mm]} ${String(yy)}`;
       return _buildMonthYearGridCell(
         instance,
+        'month',
         instance._state.attributes.month,
         String(ts),
         yy === y && mm === m,
@@ -63,7 +64,16 @@ export function renderYearView(instance, container) {
       const yy = years[i];
       const ts = ymdToTsStartOfDay(yy, 0, 1);
       const yyStr = String(yy);
-      return _buildMonthYearGridCell(instance, instance._state.attributes.year, yyStr, yy === y, ts, yyStr, yyStr);
+      return _buildMonthYearGridCell(
+        instance,
+        'year',
+        instance._state.attributes.year,
+        yyStr,
+        yy === y,
+        ts,
+        yyStr,
+        yyStr,
+      );
     },
   );
 }
@@ -71,6 +81,7 @@ export function renderYearView(instance, container) {
 /**
  * @private
  * @param {import('../../core/state.js').LightpickrInstance} instance
+ * @param {'month'|'year'} kind
  * @param {string} dataAttr
  * @param {string} dataValueStr
  * @param {boolean} selected
@@ -79,9 +90,13 @@ export function renderYearView(instance, container) {
  * @param {string} textContent
  * @returns {HTMLElement}
  */
-function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts, ariaLabel, textContent) {
+function _buildMonthYearGridCell(instance, kind, dataAttr, dataValueStr, selected, ts, ariaLabel, textContent) {
+  const { y, m } = tsToYmd(ts);
+  const isDisabled = kind === 'month' ? isMonthDisabled(instance._state, y, m) : isYearDisabled(instance._state, y);
+
   if (typeof instance._state.render.cell === 'function') {
     const ctx = buildCtx(instance, ts);
+    ctx.isDisabled = isDisabled;
     const custom = instance._state.render.cell(ctx);
     if (custom instanceof HTMLElement) {
       if (!custom.getAttribute(dataAttr)) {
@@ -95,6 +110,7 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
   const cellClass =
     instance._state.classes.cell +
     (selected ? ` ${instance._state.classes.cellSelected}` : '') +
+    (isDisabled ? ` ${instance._state.classes.cellDisabled}` : '') +
     (isFocused ? ` ${instance._state.classes.cellFocused}` : '');
   const attrs = {
     type: 'button',
@@ -102,10 +118,14 @@ function _buildMonthYearGridCell(instance, dataAttr, dataValueStr, selected, ts,
     role: 'gridcell',
     tabindex: isFocused ? '0' : '-1',
     'aria-selected': selected ? 'true' : 'false',
+    'aria-disabled': isDisabled ? 'true' : 'false',
     'aria-label': ariaLabel,
   };
   const el = createEl('button', cellClass, attrs);
   el.textContent = textContent;
+  if (isDisabled) {
+    el.disabled = true;
+  }
 
   return el;
 }

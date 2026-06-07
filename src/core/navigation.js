@@ -208,7 +208,7 @@ export function isNavOutOfRange(state, dir) {
   }
   const periodStart = ymdToTsStartOfDay(period.startYear, period.startMonth, period.startDay);
   const periodEnd = ymdToTsStartOfDay(period.endYear, period.endMonth, period.endDay);
-  return periodEnd < state.minDate || periodStart > state.maxDate;
+  return (state.minDate != null && periodEnd < state.minDate) || (state.maxDate != null && periodStart > state.maxDate);
 }
 
 /**
