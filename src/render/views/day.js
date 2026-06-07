@@ -123,9 +123,6 @@ function _buildDayGridBodyRows(instance, grid) {
       if (ctx.isDisabled) {
         cellEl.disabled = true;
       }
-      if (ctx.isOutside && !instance._state.selectOtherMonths) {
-        cellEl.disabled = true;
-      }
     }
     if (cellEl) {
       cellEl.style.gridColumn = String(col + 1);
