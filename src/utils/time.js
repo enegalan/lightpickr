@@ -193,68 +193,60 @@ export function formatDate(format, ts, timePart, state) {
   const { y, m, d } = tsToYmd(ts);
   const dateObj = new Date(ts);
   const dow = dateObj.getDay();
-  const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : dateObj.getHours();
-  const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
+  const hours = typeof timePart?.hours === 'number' ? timePart.hours : dateObj.getHours();
+  const minutes = typeof timePart?.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
   const monthShort = fromLocale(state.locale, 'monthsShort');
   const monthLong = fromLocale(state.locale, 'monthsLong');
   const dayShort = fromLocale(state.locale, 'weekdaysShort');
   const dayLong = fromLocale(state.locale, 'weekdaysLong');
   const yy = String(y).slice(-2);
-  const n = clampInt(state?.yearViewCount, 1, Number.POSITIVE_INFINITY, 12);
-  const blockStart = yearBlockStart(y, n, toInt(state?.yearViewRadius, 5));
-  const blockEnd = blockStart + n - 1;
+  const yearViewCount = clampInt(state?.yearViewCount, 1, Number.POSITIVE_INFINITY, 12);
+
+  const blockStart = yearBlockStart(y, yearViewCount, toInt(state?.yearViewRadius, 5));
+  const blockEnd = blockStart + yearViewCount - 1;
+
+  const tokens = {
+    yyyy1: () => String(blockStart),
+    yyyy2: () => String(blockEnd),
+
+    MMMM: () => monthLong[m] || '',
+    MMM: () => monthShort[m] || '',
+
+    yyyy: () => String(y),
+    YYYY: () => String(y),
+    yy: () => yy,
+
+    MM: () => pad2(m + 1),
+    M: () => String(m + 1),
+
+    dd: () => pad2(d),
+    DD: () => pad2(d),
+    d: () => String(d),
+    D: () => String(d),
+
+    EEEE: () => dayLong[dow] || '',
+    E: () => dayShort[dow] || '',
+
+    HH: () => pad2(hours),
+    mm: () => pad2(minutes),
+
+    T: () => String(ts),
+  };
+
+  const tokenNames = Object.keys(tokens).sort((a, b) => b.length - a.length);
 
   let out = '';
   let i = 0;
   while (i < format.length) {
-    if (format.startsWith('yyyy1', i)) {
-      out += String(blockStart);
-      i += 5;
-    } else if (format.startsWith('yyyy2', i)) {
-      out += String(blockEnd);
-      i += 5;
-    } else if (format.startsWith('MMMM', i)) {
-      out += monthLong[m] || '';
-      i += 4;
-    } else if (format.startsWith('MMM', i)) {
-      out += monthShort[m] || '';
-      i += 3;
-    } else if (format.startsWith('yyyy', i) || format.startsWith('YYYY', i)) {
-      out += String(y);
-      i += 4;
-    } else if (format.startsWith('yy', i)) {
-      out += yy;
-      i += 2;
-    } else if (format.startsWith('MM', i)) {
-      out += pad2(m + 1);
-      i += 2;
-    } else if (format.startsWith('dd', i) || format.startsWith('DD', i)) {
-      out += pad2(d);
-      i += 2;
-    } else if (format.startsWith('EEEE', i)) {
-      out += dayLong[dow] || '';
-      i += 4;
-    } else if (format.startsWith('HH', i)) {
-      out += pad2(hours);
-      i += 2;
-    } else if (format.startsWith('mm', i)) {
-      out += pad2(minutes);
-      i += 2;
-    } else if (format.startsWith('M', i)) {
-      out += String(m + 1);
-      i += 1;
-    } else if (format.startsWith('d', i)) {
-      out += String(d);
-      i += 1;
-    } else if (format.startsWith('E', i)) {
-      out += dayShort[dow] || '';
-      i += 1;
-    } else if (format.startsWith('T', i)) {
-      out += String(ts);
-      i += 1;
+    const token = tokenNames.find(token =>
+      format.startsWith(token, i)
+    );
+
+    if (token) {
+      out += tokens[token]();
+      i += token.length;
     } else {
-      out += format[i];
-      i += 1;
+      out += format[i++];
     }
   }
   return out;

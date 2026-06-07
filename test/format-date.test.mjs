@@ -10,6 +10,13 @@ assert.equal(formatDate('dd-MM-yyyy', tsMarch15, null, { locale: en, monthsField
 assert.equal(formatDate('E · EEEE', tsMarch15, null, { locale: en, monthsField: 'monthsShort' }), 'Su · Sunday');
 assert.equal(formatDate('MMM MMMM', tsMarch15, null, { locale: en, monthsField: 'monthsShort' }), 'Mar March');
 assert.equal(
+  formatDate('MMMM D, YYYY', startOfDayTs(new Date(2026, 5, 7).getTime()), null, {
+    locale: en,
+    monthsField: 'monthsShort',
+  }),
+  'June 7, 2026',
+);
+assert.equal(
   formatDate('yyyy1–yyyy2', startOfDayTs(new Date(2026, 0, 1).getTime()), null, {
     locale: en,
     monthsField: 'monthsShort',
