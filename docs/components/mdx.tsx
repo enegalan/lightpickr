@@ -18,6 +18,7 @@ import {SelectedDatesMultiDemo} from '@/components/demos/SelectedDatesMultiDemo'
 import {SelectedInitialDateDemo} from '@/components/demos/SelectedInitialDateDemo';
 import {TimeDemo} from '@/components/demos/TimeDemo';
 import {TitleFormattingDemo} from '@/components/demos/TitleFormattingDemo';
+import {Sandbox} from '@/components/sandbox/Sandbox';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -40,6 +41,7 @@ export function getMDXComponents(components?: MDXComponents) {
     TitleFormattingDemo,
     FooterButtonsDemo,
     FormatFunctionDemo,
+    Sandbox,
     ...components,
   } satisfies MDXComponents;
 }

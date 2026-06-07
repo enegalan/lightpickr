@@ -18,6 +18,8 @@ const config = {
     resolveAlias: {
       lightpickr: path.join(lightpickrPackageRoot, 'dist', 'lightpickr.esm.js'),
       'lightpickr/lightpickr.css': path.join(lightpickrPackageRoot, 'dist', 'lightpickr.css'),
+      'lightpickr/locale/en': path.join(lightpickrPackageRoot, 'dist', 'locale', 'en.js'),
+      'lightpickr/locale/es': path.join(lightpickrPackageRoot, 'dist', 'locale', 'es.js'),
     },
   },
   webpack: (webpackConfig) => {
@@ -25,6 +27,8 @@ const config = {
       ...webpackConfig.resolve.alias,
       lightpickr: path.join(lightpickrPackageRoot, 'dist', 'lightpickr.esm.js'),
       'lightpickr/lightpickr.css': path.join(lightpickrPackageRoot, 'dist', 'lightpickr.css'),
+      'lightpickr/locale/en': path.join(lightpickrPackageRoot, 'dist', 'locale', 'en.js'),
+      'lightpickr/locale/es': path.join(lightpickrPackageRoot, 'dist', 'locale', 'es.js'),
     };
     return webpackConfig;
   },
