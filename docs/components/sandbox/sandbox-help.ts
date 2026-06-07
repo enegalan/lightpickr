@@ -39,8 +39,6 @@ export const OPTION_HELP: Record<string, string> = {
   day: 'Include the day view in allowed navigation.',
   month: 'Include the month view in allowed navigation.',
   year: 'Include the year view in allowed navigation.',
-  dayViewCols:
-    'Number of day columns per row in the day view (1-7). Affects layout and keyboard navigation.',
   monthViewCount: 'How many month cells are shown in the month view.',
   monthViewRadius: 'How many months before the view anchor appear when the grid is centered.',
   monthViewCols: 'Column count for the month view grid.',

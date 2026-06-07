@@ -5,7 +5,6 @@ import {BasicDemo} from '@/components/demos/BasicDemo';
 import {BasicPositioningDemo} from '@/components/demos/BasicPositioningDemo';
 import {CellRenderDemo} from '@/components/demos/CellRenderDemo';
 import {CustomGridShapeDemo} from '@/components/demos/CustomGridShapeDemo';
-import {DayViewColsDemo} from '@/components/demos/DayViewColsDemo';
 import {FooterButtonsDemo} from '@/components/demos/FooterButtonsDemo';
 import {FormatFunctionDemo} from '@/components/demos/FormatFunctionDemo';
 import {InlineDemo} from '@/components/demos/InlineDemo';
@@ -37,7 +36,6 @@ export function getMDXComponents(components?: MDXComponents) {
     TimeDemo,
     CellRenderDemo,
     CustomGridShapeDemo,
-    DayViewColsDemo,
     TitleFormattingDemo,
     FooterButtonsDemo,
     FormatFunctionDemo,

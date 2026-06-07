@@ -310,17 +310,6 @@ The initial view of the calendar. Possible values:
 Order defines drill **down** (e.g. day → month → year).
 
 <heading>
-### dayViewCols
-<definition><param-type>number</param-type> <brown>=</brown> <red>7</red></definition>
-</heading>
-
-How many **columns** of day cells appear in each row of the **day** view (clamped **1–7**). The weekday header row shows the first **`dayViewCols`** labels starting from **`firstDay`**. Arrow-key navigation uses the same column count.
-
-Changing this only affects **layout** (how dates wrap into rows). It does **not** remove a weekday from the underlying month math (see **`firstDay`** and **`weekends`** for alignment and styling).
-
-When the day view is rendered, **`--lp-day-view-cols`** is set on the picker root (override the CSS variable name with **`properties.dayViewCols`** if needed).
-
-<heading>
 ### monthViewCount
 <definition><param-type>number</param-type> <brown>=</brown> <red>12</red></definition>
 </heading>
