@@ -119,6 +119,36 @@ export function isYearDisabled(state, y) {
 }
 
 /**
+ * @param {import('./state.js').LightpickrInternalState} state
+ * @param {number} y
+ * @param {number} [m]
+ * @returns {boolean}
+ */
+export function isMonthSelected(state, y, m) {
+  const picks = [];
+  if (state.range) {
+    const ranges = /** @type {number[][]} */ (state.selectedDates);
+    for (let i = 0; i < ranges.length; i++) {
+      picks.push(tsToYmd(ranges[i][0]), tsToYmd(ranges[i][1]));
+    }
+  } else {
+    const dates = /** @type {number[]} */ (state.selectedDates);
+    for (let i = 0; i < dates.length; i++) {
+      picks.push(tsToYmd(dates[i]));
+    }
+  }
+  for (let i = 0; i < picks.length; i++) {
+    if (picks[i].y !== y) {
+      continue;
+    }
+    if (m === undefined || picks[i].m === m) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * @param {number} ts
  * @param {number} start
  * @param {number} end
@@ -213,9 +243,10 @@ export function addYears(ts, delta) {
  * @param {number} ts
  * @param {{ hours?: number, minutes?: number }|null|undefined} timePart
  * @param {import('./state.js').LightpickrInternalState|import('./state.js').LightpickrOptions|null|undefined} [state]
+ * @param {{ start: number, end: number }|null|undefined} [blockYears]
  * @returns {string}
  */
-export function formatDate(format, ts, timePart, state) {
+export function formatDate(format, ts, timePart, state, blockYears = null) {
   const { y, m, d } = tsToYmd(ts);
   const dateObj = new Date(ts);
   const dow = dateObj.getDay();
@@ -228,8 +259,9 @@ export function formatDate(format, ts, timePart, state) {
   const yy = String(y).slice(-2);
   const yearViewCount = clampInt(state?.yearViewCount, 1, Number.POSITIVE_INFINITY, 12);
 
-  const blockStart = yearBlockStart(y, yearViewCount, toInt(state?.yearViewRadius, 5));
-  const blockEnd = blockStart + yearViewCount - 1;
+  const blockStart =
+    blockYears != null ? blockYears.start : yearBlockStart(y, yearViewCount, toInt(state?.yearViewRadius, 5));
+  const blockEnd = blockYears != null ? blockYears.end : blockStart + yearViewCount - 1;
 
   const tokens = {
     yyyy1: () => String(blockStart),
