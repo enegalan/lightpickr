@@ -24,7 +24,13 @@ assert.equal(
   '2016–2027',
 );
 assert.equal(
-  formatDate('yyyy1 - yyyy2', startOfDayTs(new Date(2025, 11, 1).getTime()), null, { locale: en }, { start: 2025, end: 2026 }),
+  formatDate(
+    'yyyy1 - yyyy2',
+    startOfDayTs(new Date(2025, 11, 1).getTime()),
+    null,
+    { locale: en },
+    { start: 2025, end: 2026 },
+  ),
   '2025 - 2026',
 );
 assert.equal(formatDate('T', tsMarch15, null, { locale: en, monthsField: 'monthsShort' }), String(tsMarch15));

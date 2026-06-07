@@ -40,12 +40,9 @@ export function navigateViewPage(state, dir) {
   }
   if (kind === 'month') {
     if (dir > 0) {
-      return count === 12
-        ? ymdToTsStartOfDay(tsToYmd(all[0]).y + 1, 0, 1)
-        : addMonths(all[all.length - 1], 1).ts;
+      return count === 12 ? ymdToTsStartOfDay(tsToYmd(all[0]).y + 1, 0, 1) : addMonths(all[all.length - 1], 1).ts;
     }
-    const prevAnchor =
-      count === 12 ? ymdToTsStartOfDay(tsToYmd(all[0]).y - 1, 0, 1) : addMonths(all[0], -1).ts;
+    const prevAnchor = count === 12 ? ymdToTsStartOfDay(tsToYmd(all[0]).y - 1, 0, 1) : addMonths(all[0], -1).ts;
     const prevAll = buildMonthViewTimestamps({ ...state, viewDate: prevAnchor });
     return prevAll[Math.floor((prevAll.length - 1) / size) * size];
   }

@@ -29,20 +29,36 @@ assert.equal(p._state.dayViewCols, 4);
 p.update({ monthViewCount: 12, monthViewRows: 2, monthViewCols: 4 });
 assert.equal(p._state.monthViewRows, 2);
 p.update({ monthViewCount: 8, monthViewRadius: 1, startDate: '2026-06-15' });
-const gridOpts = { monthViewRows: 2, monthViewCols: 2, monthViewCount: 12, yearViewRows: 2, yearViewCols: 2, yearViewCount: 12 };
+const gridOpts = {
+  monthViewRows: 2,
+  monthViewCols: 2,
+  monthViewCount: 12,
+  yearViewRows: 2,
+  yearViewCols: 2,
+  yearViewCount: 12,
+};
 const monthPage = createStateFromOptions({ ...gridOpts, view: 'month', startDate: '2026-01-15' });
-assert.deepEqual(viewPage(monthPage, 'month').items.map((ts) => tsToYmd(ts).m), [0, 1, 2, 3]);
+assert.deepEqual(
+  viewPage(monthPage, 'month').items.map((ts) => tsToYmd(ts).m),
+  [0, 1, 2, 3],
+);
 assert.deepEqual(
   viewPage({ ...monthPage, viewDate: navigateViewPage(monthPage, 1) }, 'month').items.map((ts) => tsToYmd(ts).m),
   [4, 5, 6, 7],
 );
 const decPage = createStateFromOptions({ ...gridOpts, view: 'month', startDate: '2026-12-15' });
-assert.deepEqual(viewPage(decPage, 'month').items.map((ts) => tsToYmd(ts).m), [8, 9, 10, 11]);
+assert.deepEqual(
+  viewPage(decPage, 'month').items.map((ts) => tsToYmd(ts).m),
+  [8, 9, 10, 11],
+);
 const dayHost = document.createElement('div');
 document.body.appendChild(dayHost);
 const fromDay = new Lightpickr(dayHost, { inline: true, selectedDates: ['2026-12-15'], ...gridOpts });
 fromDay.up();
-assert.deepEqual(viewPage(fromDay._state, 'month').items.map((ts) => tsToYmd(ts).m), [8, 9, 10, 11]);
+assert.deepEqual(
+  viewPage(fromDay._state, 'month').items.map((ts) => tsToYmd(ts).m),
+  [8, 9, 10, 11],
+);
 fromDay.destroy();
 
 const indexHost = document.createElement('div');
@@ -55,7 +71,10 @@ const indexCfg = new Lightpickr(indexHost, {
 });
 indexCfg.selectDate('2026-06-18');
 indexCfg.up();
-assert.deepEqual(viewPage(indexCfg._state, 'month').items.map((ts) => tsToYmd(ts).m), [5, 6, 7, 8, 9]);
+assert.deepEqual(
+  viewPage(indexCfg._state, 'month').items.map((ts) => tsToYmd(ts).m),
+  [5, 6, 7, 8, 9],
+);
 indexCfg.destroy();
 
 const crossYearHost = document.createElement('div');

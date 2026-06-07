@@ -20,8 +20,7 @@ export function buildMonthViewTimestamps(state) {
   if (n === 12) {
     ts = ymdToTsStartOfDay(y, 0, 1);
   } else {
-    const radius =
-      state.monthViewRadius >= n ? 0 : clampInt(state.monthViewRadius, 0, n - 1, 0);
+    const radius = state.monthViewRadius >= n ? 0 : clampInt(state.monthViewRadius, 0, n - 1, 0);
     ts = addMonths(ymdToTsStartOfDay(y, m, 1), -radius).ts;
   }
   for (let i = 0; i < n; i++) {
