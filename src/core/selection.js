@@ -93,7 +93,6 @@ export function clearSelection(state) {
   const next = Object.assign({}, state);
   next.selectedDates = [];
   next.pendingRangeStart = null;
-  next.rangeAnchor = null;
   return next;
 }
 

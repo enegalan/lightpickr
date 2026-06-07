@@ -1,5 +1,5 @@
 import { clampInt, pad2, toInt, trimFifo } from './common.js';
-import { defaultMonthNames, defaultWeekdayNames } from './locale.js';
+import { fromLocale } from './locale.js';
 
 /**
  * @param {number} ts
@@ -107,6 +107,16 @@ export function isInClosedRangeDay(ts, start, end) {
 
 /**
  * @param {number} y
+ * @param {number} yearViewCount
+ * @param {number} yearViewRadius
+ * @returns {number}
+ */
+export function yearBlockStart(y, yearViewCount, yearViewRadius) {
+  return yearViewCount === 12 ? Math.floor(y / 12) * 12 : y - yearViewRadius;
+}
+
+/**
+ * @param {number} y
  * @param {number} m
  * @returns {number}
  */
@@ -185,13 +195,13 @@ export function formatDate(format, ts, timePart, state) {
   const dow = dateObj.getDay();
   const hours = timePart && typeof timePart.hours === 'number' ? timePart.hours : dateObj.getHours();
   const minutes = timePart && typeof timePart.minutes === 'number' ? timePart.minutes : dateObj.getMinutes();
-  const monthShort = defaultMonthNames(state.locale, 'monthsShort');
-  const monthLong = defaultMonthNames(state.locale, 'monthsLong');
-  const dayShort = defaultWeekdayNames(state.locale, 'weekdaysShort');
-  const dayLong = defaultWeekdayNames(state.locale, 'weekdaysLong');
+  const monthShort = fromLocale(state.locale, 'monthsShort');
+  const monthLong = fromLocale(state.locale, 'monthsLong');
+  const dayShort = fromLocale(state.locale, 'weekdaysShort');
+  const dayLong = fromLocale(state.locale, 'weekdaysLong');
   const yy = String(y).slice(-2);
   const n = clampInt(state?.yearViewCount, 1, Number.POSITIVE_INFINITY, 12);
-  const blockStart = n === 12 ? Math.floor(y / 12) * 12 : y - toInt(state?.yearViewRadius, 5);
+  const blockStart = yearBlockStart(y, n, toInt(state?.yearViewRadius, 5));
   const blockEnd = blockStart + n - 1;
 
   let out = '';

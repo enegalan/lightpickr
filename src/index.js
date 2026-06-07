@@ -330,7 +330,7 @@ Lightpickr.prototype.disableDate = function (date) {
     return;
   }
   const next = Object.assign({}, this._state);
-  const arr = next.disabledDates;
+  const arr = next.disabledDatesSorted.slice();
   if (arr.indexOf(ts) < 0) {
     arr.push(ts);
     arr.sort((a, b) => {

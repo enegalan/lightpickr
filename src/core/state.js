@@ -121,6 +121,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {boolean} [isMobile]
  * @property {string | ((date: Date | Date[]) => string)} [format]
  * @property {string} [monthsField]
+ * @property {string} [weekdaysField]
  * @property {string|('day'|'month'|'year')} [view]
  * @property {('day'|'month'|'year')|('day'|'month'|'year')[]} [allowedViews]
  * @property {boolean} [showOtherMonths]
@@ -187,6 +188,7 @@ import lightpickrDefaults from './defaults.js';
  * @property {boolean} isMobile
  * @property {string} format
  * @property {string} monthsField
+ * @property {string} weekdaysField
  * @property {('day'|'month'|'year')[]} allowedViews
  * @property {boolean} showOtherMonths
  * @property {boolean} selectOtherMonths
@@ -226,7 +228,6 @@ import lightpickrDefaults from './defaults.js';
  * @property {boolean} visible
  * @property {boolean} popoverAlreadyOpened
  * @property {number[]|number[][]} selectedDates
- * @property {number|null} rangeAnchor
  * @property {{ hours: number, minutes: number }} timePart
  * @property {number|null} pendingRangeStart
  * @property {number|null} pendingRangeHoverTs
@@ -305,6 +306,26 @@ export function isSelectAllowed(instance, value) {
       datepicker: instance,
     }) !== false
   );
+}
+
+/**
+ * @private
+ * @param {number} count
+ * @param {number} cols
+ * @param {number} rows
+ * @returns {{ cols: number, rows: number }}
+ */
+function resolveGridDims(count, cols, rows) {
+  if (cols > 0 && rows > 0) {
+    return { cols, rows: Math.max(rows, Math.ceil(count / cols)) };
+  }
+  if (cols > 0) {
+    return { cols, rows: Math.ceil(count / cols) };
+  }
+  if (rows > 0) {
+    return { cols: Math.ceil(count / rows), rows };
+  }
+  return { cols, rows };
 }
 
 /**
@@ -447,21 +468,8 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     lightpickrDefaults.yearViewRows,
   );
 
-  if (monthViewCols > 0 && monthViewRows > 0) {
-    monthViewRows = Math.max(monthViewRows, Math.ceil(monthViewCount / monthViewCols));
-  } else if (monthViewCols > 0) {
-    monthViewRows = Math.ceil(monthViewCount / monthViewCols);
-  } else if (monthViewRows > 0) {
-    monthViewCols = Math.ceil(monthViewCount / monthViewRows);
-  }
-
-  if (yearViewCols > 0 && yearViewRows > 0) {
-    yearViewRows = Math.max(yearViewRows, Math.ceil(yearViewCount / yearViewCols));
-  } else if (yearViewCols > 0) {
-    yearViewRows = Math.ceil(yearViewCount / yearViewCols);
-  } else if (yearViewRows > 0) {
-    yearViewCols = Math.ceil(yearViewCount / yearViewRows);
-  }
+  ({ cols: monthViewCols, rows: monthViewRows } = resolveGridDims(monthViewCount, monthViewCols, monthViewRows));
+  ({ cols: yearViewCols, rows: yearViewRows } = resolveGridDims(yearViewCount, yearViewCols, yearViewRows));
 
   const nextState = {
     inline,
@@ -479,6 +487,7 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     weekends: normalizeWeekendIndexes(raw.weekends),
     isMobile,
     monthsField: raw.monthsField.trim(),
+    weekdaysField: raw.weekdaysField.trim(),
     allowedViews,
     showOtherMonths: raw.showOtherMonths !== false,
     selectOtherMonths: raw.selectOtherMonths !== false,
@@ -519,7 +528,6 @@ export function createStateFromOptions(incomingRaw, targetEl) {
     visible: inline,
     popoverAlreadyOpened: inline || typeof raw.position === 'function',
     selectedDates: [],
-    rangeAnchor: null,
     timePart: { hours: new Date().getHours(), minutes: new Date().getMinutes() },
     pendingRangeStart: null,
     pendingRangeHoverTs: null,
@@ -572,6 +580,7 @@ export function mergeOptions(instance, patch) {
   next.popoverAlreadyOpened = !isStringPopover || (wasStringPopover && instance._state.popoverAlreadyOpened);
   return next;
 }
+
 /**
  * @private
  * @param {LightpickrInternalState} state
@@ -592,13 +601,14 @@ function _extractRawOptions(state) {
     showEvent: state.showEvents.slice(),
     minDate: state.minDate,
     maxDate: state.maxDate,
-    disabledDates: state.disabledDates,
+    disabledDates: state.disabledDatesSorted.slice(),
     locale: state.locale,
     firstDay: state.firstDay,
     weekends: state.weekends.slice(),
     isMobile: state.isMobile,
     format: state.format,
     monthsField: state.monthsField,
+    weekdaysField: state.weekdaysField,
     view: state.currentView === 'time' ? 'day' : state.currentView,
     allowedViews: state.allowedViews.slice(),
     showOtherMonths: state.showOtherMonths,

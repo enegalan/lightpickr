@@ -606,12 +606,14 @@ function _syncTheme(instance) {
     shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
+  const darkCls = instance._state.classes.themeDark;
+  const lightCls = instance._state.classes.themeLight;
   if (shouldUseDark) {
-    instance.$datepicker.classList.add('lp--dark');
-    instance.$datepicker.classList.remove('lp--light');
+    instance.$datepicker.classList.add(darkCls);
+    instance.$datepicker.classList.remove(lightCls);
   } else {
-    instance.$datepicker.classList.remove('lp--dark');
-    instance.$datepicker.classList.add('lp--light');
+    instance.$datepicker.classList.remove(darkCls);
+    instance.$datepicker.classList.add(lightCls);
   }
 }
 

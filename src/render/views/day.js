@@ -1,7 +1,7 @@
 import { buildDayMonthCells } from '../../core/calendar-grid.js';
 import lightpickrDefaults from '../../core/defaults.js';
 import { createEl } from '../../utils/common.js';
-import { defaultWeekdayNames, getTranslations } from '../../utils/locale.js';
+import { getTranslations, fromLocale } from '../../utils/locale.js';
 import { formatDate, tsToYmd } from '../../utils/time.js';
 import { buildCtx } from '../context.js';
 import { mountViewHeader } from '../header.js';
@@ -43,7 +43,7 @@ export function renderDayView(instance, container) {
  * @returns {void}
  */
 function _buildDayGridHeadRow(instance, grid) {
-  const names = defaultWeekdayNames(instance._state.locale, instance._state.weekdaysField);
+  const names = fromLocale(instance._state.locale, instance._state.weekdaysField);
   const fd = instance._state.firstDay % 7;
   const clickable = instance._state.dayNameClickable === true;
 

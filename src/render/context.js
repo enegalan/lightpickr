@@ -47,7 +47,7 @@ export function buildCtx(instance, dayTs, outside = false) {
       onlyTime: instance._state.onlyTime,
       minDate: instance._state.minDate,
       maxDate: instance._state.maxDate,
-      disabledDates: instance._state.disabledDates,
+      disabledDates: instance._state.disabledDatesSorted.slice(),
       locale: instance._state.locale,
       firstDay: instance._state.firstDay,
       weekends: instance._state.weekends.slice(),

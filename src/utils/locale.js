@@ -5,28 +5,13 @@ export const DEFAULT_TRANSLATIONS = Object.freeze(_localeStringFields(lightpickr
 
 /**
  * @param {import('./state.js').LightpickrLocale} locale
- * @param {string} [monthsField]
+ * @param {string} field
  * @returns {string[]}
  */
-export function defaultMonthNames(locale, monthsField) {
-  const field =
-    typeof monthsField === 'string' && monthsField.trim() ? monthsField.trim() : lightpickrDefaults.monthsField;
-  return (
-    (Array.isArray(locale) ? locale : locale || lightpickrDefaults.locale)[field] || lightpickrDefaults.locale[field]
-  );
-}
-
-/**
- * @param {import('./state.js').LightpickrLocale} locale
- * @param {string} [weekdaysField]
- * @returns {string[]}
- */
-export function defaultWeekdayNames(locale, weekdaysField) {
-  const field =
-    typeof weekdaysField === 'string' && weekdaysField.trim() ? weekdaysField.trim() : lightpickrDefaults.weekdaysField;
-  return (
-    (Array.isArray(locale) ? locale : locale || lightpickrDefaults.locale)[field] || lightpickrDefaults.locale[field]
-  );
+export function fromLocale(locale, field) {
+  const f = typeof field === 'string' ? field.trim() : '';
+  const bundle = locale && typeof locale === 'object' && !Array.isArray(locale) ? locale : lightpickrDefaults.locale;
+  return bundle[f] || lightpickrDefaults.locale[f];
 }
 
 /**

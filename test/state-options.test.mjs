@@ -24,4 +24,30 @@ assert.equal(p._state.dayViewCols, 4);
 assert.equal(Object.prototype.hasOwnProperty.call(p._state, 'numberOfMonths'), false);
 p.update({ minDate: '2026-01-01', format: 'YYYY-MM-DD' });
 assert.equal(Object.prototype.hasOwnProperty.call(p._state, 'numberOfMonths'), false);
+
+const inlineHost = document.createElement('div');
+document.body.appendChild(inlineHost);
+const inline = new Lightpickr(inlineHost, { inline: true });
+
+inline.disableDate('2026-06-15');
+assert.equal(inline.disabledDates.length, 1);
+inline.enableDate('2026-06-15');
+assert.equal(inline.disabledDates.length, 0);
+
+inline.disableDate('2026-06-15');
+inline.update({});
+assert.equal(inline.disabledDates.length, 1);
+
+inline.update({ weekdaysField: 'weekdaysLong' });
+assert.equal(inline._state.weekdaysField, 'weekdaysLong');
+
+inline.destroy();
+
+const timeHost = document.createElement('div');
+document.body.appendChild(timeHost);
+const withTime = new Lightpickr(timeHost, { inline: true, enableTime: true });
+withTime.setCurrentView('month');
+assert.equal(withTime.currentView, 'month');
+withTime.destroy();
+
 p.destroy();

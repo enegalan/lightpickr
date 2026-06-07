@@ -1,6 +1,6 @@
 import { buildMonthViewTimestamps, buildYearViewYears } from '../../core/calendar-grid.js';
 import { createEl } from '../../utils/common.js';
-import { defaultMonthNames, getTranslations } from '../../utils/locale.js';
+import { getTranslations, fromLocale } from '../../utils/locale.js';
 import { isFocusDay, tsToYmd, ymdToTsStartOfDay } from '../../utils/time.js';
 import { buildCtx } from '../context.js';
 import { mountViewHeader } from '../header.js';
@@ -12,7 +12,7 @@ import { mountViewHeader } from '../header.js';
  */
 export function renderMonthView(instance, container) {
   const { y, m } = tsToYmd(instance._state.viewDate);
-  const months = defaultMonthNames(instance._state.locale, instance._state.monthsField);
+  const months = fromLocale(instance._state.locale, instance._state.monthsField);
   const stamps = buildMonthViewTimestamps(instance._state);
 
   _renderMonthYearGridView(

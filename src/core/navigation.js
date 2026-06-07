@@ -6,6 +6,7 @@ import {
   startOfDayTs,
   toTimestamp,
   tsToYmd,
+  yearBlockStart,
   ymdToTsStartOfDay,
 } from '../utils/time.js';
 import { clampView } from '../utils/view.js';
@@ -23,7 +24,7 @@ export function navigateNextPrev(state, dir) {
   const next = Object.assign({}, state);
   const v = state.currentView;
   let timestamp = null;
-  if (v === 'day') {
+  if (v === 'day' || v === 'time') {
     const { ts } = addMonths(state.viewDate, dir);
     timestamp = ts;
   } else if (v === 'month') {
@@ -32,9 +33,6 @@ export function navigateNextPrev(state, dir) {
   } else if (v === 'year') {
     const { y, m } = tsToYmd(state.viewDate);
     timestamp = ymdToTsStartOfDay(y + dir * state.yearViewCount, m, 1);
-  } else if (v === 'time') {
-    const { ts } = addMonths(state.viewDate, dir);
-    timestamp = ts;
   }
   if (timestamp != null) {
     next.viewDate = timestamp;
@@ -152,8 +150,11 @@ export function navigateDown(state) {
  */
 export function setCurrentViewState(state, view, params) {
   let next = Object.assign({}, state);
-  next.currentView =
-    state.onlyTime || state.enableTime || view === 'time' ? 'time' : clampView(state.allowedViews, 'day');
+  if (state.onlyTime || (view === 'time' && state.enableTime)) {
+    next.currentView = 'time';
+  } else {
+    next.currentView = clampView(state.allowedViews, view === 'time' ? 'day' : view);
+  }
   if (params?.date != null) {
     next = setViewDateState(next, params.date);
   }
@@ -246,7 +247,7 @@ function _navTargetPeriodYmd(state, dir) {
       const { y } = tsToYmd(state.viewDate);
       const n = clampInt(state.yearViewCount, 1, Number.MAX_SAFE_INTEGER, 1);
       const yTarget = y + dir * n;
-      const startYearOfBlock = n === 12 ? Math.floor(yTarget / 12) * 12 : yTarget - state.yearViewRadius;
+      const startYearOfBlock = yearBlockStart(yTarget, n, state.yearViewRadius);
       return {
         startYear: startYearOfBlock,
         endYear: startYearOfBlock + n - 1,
