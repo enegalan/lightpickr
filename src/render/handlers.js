@@ -340,12 +340,10 @@ function _bindRangeDragHandlers(instance) {
     if (!(dayBtn instanceof HTMLElement) || !instance.$datepicker.contains(dayBtn)) {
       return;
     }
-    if (
-      !(
-        dayBtn.classList.contains(instance._state.classes.cellRangeStart) ||
-        dayBtn.classList.contains(instance._state.classes.cellRangeEnd)
-      )
-    ) {
+    if (!(
+      dayBtn.classList.contains(instance._state.classes.cellRangeStart) ||
+      dayBtn.classList.contains(instance._state.classes.cellRangeEnd)
+    )) {
       return;
     }
     const ts = _parseElementNumber(dayBtn, instance._state.attributes.day);
